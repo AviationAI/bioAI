@@ -1,0 +1,16 @@
+{% extends "bioAIPrototype/layout.html" %}
+{% block title %}Login{% endblock %}
+{% block body %}
+    <h1 class = "container-fluid">Login</h1>
+     <form class = "container-fluid" method = "POST" action = "{% url 'login' %}">
+        {% csrf_token %}
+        <div class = "mb-3">
+            <input placeholder = "Username" type = "text" name = "username" id = "username" class = "form-control">
+        </div>
+        <div class = "mb-3">
+            <input placeholder = "Password" type = "password" name = "password" id = "password" class = "form-control">
+        </div>
+        <button type = "submit" class="btn btn-primary">Login</button>
+     </form>
+     <strong>{{ message }}</strong>
+{% endblock %}

@@ -1,0 +1,56 @@
+.body {
+    padding: 25px;
+}
+
+#loading {
+    display: none;
+}
+
+.blackLink {
+    color: black;
+    text-decoration: none;
+}
+
+.blackLink:hover{
+    color: black;
+    text-decoration: underline;
+}
+
+.blackLink:active{
+    color: black;
+    text-decoration: underline;
+}
+
+.projectDiv {
+    align-items: center;
+    display: flex;
+    padding: 10px;
+    border-style: solid;
+    flex-direction: row;   
+    border-width: 1px; 
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 0 4px 5px lightgray;
+}
+
+.projectDiv:hover {
+    background-color: #AAAAAA;
+}
+
+.delete {
+    float: right;
+    height: 50px;
+}
+
+.deleteDiv {
+    margin-left: auto;
+}
+
+.projects{
+    margin-top: 25px;
+    justify-content: center;
+}
+
+.centeredTitle {
+    text-align: center;
+}

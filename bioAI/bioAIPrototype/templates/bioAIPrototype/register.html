@@ -1,0 +1,22 @@
+{% extends "bioAIPrototype/layout.html" %}
+{% block title %}Register{% endblock %}
+{% block body %}
+    <h1 class = "container-fluid">Register</h1>
+     <form class = "container-fluid" method = "POST" action = "{% url 'register' %}">
+        {% csrf_token %}
+        <div class = "mb-3">
+            <input placeholder = "Username" type = "text" name = "username" id = "username" class = "form-control">
+        </div>
+        <div class = "mb-3">
+            <input placeholder = "Email Address" type = "text" name = "email" id = "email" class = "form-control">
+        </div>
+        <div class = "mb-3">
+            <input placeholder = "Password" type = "password" name = "password" id = "password" class = "form-control">
+        </div>
+        <div class = "mb-3">
+            <input placeholder = "Confirm Password" type = "password" name = "confirmation" id = "password" class = "form-control">
+        </div>
+        <button type = "submit" class="btn btn-primary">Register</button>
+     </form>
+     <strong>{{ message }}</strong>
+{% endblock %}

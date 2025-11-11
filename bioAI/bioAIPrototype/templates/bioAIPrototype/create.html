@@ -1,0 +1,18 @@
+{% extends 'bioAIPrototype/layout.html' %}
+{% block title %}Create a Project{% endblock %}
+{% block body %}
+    <h1>Create a Project</h1>
+    <div id = "loading" class="spinner-border spinner-border-sm  mb-2" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <form id = "create" class = "container-fluid" method="POST" action = "{% url 'create' %}">
+        {% csrf_token %}
+        <div class = "mb-3">
+            <input type = "text" class = "form-control" placeholder="Research Topic" id = "title" name = "title">
+        </div>
+        <div class = "mb-3">
+            <textarea id = "description" class = "form-control" name = "description" placeholder = "Describe your topic"></textarea>
+        </div>
+        <button type = "submit" class = "btn btn-primary">Create</button>
+    </form>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends 'bioAIPrototype/layout.html' %}
+{% block title %}Home{% endblock%}
+{% block body %}
+{% if user.is_authenticated %}
+<h1 class = "centeredTitle">My Projects</h1>
+<div class = "projects">
+  {% for project in projects %}
+  <a class = "blackLink" href = "{% url 'project' project.id %}">
+  <div class = "projectDiv">
+    <div>
+      <h3>{{ project.topic }}</h3>
+      <p>{{ project.description }}</p>
+    </div>
+    <form class = "deleteDiv">
+        {% csrf_token %}
+        <button class = "delete btn btn-danger">Delete</button>
+    </form>
+ </div>
+  </a>
+  {% empty %}
+  <strong>No projects yet...</strong>
+  {% endfor %}
+</div>
+{% else %}
+<h2>Login to create a project</h2>
+{% endif %}
+{% endblock %}
