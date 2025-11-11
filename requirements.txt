@@ -1,0 +1,2 @@
+Django
+ollama==0.12.10
