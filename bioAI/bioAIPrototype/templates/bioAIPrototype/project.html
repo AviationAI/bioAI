@@ -2,16 +2,21 @@
 {% block title %}Home{% endblock%}
 {% block body %}
 {% if user.is_authenticated and project.user == user %}
-<h1>{{ project.topic }}</h1>
+    <h1>{{ project.topic }}</h1>
     <p>{{ project.description }}</p>
-    <h5>Sources</h5>
-      <ul>
+    <hr>
+    <section>
+        <h5>Sources</h5>
+        <ul>
         {% for source in project.AIsteps.available_trusted_literatures %}
           <li>{{ source }}</li>
         {% endfor %}
-      </ul>
+        </ul>
+    </section>
+    <section>
       <h5>Summarization</h5>
       <p>{{ project.AIsteps.summarization }}</p>
+    </section>
 {% else %}
   <h1>No access to this project.</h1>
 {% endif %}

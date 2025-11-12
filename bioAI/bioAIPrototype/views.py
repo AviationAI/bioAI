@@ -112,6 +112,15 @@ def create(request):
         return JsonResponse({"Success": "True", "Project": p.serialize()})
     return render(request, "bioAIPrototype/create.html")
 
+def delete(request, project_id):
+    if request.method == "POST":
+        project = Project.objects.get(id = project_id)
+        if request.user == project.user:
+            project.delete()
+            return JsonResponse({"Success": "True"})
+        return JsonResponse({"Error": "User cannot delete project that they do not own."})
+    return JsonResponse({"Error": "Post method required."})
+
 def login_view(request):
     if request.method == "POST":
         username = request.POST["username"]

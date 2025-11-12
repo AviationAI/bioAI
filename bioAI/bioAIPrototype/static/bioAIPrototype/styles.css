@@ -27,10 +27,10 @@
     padding: 10px;
     border-style: solid;
     flex-direction: row;   
-    border-width: 1px; 
+    border-width: 0.1px; 
     border-radius: 10px;
     margin-bottom: 20px;
-    box-shadow: 0 0 4px 5px lightgray;
+    box-shadow: 0 0 6px 4px lightgray;
 }
 
 .projectDiv:hover {
@@ -39,7 +39,7 @@
 
 .delete {
     float: right;
-    height: 50px;
+    height: 40px;
 }
 
 .deleteDiv {
@@ -47,7 +47,7 @@
 }
 
 .projects{
-    margin-top: 25px;
+    margin-top: 30px;
     justify-content: center;
 }
 

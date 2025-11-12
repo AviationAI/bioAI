@@ -11,9 +11,9 @@
       <h3>{{ project.topic }}</h3>
       <p>{{ project.description }}</p>
     </div>
-    <form class = "deleteDiv">
+    <form method = "POST" class = "deleteDiv" data-id = "{{ project.id }}">
         {% csrf_token %}
-        <button class = "delete btn btn-danger">Delete</button>
+        <button type = "submit" class = "delete btn btn-danger" >Delete</button>
     </form>
  </div>
   </a>

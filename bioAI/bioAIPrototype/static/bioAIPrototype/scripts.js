@@ -1,6 +1,15 @@
 document.addEventListener('DOMContentLoaded', function(){
-    document.querySelector("#create").onsubmit = () => create_project(event);
-    document.querySelectorAll(".delete").forEach(form => {element.addEventListener('submit', () => delete(element))});
+    const create = document.querySelector("#create")
+    if (create){
+        create.onsubmit = () => create_project(event);
+    }
+    const deleteDivs = document.querySelectorAll(".deleteDiv")
+    if(deleteDivs){
+        deleteDivs  .forEach(form => {
+            form.addEventListener('submit', (event) => delete_project(event, form))
+        });
+    }
+        
 });
 
 function create_project(event){
@@ -29,6 +38,31 @@ function create_project(event){
             description.value = "";
             window.location.href = "http://127.0.0.1:8000";
         })
+    }
+}
+
+function delete_project(event, form){
+    event.stopPropagation();
+    event.preventDefault();
+    let confirmation = confirm("Are you sure you want to delete this project? This action cannot be reversed.");
+    if (confirmation){
+        const project_id = form.dataset.id;
+        const csrf_token = getCookie('csrftoken');
+        fetch(`/delete/${project_id}`, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": csrf_token,
+                "Content-Type": "application/json"
+            }
+        })
+        .then(request => request.json())
+        .then(response => {
+            console.log(response);
+        })
+        .catch(error => {
+            console.log(error);
+        })
+        location.reload();
     }
 }
 
