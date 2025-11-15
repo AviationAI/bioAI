@@ -4,3 +4,4 @@ langchain==1.0.5
 langchain-ollama==1.0.0
 langchain-core==0.2.35
 langchain-community==0.2.11
+markdown2==2.5.4
