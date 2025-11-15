@@ -2,6 +2,10 @@
     padding: 25px;
 }
 
+.background-bar {
+    background-color: rgba(0,0,0,0);
+}
+
 #loading {
     display: none;
 }
@@ -53,4 +57,20 @@
 
 .centeredTitle {
     text-align: center;
+}
+
+.homePage {
+    margin: -25px;
+    height: 100vh;
+    background-image: url("https://static.vecteezy.com/system/resources/thumbnails/039/302/250/small/ai-generated-back-to-school-science-lab-excitement-highlight-the-excitement-of-a-science-experiment-in-a-laboratory-setting-background-image-generative-ai-photo.jpg");
+    background-size: cover;
+    background-position: center;
+}
+
+.white-text{
+    color: white;
+}
+
+.large-text {
+    font-size: 72px;
 }

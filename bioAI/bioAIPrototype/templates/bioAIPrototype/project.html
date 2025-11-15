@@ -14,8 +14,7 @@
         </ul>
     </section>
     <section>
-      <h5>Summarization</h5>
-      <p>{{ project.AIsteps.summarization }}</p>
+      <div>{{ summary| safe  }}</div>
     </section>
 {% else %}
   <h1>No access to this project.</h1>

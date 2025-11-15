@@ -1,0 +1,21 @@
+{% extends 'bioAIPrototype/edit.html'%}
+{% block title %}
+Edit {{ project.topic }}
+{% endblock %}
+{% block body %}
+<form id = "edit" class = "container-fluid" method = "POST">
+    <div class = "mb-3">
+        <input class = "form-control" value = "{{ project.topic }}" type = "text" name = "topic" id = "topic">
+    </div>
+    <div class = "mb-3">
+        <textarea class = "form-control" name = "description" id = "description">{{ project.description }}</textarea>
+    </div>
+    <div class = "mb-3">
+        <textarea class = "form-control" name = "summary" id = "summary">{{ project.summary }}</textarea>
+    </div>
+    <div class = "mb-3">
+        <input class = "form-control" value = "{{ project.topic }}" type = "text">
+    </div>
+    <button type = "submit" class = "btn btn-primary">Save Edits</button>
+</form>
+{% endblock %}

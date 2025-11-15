@@ -18,6 +18,7 @@ class Project(models.Model):
     description = models.CharField()
     objective = models.CharField(default="none")
     AIsteps = models.JSONField()
+    summary = models.CharField()
 
     def __str__(self):
         return f"{self.topic} by {self.user}"
@@ -30,12 +31,14 @@ class Project(models.Model):
             "description": self.description,
             "objective": self.objective,
             "AIsteps": {
-                "available_trusted_literatures": self.AIsteps['available_trusted_literatures'],
-                "summarization": self.AIsteps['summarization']
-            }
+                "available_trusted_literatures": self.AIsteps['available_trusted_literatures']
+            },
+            "summary": self.summary
         }
     
     
 class AIGeneratedResearchSteps(BaseModel):
     available_trusted_literatures: List[str] = Field(description = "All available sites/trusted literatures on the topic. Must be trustable websites.")
-    summarization: str = Field(description="Summarization of the entire topic, and without sources.")
+    model_config = {
+        "extra": "ignore"
+    }

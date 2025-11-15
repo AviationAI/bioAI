@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', function(){
-    const create = document.querySelector("#create")
+    const create = document.querySelector("#create");
+    const edit = document.querySelector("#edit");
     if (create){
         create.onsubmit = () => create_project(event);
     }
@@ -9,7 +10,9 @@ document.addEventListener('DOMContentLoaded', function(){
             form.addEventListener('submit', (event) => delete_project(event, form))
         });
     }
-        
+    if (edit){
+        edit.onsubmit = () => edit_project(event);
+    }   
 });
 
 function create_project(event){

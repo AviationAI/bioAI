@@ -16,8 +16,10 @@ from langchain_core.messages import HumanMessage
 from django.views.decorators.csrf import csrf_exempt
 import uuid
 from datetime import datetime
+from markdown2 import Markdown
 
 # Create your views here.
+markdowner = Markdown()
 chat = ChatOllama(model = "llama3.2:3b")
 
 @csrf_exempt
@@ -46,8 +48,7 @@ def create(request):
                 "Example Government",
                 "Example Organization",
                 "Example College",
-            ],
-            summarization = "Example summarization",
+            ]
         )
         print (example_steps.model_dump_json())
         ai_prompt = f"""
@@ -67,16 +68,12 @@ def create(request):
             {example_steps.model_dump_json()}
 
             Instructions for the content of your response: 
-            Step 1: Available trustworthy literature: Find detailed and trustworthy sources/literatures towards the topic of the study. ONLY use real, existing sources. DO NOT invent sources. If all sources cannot be verified as real, write "NO TRUSTWORTHY SOURCES" instead. They should follow the following criteria:
+            Available trustworthy literature: Find detailed and trustworthy sources/literatures towards the topic of the study. ONLY use real, existing sources. DO NOT invent sources. If all sources cannot be verified as real, write "NO TRUSTWORTHY SOURCES" instead. They should follow the following criteria:
                 a. Lack of bias (Bad source example: Oil company for the topic of climate change)
                 b. The source has a good online reputation for factual data
                 c. The source is recommended to be .edu .gov or .org, however .com is fine if the source follows all other criteria
                 d: The source is relevant towards the topic of the study
                 e: ONLY use real, existing sources. DO NOT invent URLs, DOIs, or articles. If all sources cannot be verified as real, write "NO TRUSTWORTHY SOURCES" instead.
-            Step 2: Summarization: Now, with all the information you have gathered on the research topic, summarize all key points about the topic. This summary should follow the following criteria:
-                a. Length: The summary should be anywhere from 6-12 sentences, covering critical aspects about the topic. If needed, you can extend the range by a few sentences if critical details are missed
-                b. Sources: Use ONLY trustworthy sources for this summary (Look above for the parameters defining a trustworthy source)
-                c. Content: The summary should give as much valid information about the topic as possible, and should be based on the description for the project. Focus on facts.
 
             
 
@@ -88,8 +85,9 @@ def create(request):
             Output must be valid JSON.
             Do NOT include explanations, code fences, or any text outside the JSON object.
             Use strings instead of python objects 
-            Dp NOT use "=", instead use ":" (unless it is part of your url)
+            Do NOT use "=", instead use ":" (unless it is part of your url)
             ALL OF YOU JSON OBJECT SHOULD BE INSIDE OF TWO CURLY BRACES 
+            Your response should only include ONE field (available_trusted_literatures) and no extra fields
         """
         messages = [
             HumanMessage(content = ai_prompt)
@@ -98,15 +96,52 @@ def create(request):
         response = chat.invoke(messages)
         steps = response.content
         validated_steps = AIGeneratedResearchSteps.model_validate_json(steps)
-
         print(validated_steps.model_dump_json())
+
+        ai_prompt2 = f"""
+            You are an AI scientific research assistant. Your task is to generate structured steps toward conducting a scientific research study.
+            The topic of the study is the following:
+
+            <study_topic>
+                {title}
+            </study_topic>
+            The description of the study is the following. Use the description as the main guide for the following steps: 
+
+            <study_description>
+                {description}
+            </study_description>
+
+            Your job is to generate a summary of the study topic.
+            You may use the following sources:\
+
+            <study_sources>
+                {response}
+            </study_sources>
+
+            Criteria:
+            Your summary should be professional and formal
+            Your summary should be 6-12 sentences
+            Include facts and methodology and not history unless explicitly stated in the study topic / study description
+            Use the study description as your framework for the summary
+        """
+
+        messages2 = [
+            HumanMessage(content = ai_prompt2)
+        ]
+
+        response = chat.invoke(messages2)
+        
+        summary = response.content
+
+
         
         p = Project.objects.create(
             id = id,
             user = request.user,
             topic = title,
             description = description,
-            AIsteps = json.loads(validated_steps.model_dump_json())
+            AIsteps = json.loads(validated_steps.model_dump_json()),
+            summary = summary
         )
         p.save()
         return JsonResponse({"Success": "True", "Project": p.serialize()})
@@ -138,7 +173,23 @@ def login_view(request):
 
 def project(request, project_id):
     project = Project.objects.get(id = project_id)
+    summary = markdowner.convert(project.summary)
     return render(request, "bioAIPrototype/project.html", {
+        "project": project,
+        "summary": summary
+    })
+
+
+def edit(request, project_id):
+    project = Project.objects.get(id = project_id)
+    if request.method == "POST":
+        data = json.loads(request.body)
+        description = data.description
+        topic = data.topic
+
+        project.update(topic = topic, description = description)
+        return JsonResponse({"Success": "True"})
+    return render(request, "bioAIPrototype/edit.html", {
         "project": project
     })
 
