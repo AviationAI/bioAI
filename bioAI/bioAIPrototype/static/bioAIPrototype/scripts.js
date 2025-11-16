@@ -12,7 +12,14 @@ document.addEventListener('DOMContentLoaded', function(){
     }
     if (edit){
         edit.onsubmit = () => edit_project(event);
-    }   
+    }
+    const dropbar = document.querySelector(".dropbar");
+    document.querySelector("#account").onclick = () => {
+        dropbar.style.display = "flex";
+    }
+    document.querySelector("#close-dropbar").onclick = () =>  {
+        dropbar.style.display = "none";
+    }
 });
 
 function create_project(event){

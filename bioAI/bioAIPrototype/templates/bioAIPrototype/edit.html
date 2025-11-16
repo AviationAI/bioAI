@@ -1,20 +1,36 @@
-{% extends 'bioAIPrototype/edit.html'%}
+{% extends 'bioAIPrototype/layout.html'%}
 {% block title %}
 Edit {{ project.topic }}
 {% endblock %}
 {% block body %}
+<h1>Edit</h1>
 <form id = "edit" class = "container-fluid" method = "POST">
     <div class = "mb-3">
+        <label for = "topic">Topic</label>
         <input class = "form-control" value = "{{ project.topic }}" type = "text" name = "topic" id = "topic">
     </div>
     <div class = "mb-3">
+        <label for = "description">Description</label>
         <textarea class = "form-control" name = "description" id = "description">{{ project.description }}</textarea>
     </div>
     <div class = "mb-3">
-        <textarea class = "form-control" name = "summary" id = "summary">{{ project.summary }}</textarea>
+        <label for = "list-sources">Sources</label>
+        <ul id = "list-sources">
+            {% for source in project.AIsteps.available_trusted_literatures %}
+                <li>
+                    <div class = "input-group">
+                    <input class = "form-control source" value = "{{ source }}">
+                    <button type = "button" class = "btn btn-danger btn-sm">Delete Source</button>
+                    </div>
+                </li><br>
+            {% endfor %}
+        </ul>
+        <button type = "button" class = "btn btn-secondary">Add a source</button>
+        <input type = "hidden" id = "sources" name = "sources">
     </div>
     <div class = "mb-3">
-        <input class = "form-control" value = "{{ project.topic }}" type = "text">
+        <label for = "summary">Summary</label>
+        <textarea rows = "25"class = "form-control" name = "summary" id = "summary">{{ project.summary }}</textarea>
     </div>
     <button type = "submit" class = "btn btn-primary">Save Edits</button>
 </form>

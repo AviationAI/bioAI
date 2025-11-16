@@ -74,3 +74,42 @@
 .large-text {
     font-size: 72px;
 }
+
+.dropbar {
+    position: fixed;
+    z-index: 999;
+    top: 0;
+    right: 0;
+    display: none;
+    flex-direction: column;
+    height: 25vh;
+    width: 35vh;
+    list-style-type: none;
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding: 10px;
+    background-color: rgba(255,255,255, 0.9);
+    box-shadow: -2px 2px 5px lightgray;
+    backdrop-filter: blur(50px);
+    border-radius: 5px;
+}
+
+.dropbar li {
+    color: black;
+    height: 20px;
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+.navbar-toggler {
+    margin-left: auto;
+    margin-right: 10px;
+}
+
+#account:hover {
+    cursor: pointer;
+}
+
+#close-dropbar:hover {
+    cursor: pointer;
+}
