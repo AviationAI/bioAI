@@ -1,7 +1,6 @@
 Django==5.1.2
 ollama
-langchain==1.0.5
+langchain>=1.0.5
 langchain-ollama==1.0.0
 langchain-core==1.0.5
-langchain-community==0.2.11
 markdown2==2.5.4
