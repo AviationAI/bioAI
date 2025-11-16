@@ -1,5 +1,5 @@
 Django==5.1.2
-ollama==0.1.10
+ollama
 langchain==1.0.5
 langchain-ollama==1.0.0
 langchain-core==0.2.35
