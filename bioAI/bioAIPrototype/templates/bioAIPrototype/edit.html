@@ -4,7 +4,8 @@ Edit {{ project.topic }}
 {% endblock %}
 {% block body %}
 <h1>Edit</h1>
-<form id = "edit" class = "container-fluid" method = "POST">
+<form data-project-id = "{{ project.id }}"id = "edit" class = "container-fluid">
+    {% csrf_token %}
     <div class = "mb-3">
         <label for = "topic">Topic</label>
         <input class = "form-control" value = "{{ project.topic }}" type = "text" name = "topic" id = "topic">
@@ -19,14 +20,13 @@ Edit {{ project.topic }}
             {% for source in project.AIsteps.available_trusted_literatures %}
                 <li>
                     <div class = "input-group">
-                    <input class = "form-control source" value = "{{ source }}">
-                    <button type = "button" class = "btn btn-danger btn-sm">Delete Source</button>
-                    </div>
-                </li><br>
+                        <input class = "form-control source" placeholder = "Source" value = "{{ source }}">
+                        <button  type = "button" class = "deleteSource btn btn-danger btn-sm">Delete Source</button>
+                    </div><br>
+                </li>
             {% endfor %}
         </ul>
-        <button type = "button" class = "btn btn-secondary">Add a source</button>
-        <input type = "hidden" id = "sources" name = "sources">
+        <button id = "addSource"type = "button" class = "btn btn-secondary">Add a source</button>
     </div>
     <div class = "mb-3">
         <label for = "summary">Summary</label>

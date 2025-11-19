@@ -17,10 +17,18 @@ from django.views.decorators.csrf import csrf_exempt
 import uuid
 from datetime import datetime
 from markdown2 import Markdown
+from langchain_community.document_loaders import WebBaseLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_ollama import OllamaEmbeddings
+from langchain_core.vectorstores import InMemoryVectorStore
+from langchain_chroma import Chroma
 
 # Create your views here.
 markdowner = Markdown()
 chat = ChatOllama(model = "llama3.2:3b")
+embeddings = OllamaEmbeddings(model = "nomic-embed-text")
+text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1500, chunk_overlap = 225)
+
 
 @csrf_exempt
 # Index() main page
@@ -112,7 +120,7 @@ def create(request):
             </study_description>
 
             Your job is to generate a summary of the study topic.
-            You may use the following sources:\
+            You may use the following sources:
 
             <study_sources>
                 {response}
@@ -123,6 +131,8 @@ def create(request):
             Your summary should be 6-12 sentences
             Include facts and methodology and not history unless explicitly stated in the study topic / study description
             Use the study description as your framework for the summary
+            Do NOT include any personal pronouns in the summary
+            Do NOT reference the study, you are summarizing information relating to the study
         """
 
         messages2 = [
@@ -179,19 +189,53 @@ def project(request, project_id):
         "summary": summary
     })
 
+@csrf_exempt
+def URLQuestion(request):
+    if request.method == "POST":
+        start =  datetime.now()
+        print(start)
+        data = json.loads(request.body)
+        url = data.get("url")
+        question = data.get("question")
+        loader = WebBaseLoader(url)
+        documents = loader.load()
+        chunks = text_splitter.split_documents(documents)
+
+        vectorstorage = Chroma(
+            collection_name="user_collection_one",
+            embedding_function=embeddings
+        )
+
+        retriever = vectorstorage.as_retriever()
+        vectorstorage.add_documents(chunks)
+        docs = retriever.invoke(question)
+        docs_content = "\n\n".join(doc.page_content for doc in docs)
+        prompt = f"Context = {docs_content} Question = {question}"
+        response = chat.invoke(prompt)
+        print(datetime.now() - start)
+        return JsonResponse({"Success": "True", "response": response.content})
+    return JsonResponse({"Error": "Post Method Required"})
 
 def edit(request, project_id):
     project = Project.objects.get(id = project_id)
     if request.method == "POST":
         data = json.loads(request.body)
-        description = data.description
-        topic = data.topic
+        description = data.get("description")  
+        topic = data.get("topic")
+        summary = data.get("summary")
+        sources = data.get("sources")
 
-        project.update(topic = topic, description = description)
+        project.topic = topic
+        project.description = description
+        project.summary = summary
+        project.AIsteps["available_trusted_literatures"] = sources   
+        project.save()
         return JsonResponse({"Success": "True"})
     return render(request, "bioAIPrototype/edit.html", {
         "project": project
     })
+
+
 
 def register(request):
     if request.method == "POST":

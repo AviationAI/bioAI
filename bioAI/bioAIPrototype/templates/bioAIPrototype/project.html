@@ -7,14 +7,31 @@
     <a href = "{% url 'edit' project.id %}">Edit</a>
     <hr>
     <section>
-        <h5>Sources</h5>
+        <h3>Sources</h3>
         <ul>
         {% for source in project.AIsteps.available_trusted_literatures %}
           <li>{{ source }}</li>
         {% endfor %}
         </ul>
-    </section>
+        <h5>Ask AI questions about sources</h5>
+        <div id = "responses">
+
+        </div>
+        <form id = "source-questions" class = "container-fluid" method = "POST">
+          <div class = "mb-3">
+            <label for = "url">Source</label>
+            <input id = "url" class = "form-control" type = "url" placeholder="Enter URL of a source/literature">
+          </div>
+          <div class = "mb-3">
+            <label for = "question">Question</label>
+            <input id = "question" class = "form-control" type = "text" placeholder="Enter question about source/literature">
+          </div>
+          <p class = "form-text">This will only work with static web pages. Response may take up to 45 seconds.</p>
+          <button type = "submit" class = "btn btn-primary">Ask</button>
+        </form>
+    </section><br>
     <section>
+      <h3>Summary</h3>
       <div>{{ summary| safe  }}</div>
     </section>
 
