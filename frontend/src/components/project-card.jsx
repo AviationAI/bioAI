@@ -18,6 +18,7 @@ function Project({project}){
             } catch (err){
                 console.log(err);
             } finally {
+                window.location.refresh();
             }     
         }
     }

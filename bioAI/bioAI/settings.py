@@ -77,11 +77,11 @@ TEMPLATES = [
 WSGI_APPLICATION = 'bioAI.wsgi.application'
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000"
+    "http://localhost:5173"
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000",
+    "http://localhost:5173"
 ]
 
 CSRF_COOKIE_HTTPONLY = False
