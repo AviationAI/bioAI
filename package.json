@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "bootstrap": "^5.3.8",
+    "install": "^0.13.0",
+    "npm": "^11.6.3",
+    "react-bootstrap": "^2.10.10"
+  }
+}

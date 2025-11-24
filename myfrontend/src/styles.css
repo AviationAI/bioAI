@@ -1,0 +1,195 @@
+.body {
+    padding: 25px;
+}
+
+.background-bar {
+    background-color: rgba(0,0,0,0);
+}
+
+#loading {
+    display: none;
+}
+
+.blackLink {
+    color: black;
+    text-decoration: none;
+}
+
+.blackLink:hover{
+    color: black;
+    text-decoration: underline;
+}
+
+.blackLink:active{
+    color: black;
+    text-decoration: underline;
+}
+
+.projectDiv {
+    align-items: center;
+    display: flex;
+    padding: 15px;
+    border-style: solid;
+    flex-direction: row;   
+    border-width: 0.1px; 
+    border-radius: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 0 6px 4px lightgray;
+}
+
+.projectDiv:hover {
+    background-color: #AAAAAA;
+}
+
+
+.projects{
+    margin-top: 30px;
+    justify-content: center;
+}
+
+.deleteDiv {
+    margin-left: auto;
+}
+
+.homePage {
+    margin: -25px;
+    height: 100vh;
+    background-image: url("https://static.vecteezy.com/system/resources/thumbnails/039/302/250/small/ai-generated-back-to-school-science-lab-excitement-highlight-the-excitement-of-a-science-experiment-in-a-laboratory-setting-background-image-generative-ai-photo.jpg");
+    background-size: cover;
+    background-position: center;
+}
+
+.white-text{
+    color: white;
+}
+
+.large-text {
+    font-size: 72px;
+}
+
+.dropbar {
+    position: fixed;
+    z-index: 999;
+    top: 0;
+    right: 0;
+    display: none;
+    flex-direction: column;
+    height: 25vh;
+    width: 35vh;
+    list-style-type: none;
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding: 10px;
+    background-color: rgba(255,255,255, 0.9);
+    box-shadow: -2px 2px 5px lightgray;
+    backdrop-filter: blur(50px);
+    border-radius: 5px;
+}
+
+.dropbar li {
+    color: black;
+    height: 20px;
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+.navbar-toggler {
+    margin-left: auto;
+    margin-right: 10px;
+}
+
+#account:hover {
+    cursor: pointer;
+}
+
+#close-dropbar:hover {
+    cursor: pointer;
+}
+
+.subnav {
+    font-size: 18px;
+}
+
+#app {
+    padding: 25px;
+}
+
+.text-description {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 80vw;
+}
+
+.topic {
+    width: 40vw;
+    display: flex;
+    font-size: 12px;
+}
+
+.sign-in {
+    border-width: 0px;
+    border-radius: 5px;
+    float: right;
+    background-color: white;
+    color: rgb(91, 77, 77);
+}
+
+.create-btn {
+    margin: auto;
+    border-width: 0px;
+    border-radius: 10px;
+    height: 60px;
+    width: 150px;
+    font-size: 17px;
+    background-color: rgb(28, 112, 160);
+    color: white;
+    box-shadow: 0px 0px 3px 2px rgba(0,0,0,0.3);
+}
+
+.create-btn:hover{
+    background-color: white;
+    color: rgb(28, 112, 160);
+    box-shadow: 0px 0px 5px 3px rgba(0,0,0,0.3);
+}
+
+.topic-control {
+    width: 65vw;
+    border-radius: 15px;
+    padding: 5px;   
+    border-width: 0.1px;
+    box-shadow: 0 0 5px 3px rgba(129, 129, 129, 0.3);
+    height: 7vh;
+}
+
+.description-control {
+    padding: 10px;
+    width: 65vw;
+    box-shadow: 0 0 5px 3px rgba(129, 129, 129, 0.3);
+    border-width: 0.1px;
+    border-radius: 5px;
+}
+
+.create-container {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+}
+
+.create-form {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.centeredImage {
+    display: block;
+    margin: auto;
+    width: 60vw;
+}
+
+.centeredText {
+    text-align: center;
+}
+
+
