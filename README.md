@@ -1,4 +1,4 @@
-# bioAi
+# bioAI
 
 ```
 bioAI
@@ -24,11 +24,13 @@ bioAI
 │  │  │  ├─ 0001_initial.py
 │  │  │  ├─ 0002_alter_project_id.py
 │  │  │  ├─ 0003_alter_user_id.py
+│  │  │  ├─ 0004_rename_aisteps_project_available_trusted_literatures.py
 │  │  │  ├─ __init__.py
 │  │  │  └─ __pycache__
 │  │  │     ├─ 0001_initial.cpython-313.pyc
 │  │  │     ├─ 0002_alter_project_id.cpython-313.pyc
 │  │  │     ├─ 0003_alter_user_id.cpython-313.pyc
+│  │  │     ├─ 0004_rename_aisteps_project_available_trusted_literatures.cpython-313.pyc
 │  │  │     └─ __init__.cpython-313.pyc
 │  │  ├─ models.py
 │  │  ├─ permissions.py
@@ -65,41 +67,38 @@ bioAI
 │  │  └─ wsgi.py
 │  ├─ db.sqlite3
 │  └─ manage.py
-├─ myfrontend
+├─ frontend
 │  ├─ README.md
+│  ├─ eslint.config.js
+│  ├─ index.html
 │  ├─ package-lock.json
 │  ├─ package.json
 │  ├─ public
-│  │  ├─ favicon.ico
-│  │  ├─ index.html
-│  │  ├─ logo192.png
-│  │  ├─ logo512.png
-│  │  ├─ manifest.json
-│  │  └─ robots.txt
-│  └─ src
-│     ├─ App.css
-│     ├─ App.js
-│     ├─ App.test.js
-│     ├─ components
-│     │  ├─ AxiosInstance.jsx
-│     │  ├─ getCookie.jsx
-│     │  ├─ layout.jsx
-│     │  ├─ project-card.jsx
-│     │  └─ spinner.jsx
-│     ├─ hooks
-│     ├─ icons
-│     │  └─ delete.svg
-│     ├─ index.css
-│     ├─ index.js
-│     ├─ logo.svg
-│     ├─ pages
-│     │  ├─ create.jsx
-│     │  └─ index.jsx
-│     ├─ reportWebVitals.js
-│     ├─ setupTests.js
-│     └─ styles.css
-├─ package-lock.json
-├─ package.json
+│  │  └─ vite.svg
+│  ├─ src
+│  │  ├─ App.css
+│  │  ├─ App.jsx
+│  │  ├─ assets
+│  │  │  └─ react.svg
+│  │  ├─ components
+│  │  │  ├─ 404.jsx
+│  │  │  ├─ AxiosInstance.jsx
+│  │  │  ├─ getCookie.jsx
+│  │  │  ├─ layout.jsx
+│  │  │  ├─ project-card.jsx
+│  │  │  └─ spinner.jsx
+│  │  ├─ icons
+│  │  │  └─ delete.svg
+│  │  ├─ images
+│  │  │  └─ Image404.jpg
+│  │  ├─ index.css
+│  │  ├─ main.jsx
+│  │  ├─ pages
+│  │  │  ├─ create.jsx
+│  │  │  ├─ index.jsx
+│  │  │  └─ project.jsx
+│  │  └─ styles.css
+│  └─ vite.config.js
 └─ requirements.txt
 
 ```
