@@ -29,7 +29,7 @@ function ProjectDetail(){
         }
         fetchProject();
     }, [projectID])
-    if(loading) return <Loader/>;
+    if(loading) return <Loader loading = {true}/>;
     return (
         <>
         {project !== null ? (

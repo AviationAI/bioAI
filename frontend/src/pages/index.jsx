@@ -4,9 +4,32 @@ import { Link } from 'react-router-dom';
 import { SignedIn, SignedOut } from "@clerk/clerk-react";
 import AxiosInstance from "../components/AxiosInstance";
 import { useAuth } from "@clerk/clerk-react";
+import Loader from "../components/spinner";
 
 function Home(){
-    const { projects } = useOwnedByMe();
+    const [projects, setProjects ] = useState(null);
+    const { getToken } = useAuth();
+    const [loading, setLoading] = useState(true);
+    useEffect(() => {
+        async function fetch_project(){
+            try {
+                const token = await getToken();
+                const response = await AxiosInstance.get('/api/projects',{
+                    headers: {
+                    Authorization: `Bearer ${token}`
+                }
+                });
+                console.log('API Response:', response.data);
+                setProjects(response.data);
+            } catch (err){
+                console.log(err);
+            }finally{
+                setLoading(false);
+            }
+        }
+        fetch_project();
+    }, [])
+    if(loading) return <Loader loading = {true}/>;
     return (
 
         <>
@@ -29,32 +52,6 @@ function Home(){
         </SignedOut>
         </>
     );
-}
-
-function useOwnedByMe(){
-    const [projects, setProjects] = useState([]);
-    const { getToken, isLoaded } = useAuth();
-    useEffect(() => {
-        if (!isLoaded) return;
-
-        async function fetch_project (){
-            try {
-                const token = await getToken();
-                const response = await AxiosInstance.get('/api/projects',{
-                    headers: {
-                    Authorization: `Bearer ${token}`
-                }
-                } );
-                console.log('API Response:', response.data);
-                setProjects(response.data);
-            } catch (err){
-                console.log(err);
-            }
-        }
-        fetch_project();
-    }, [isLoaded]);
-   
-    return {projects};
 }
 
 export default Home;
