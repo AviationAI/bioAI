@@ -216,18 +216,23 @@ class ProjectRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
         remove = request.data.get("removed", [])
         newEditors = currentEditors + request.data.get("editors", [])
         newViewers = currentViewers + request.data.get("viewers", [])
+        # Typecasting to set to find the intersection
         intersection = set(newViewers).intersection(set(newEditors))
 
+        # Checking if each user has multiple instances
         for user in intersection:
+            # Removing user from the instance not provided from the front end
             if user in editors:
                 newViewers.remove(user)
             elif user in viewers:
                 newEditors.remove(user)
 
+        # Checking which users are in the remove list
         for user in remove:
+            # Removing the user if from every other list
             if user in newEditors:
                 newEditors.remove(user)
-            elif user in newViewers: 
+            if user in newViewers: 
                 newViewers.remove(user)
 
         updateData = {

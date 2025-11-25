@@ -204,12 +204,12 @@
     flex: 1 1;
 }
 
-.shareButton {
+.friendlyButton {
     background-color: rgb(72, 147, 233);
     color: white;
 }
 
-.shareButton:hover {
+.friendlyButton:hover {
     background-color: white;
     color: rgb(72, 147, 233);
 }
@@ -241,6 +241,8 @@
     bottom: 0;
     width: fit-content;
     height: fit-content;
+    min-width: 30vw;
+    min-height: 50vh;
     position: fixed;
     margin: auto;
     border-radius: 15px;
@@ -257,4 +259,18 @@
     padding: 0px;
     border-radius: none;
     cursor: pointer;
+}
+
+.access-select {
+    float: right;
+    cursor: pointer;
+    background-color: white;
+    border-width: 0px;
+    width: fit-content;
+    border-radius: 5px;
+    box-shadow: 0 0 3px 1px rgba(0,0,0,0.3);
+}
+
+.access-select:hover {
+    background-color: lightgray;
 }
