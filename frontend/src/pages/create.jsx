@@ -13,7 +13,7 @@ function Create(){
     const send = async (event) => {
         event.preventDefault();
         if (topic.length > 0 && description.length > 0){
-        try{
+        try {
             setLoading(true);
             const token = await getToken()
             const data = await AxiosInstance.post('/api/projects', {
@@ -27,7 +27,7 @@ function Create(){
         } catch (err){
             console.log(err);
             console.log('Response data:', err.response?.data);
-        }finally {
+        } finally {
             setLoading(false);
         }
     }

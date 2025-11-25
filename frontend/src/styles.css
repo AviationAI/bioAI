@@ -138,7 +138,7 @@
     border-radius: 10px;
     height: 60px;
     width: 150px;
-    font-size: 17px;
+    font-size: 15px;
     background-color: rgb(28, 112, 160);
     color: white;
     box-shadow: 0px 0px 3px 2px rgba(0,0,0,0.3);
@@ -189,4 +189,72 @@
     text-align: center;
 }
 
+.textButton {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
+.textButton button {
+    margin-left: auto;
+}
+
+.textButton h1 {
+    text-align: center;
+    flex: 1 1;
+}
+
+.shareButton {
+    background-color: rgb(72, 147, 233);
+    color: white;
+}
+
+.shareButton:hover {
+    background-color: white;
+    color: rgb(72, 147, 233);
+}
+
+.miniScreen {
+    z-index: 999;
+
+}
+
+.overlay-background {
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    z-index: 9;
+    background-color: rgba(0,0,0,0.3);
+    top: 0;
+    left: 0;
+}
+
+.overlay-container {
+    padding: 10px;
+    text-align: center;
+    background-color: white;
+    z-index: 10;
+    left:0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: fit-content;
+    height: fit-content;
+    position: fixed;
+    margin: auto;
+    border-radius: 15px;
+}
+
+.overlay-controls {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.overlay-close {
+    background-color: transparent;
+    padding: 0px;
+    border-radius: none;
+    cursor: pointer;
+}

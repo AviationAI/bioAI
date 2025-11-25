@@ -26,13 +26,12 @@ from django.middleware.csrf import get_token
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .serializers import UserSerializer, ProjectSerializer
-from rest_framework import generics
+from .serializers import UserSerializer, ProjectFrontendSerializer, ProjectBackendSerializer
+from rest_framework import generics, permissions
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
-from .permissions import IsOwner
-
-
+from .permissions import IsOwner, IsEditor, IsViewer
+from rest_framework import status
 # Create your views here.
 markdowner = Markdown()
 chat = ChatOllama(model = "llama3.2:3b")
@@ -40,7 +39,7 @@ embeddings = OllamaEmbeddings(model = "nomic-embed-text")
 text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1500, chunk_overlap = 250)
 
 class ProjectListCreate(generics.ListCreateAPIView):
-    serializer_class = ProjectSerializer
+    serializer_class = ProjectBackendSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
@@ -105,10 +104,14 @@ class ProjectListCreate(generics.ListCreateAPIView):
 
         response = chat.invoke(messages)
         steps = response.content
+
         if not steps.endswith("}"):
             steps = steps.split("}")[0]
+            steps = steps + "}"
+
         if not steps.startswith("{"):
             steps = steps.split("{")[1]
+            steps = "{" + steps
             
         print(steps)
         validated_steps = AIGeneratedResearchSteps.model_validate_json(steps)
@@ -166,9 +169,65 @@ class ProjectListCreate(generics.ListCreateAPIView):
 
 class ProjectRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     queryset = Project.objects.all()
-    serializer_class = ProjectSerializer
-    permission_classes = [IsAuthenticated, IsOwner]
     lookup_field = "pk"
+    def get_permissions(self):
+        request = self.request
+        if request.method == "GET":
+            return [IsViewer()]
+        elif request.method in ["PUT", "PATCH"]:
+            return [IsEditor()]
+        elif request.method == "DELETE":
+            return [IsOwner()]
+        return False
+    
+    def get_serializer_class(self):
+        request = self.request
+        if request.method == "GET":
+            return ProjectFrontendSerializer
+        return ProjectBackendSerializer
+
+    def put (self, request, *args, **kwargs):
+        data = request.data
+        topic = data.get("topic")
+        description = data.get("description")
+        sources = data.get("sources")
+        summary = data.get("summary")
+        project = self.get_object()
+        updateData = {
+            "topic": topic,
+            "description": description,
+            "sources": sources,
+            "summary": summary,
+        }
+        serializer = self.get_serializer(
+            project, data = updateData, partial = True
+        )
+        if not serializer.is_valid():
+            return Response({"error": "invalid data"}, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def patch (self, request, *args, **kwargs):
+        project = self.get_object()
+        currentEditors = [editor.id for editor in project.editors.all()]
+        currentViewers = [viewer.id  for viewer in project.viewers.all()]
+        updateData = {
+            "editors": currentEditors + request.data.get("editors", []),
+            "viewers": currentViewers + request.data.get("viewers", [])
+        }
+
+        serializer = self.get_serializer(project, data = updateData, partial = True)
+
+        if not serializer.is_valid():
+            return Response({"error": "invalid data"}, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
+        
+
+
 
 @csrf_exempt
 # Index() main page

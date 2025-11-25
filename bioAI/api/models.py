@@ -11,12 +11,8 @@ import uuid
 
 class User(AbstractUser):
     id = models.CharField(primary_key=True, editable=False)
-    def serialize(self):
-        return {
-            "id": self.id,
-            "username": self.username,
-            "email": self.email
-        }
+    def __str__(self):
+        return f"{self.username}"
 
 class Project(models.Model):
     id = models.UUIDField(primary_key=True, default = uuid.uuid4)
@@ -26,8 +22,8 @@ class Project(models.Model):
     objective = models.CharField(default="none")
     available_trusted_literatures = models.JSONField()
     summary = models.CharField()
-    editors = models.ManyToManyField(User, related_name="editable_projects")
-    viewers = models.ManyToManyField(User, related_name="viewable_projects")
+    editors = models.ManyToManyField(User, related_name="editable_projects", blank = True)
+    viewers = models.ManyToManyField(User, related_name="viewable_projects", blank = True)
 
     def __str__(self):
         return f"{self.topic} by {self.user}"
