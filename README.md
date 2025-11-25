@@ -1,5 +1,6 @@
 # bioAI
 
+
 ```
 bioAI
 ├─ README.md
@@ -25,12 +26,14 @@ bioAI
 │  │  │  ├─ 0002_alter_project_id.py
 │  │  │  ├─ 0003_alter_user_id.py
 │  │  │  ├─ 0004_rename_aisteps_project_available_trusted_literatures.py
+│  │  │  ├─ 0005_alter_project_editors_alter_project_viewers.py
 │  │  │  ├─ __init__.py
 │  │  │  └─ __pycache__
 │  │  │     ├─ 0001_initial.cpython-313.pyc
 │  │  │     ├─ 0002_alter_project_id.cpython-313.pyc
 │  │  │     ├─ 0003_alter_user_id.cpython-313.pyc
 │  │  │     ├─ 0004_rename_aisteps_project_available_trusted_literatures.cpython-313.pyc
+│  │  │     ├─ 0005_alter_project_editors_alter_project_viewers.cpython-313.pyc
 │  │  │     └─ __init__.cpython-313.pyc
 │  │  ├─ models.py
 │  │  ├─ permissions.py
@@ -85,9 +88,12 @@ bioAI
 │  │  │  ├─ AxiosInstance.jsx
 │  │  │  ├─ getCookie.jsx
 │  │  │  ├─ layout.jsx
+│  │  │  ├─ overlay.jsx
 │  │  │  ├─ project-card.jsx
 │  │  │  └─ spinner.jsx
+│  │  ├─ hook
 │  │  ├─ icons
+│  │  │  ├─ close.svg
 │  │  │  └─ delete.svg
 │  │  ├─ images
 │  │  │  └─ Image404.jpg
