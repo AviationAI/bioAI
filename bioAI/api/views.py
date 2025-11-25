@@ -211,9 +211,28 @@ class ProjectRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
         project = self.get_object()
         currentEditors = [editor.id for editor in project.editors.all()]
         currentViewers = [viewer.id  for viewer in project.viewers.all()]
+        editors = request.data.get("editors", [])
+        viewers = request.data.get("viewers", [])
+        remove = request.data.get("removed", [])
+        newEditors = currentEditors + request.data.get("editors", [])
+        newViewers = currentViewers + request.data.get("viewers", [])
+        intersection = set(newViewers).intersection(set(newEditors))
+
+        for user in intersection:
+            if user in editors:
+                newViewers.remove(user)
+            elif user in viewers:
+                newEditors.remove(user)
+
+        for user in remove:
+            if user in newEditors:
+                newEditors.remove(user)
+            elif user in newViewers: 
+                newViewers.remove(user)
+
         updateData = {
-            "editors": currentEditors + request.data.get("editors", []),
-            "viewers": currentViewers + request.data.get("viewers", [])
+            "editors": newEditors,
+            "viewers": newViewers
         }
 
         serializer = self.get_serializer(project, data = updateData, partial = True)
@@ -222,12 +241,6 @@ class ProjectRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
             return Response({"error": "invalid data"}, status=status.HTTP_400_BAD_REQUEST)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-
-        
-
-
 
 @csrf_exempt
 # Index() main page
