@@ -1,22 +1,15 @@
 # bioAI
 
 
+## Version: 0.7.8
+
+
 ```
 bioAI
 ├─ README.md
 ├─ bioAI
 │  ├─ api
 │  │  ├─ __init__.py
-│  │  ├─ __pycache__
-│  │  │  ├─ __init__.cpython-313.pyc
-│  │  │  ├─ admin.cpython-313.pyc
-│  │  │  ├─ apps.cpython-313.pyc
-│  │  │  ├─ authentication.cpython-313.pyc
-│  │  │  ├─ models.cpython-313.pyc
-│  │  │  ├─ permissions.cpython-313.pyc
-│  │  │  ├─ serializers.cpython-313.pyc
-│  │  │  ├─ urls.cpython-313.pyc
-│  │  │  └─ views.cpython-313.pyc
 │  │  ├─ admin.py
 │  │  ├─ apps.py
 │  │  ├─ authentication.py
@@ -27,14 +20,7 @@ bioAI
 │  │  │  ├─ 0003_alter_user_id.py
 │  │  │  ├─ 0004_rename_aisteps_project_available_trusted_literatures.py
 │  │  │  ├─ 0005_alter_project_editors_alter_project_viewers.py
-│  │  │  ├─ __init__.py
-│  │  │  └─ __pycache__
-│  │  │     ├─ 0001_initial.cpython-313.pyc
-│  │  │     ├─ 0002_alter_project_id.cpython-313.pyc
-│  │  │     ├─ 0003_alter_user_id.cpython-313.pyc
-│  │  │     ├─ 0004_rename_aisteps_project_available_trusted_literatures.cpython-313.pyc
-│  │  │     ├─ 0005_alter_project_editors_alter_project_viewers.cpython-313.pyc
-│  │  │     └─ __init__.cpython-313.pyc
+│  │  │  └─ __init__.py
 │  │  ├─ models.py
 │  │  ├─ permissions.py
 │  │  ├─ serializers.py
@@ -59,11 +45,6 @@ bioAI
 │  │  └─ views.py
 │  ├─ bioAI
 │  │  ├─ __init__.py
-│  │  ├─ __pycache__
-│  │  │  ├─ __init__.cpython-313.pyc
-│  │  │  ├─ settings.cpython-313.pyc
-│  │  │  ├─ urls.cpython-313.pyc
-│  │  │  └─ wsgi.cpython-313.pyc
 │  │  ├─ asgi.py
 │  │  ├─ settings.py
 │  │  ├─ urls.py

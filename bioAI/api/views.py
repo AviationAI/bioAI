@@ -211,40 +211,62 @@ class ProjectRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
         project = self.get_object()
         currentEditors = [editor.id for editor in project.editors.all()]
         currentViewers = [viewer.id  for viewer in project.viewers.all()]
-        editors = request.data.get("editors", [])
+        addedUsers = request.data.get("addedUsers", [])
+        addedType = request.data.get("addedType", None)
+        print(f"{ addedType }, { addedUsers }")
+        editors = request.data.get("editors", [])   
         viewers = request.data.get("viewers", [])
         remove = request.data.get("removed", [])
-        newEditors = currentEditors + request.data.get("editors", [])
-        newViewers = currentViewers + request.data.get("viewers", [])
+        newEditors = set(currentEditors) | set(editors)
+        newViewers = set(currentViewers) | set(viewers)
         # Typecasting to set to find the intersection
-        intersection = set(newViewers).intersection(set(newEditors))
-
+        intersection = newEditors & newViewers
+        print("declared vars")
         # Checking if each user has multiple instances
         for user in intersection:
             # Removing user from the instance not provided from the front end
             if user in editors:
-                newViewers.remove(user)
+                newViewers.discard(user)
             elif user in viewers:
-                newEditors.remove(user)
-
+                newEditors.discard(user)
+            else:
+                if user in currentEditors:
+                    newViewers.discard(user)
+                elif user in currentViewers:
+                    newEditors.discard(user)
+        print("first for")
+        for user in addedUsers:
+            try:
+                userID = User.objects.get(username = user).id
+                if userID not in newEditors and userID not in newViewers:
+                    if addedType == "editor":
+                        newEditors.add(userID)
+                    elif addedType == "viewer":
+                        newViewers.add(userID)
+            except:
+                print("exception")
+        print("second for")
         # Checking which users are in the remove list
         for user in remove:
             # Removing the user if from every other list
             if user in newEditors:
-                newEditors.remove(user)
+                newEditors.discard(user)
             if user in newViewers: 
-                newViewers.remove(user)
-
+                newViewers.discard(user)
+        print("third for")
         updateData = {
-            "editors": newEditors,
-            "viewers": newViewers
+            "editors": list(newEditors),
+            "viewers": list(newViewers)
         }
-
+        print("updated")
+        print(updateData)
         serializer = self.get_serializer(project, data = updateData, partial = True)
-
+        print("serializer!")
         if not serializer.is_valid():
+            print("error")
             return Response({"error": "invalid data"}, status=status.HTTP_400_BAD_REQUEST)
         serializer.save()
+        print("home run!")
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 @csrf_exempt

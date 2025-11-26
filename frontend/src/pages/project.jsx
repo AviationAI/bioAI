@@ -6,17 +6,22 @@ import Loader from "../components/spinner";
 import Screen404 from "../components/404";
 import ReactMarkdown from 'react-markdown';
 import Overlay from "../components/overlay";
+import InputTags from "../components/inputTags";
 
 function ProjectDetail(){
+
     const [isOverlayOpen, setIsOverlayOpen] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     const { projectID } = useParams();
-    const { getToken } = useAuth();
+    const { getToken, userId } = useAuth();
     const [project, setProject] = useState(null);
     const [editors, setEditors] = useState([]);
     const [viewers, setViewers] = useState([]);
     const [removed, setRemoved] = useState([]);
-
+    const [addedUsers, setAddedUsers] = useState([]);
+    const [type, setType] = useState("editor");
+    const [dependency, setDependency] = useState(true);
 
     function handleChange(event){
         const el = event.currentTarget;
@@ -46,6 +51,36 @@ function ProjectDetail(){
             setViewers(viewers.filter(viewer => viewer !== user));
         }
     }
+    
+    async function handleSubmit(event){
+        event.preventDefault();
+        if (editors.length > 0 || viewers.length > 0 || removed.length > 0 || addedUsers.length > 0 ){
+            setIsLoading(true);
+            try{
+                const token = await getToken();
+                const request = await AxiosInstance.patch(`/api/projects/${project.id}`, {
+                    "removed": removed,
+                    "editors": editors,
+                    "viewers": viewers,
+                    "addedUsers": addedUsers,
+                    "addedType": type.toLowerCase()
+                }, {
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                })
+            } catch (err){
+                console.log(err);
+            }finally {
+                setIsLoading(false);
+                setIsOverlayOpen(false);
+                setAddedUsers([]);
+                setDependency(!dependency);
+            }
+        }else {
+            setIsOverlayOpen(false);
+        }
+    }
 
     useEffect(() => {
         async function fetchProject(){
@@ -65,38 +100,40 @@ function ProjectDetail(){
             }
         }
         fetchProject();
-    }, [projectID])
+    }, [projectID, dependency])
     if(loading) return <Loader loading = {true}/>;
     return (
         <>
-        {project !== null ? (
+        { (project !== null) ? (
         <>
             {/*isOverlayOpen is connected to isOpen, so any change of its state toggles the overlay*/}
-            <Overlay isOpen = {isOverlayOpen} onClose = {() => {setIsOverlayOpen(false)}}>
+        {userId === project.user.id &&
+            <Overlay loading = {isLoading} isOpen = {isOverlayOpen} onClose = {() => {setIsOverlayOpen(false)}}>
                 <h2>Share</h2>
                 <div>
                     <strong>Owner: </strong> 
                     { project.user.username }
                 </div>
+                <form onSubmit={handleSubmit} onKeyDown = {(event) => {if (event.key === "Enter") {event.preventDefault()}}}>
                 { (project.editors.length > 0 || project.viewers.length >0) ?  (
-                <form>
+                <>
                 <h4>Editors</h4>
                 <div>
                     {project.editors.length >0 ? (
                     <>
                         {/* renderring text showing every editor */}
                         {project.editors.map(editor => (
-                        <>
+                        <div key = {editor.id}>
                             <strong>{ editor.username }</strong> 
                             <select data-default = "editor" onChange = {handleChange} data-user = {editor.id} data-type = "editor" className = "access-select">
                                 <option>Editor</option>
                                 <option>Viewer</option>
                                 <option>Remove Access</option>
                             </select>
-                        </>
+                        </div>
                         ))}
                     </> 
-                    ) :(
+                    ):(
                         <p>No editors.</p>
                     )}
                 </div>
@@ -104,43 +141,53 @@ function ProjectDetail(){
                 {project.viewers.length > 0 ? (
                 <>
                     {project.viewers.map(viewer => (
-                        <>
+                        <div>
                             <strong>{ viewer.username }</strong> 
                             <select data-default = "viewer" onChange = {handleChange} data-user = {viewer.id} data-type = "viewer" className = "viewers access-select">
                                 <option>Viewer</option>
                                 <option>Editor</option>
                                 <option>Remove Access</option>
                             </select>
-                        </>
+                        </div>
+                        
                     ))}
                 </>
                 ):(
                     <p>No viewers</p>
                 )
                 }
+            </>
+            ):(
+                <strong>No viewers nor editors yet</strong>
+            )}
+            <InputTags tags = {addedUsers} setTags={setAddedUsers}/>
+            {addedUsers.length > 0 && 
+                <select value = {type} onChange={(event) => setType(event.currentTarget.value)}>
+                    <option>Editor</option>
+                    <option>Viewer</option>
+                </select>
+            }
             <button type = "submit" className="friendlyButton">
-                {(editors.length > 0 || viewers.length>0 || removed.length >0) ? (
+                {(editors.length > 0 || viewers.length>0 || removed.length >0 || addedUsers.length > 0) ? (
                     <>Save</>
                 ): (
                     <>Close</>
                 )}
             </button>
             </form>
-            ):(
-                <strong>No viewers nor editors yet</strong>
-            )}
             </Overlay>
+            }
             <div className = "textButton">
                 <h1 className = "centeredText">{ project.topic }</h1>
                 {/*Setting isoverlay to true onclick*/}
-                <button className = "friendlyButton" onClick={() => {setIsOverlayOpen(true)}}>Share</button>
+                {project.user.id === userId && <button className = "friendlyButton" onClick={() => {setIsOverlayOpen(true)}}>Share</button>}
             </div>
             <p className = "centeredText">{ project.description }</p>
             <h3 className = "">Sources</h3>
             <div>
             <ul className = "sources">
                 {project.available_trusted_literatures.map(source => (
-                    <li className = "source">{ source }</li>
+                    <li key = {source} className = "source">{ source }</li>
                 ))}
             </ul>
             </div> 
