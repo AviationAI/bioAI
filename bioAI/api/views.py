@@ -285,14 +285,18 @@ class RAGviews(APIView):
 
         # Making it easier to perform a RAG pipeline with the db
         retriever = vectorstorage.as_retriever()
+
         # Adding docs to the vector store, turning it into vectors for the AI
         vectorstorage.add_documents(chunks)
+
         # Asking the vector store to retrieve documents based on the question 
         docs = retriever.invoke(question)
         docs_content = "\n\n".join(doc.page_content for doc in docs)
         prompt = f"Context = {docs_content} Question = {question}"
         response = chat.invoke(prompt)
+
         print(datetime.now() - start)
+        
         return Response(response.content)
 
 def login_view(request):

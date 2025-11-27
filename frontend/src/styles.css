@@ -330,3 +330,30 @@
     flex-direction: column;
     text-align: center;
 }
+
+.midTextarea {
+    width: 35vw;
+}
+
+.midInput {
+    width: 35vw;
+}
+
+.sourceQuestionDiv {
+    display: flex;
+    flex-direction: row;
+}
+
+.halfDiv {
+    width: 50vw;
+}
+
+.friendlySubmitButton {
+    color: white;
+    background-color: rgb(64, 95, 175);
+}
+
+.friendlySubmitButton:hover {
+    color: rgb(64, 95, 175);
+    background-color: white;
+}

@@ -11,6 +11,7 @@ import { Link } from "react-router-dom";
 
 function ProjectDetail(){
 
+    // Setting state variables
     const [isOverlayOpen, setIsOverlayOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
@@ -23,7 +24,12 @@ function ProjectDetail(){
     const [addedUsers, setAddedUsers] = useState([]);
     const [type, setType] = useState("editor");
     const [dependency, setDependency] = useState(true);
+    const [url, setURL] = useState("");
+    const [question, setQuestion] = useState("");
+    const [response, setResponse] = useState("");
 
+
+    // handleChange handles the change of the dropdowns relating to the people currently shared in the project, and makes sure that the value is not different to the value it originally was
     function handleChange(event){
         const el = event.currentTarget;
         const value = el.value;
@@ -53,6 +59,7 @@ function ProjectDetail(){
         }
     }
     
+    // handleSubmit handles the submitting of the edits the owner has made to which people have what access to the project
     async function handleSubmit(event){
         event.preventDefault();
         if (editors.length > 0 || viewers.length > 0 || removed.length > 0 || addedUsers.length > 0 ){
@@ -80,6 +87,26 @@ function ProjectDetail(){
             }
         }else {
             setIsOverlayOpen(false);
+        }
+    }
+
+    async function handleRAGSubmit(event){
+        event.preventDefault();
+        if (url.trim().length > 0 && question.trim().length > 0 ){
+            try{
+                const token = await getToken();
+                const response = await AxiosInstance.post("/api/ask", {
+                    "url": url,
+                    "question": question
+                }, {
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+                setResponse(response.data);
+            }catch (err){
+                console.log(err);
+            }
         }
     }
 
@@ -186,20 +213,32 @@ function ProjectDetail(){
             <p className = "centeredText">{ project.description }</p>
             {(project.user.id === userId || userId in project.editors.map(editor => editor.id)) && <Link  to = "#"className = "">Edit</Link>}
             <hr/>
-            <h3 className = "">Sources</h3>
-            <div>
-            <ul className = "sources">
-                {project.available_trusted_literatures.map(source => (
-                    <li key = {source} className = "source">{ source }</li>
-                ))}
-            </ul>
-            </div>
-            <div>
-                <div>
-                    
+            <div className = "sourceQuestionDiv">
+                <div className="halfDiv">
+                <h3 className = "">Sources</h3>
+                <ul className = "sources">
+                    {project.available_trusted_literatures.map(source => (
+                        <li key = {source} className = "source">{ source }</li>
+                    ))}
+                </ul>
                 </div>
-                <input/>
-            </div> 
+                <div className = "halfDiv">
+                    <h3>Ask AI about a source</h3>
+                    <div>
+                        <ReactMarkdown>{response}</ReactMarkdown>
+                    </div>
+                    <form onSubmit = {handleRAGSubmit}>
+                        <div className="mb-3">
+                            <input value = {url} onChange = {(event) => {setURL(event.currentTarget.value)}} className = "midInput" placeholder="Enter URL for scraping"/>
+                            <div className="form-text">Procceed at your own risk. By submitting this form you acknowledge that we have no legal liabilites regarding your web scraping request.</div>
+                        </div>
+                        <div className="mb-3">
+                            <textarea value = {question} onChange = {(event) => {setQuestion(event.currentTarget.value)}} className = "midTextarea" placeholder = "Question about source"></textarea>
+                        </div>
+                        <button type = "submit" className = "friendlySubmitButton">Ask</button>
+                    </form>
+                </div> 
+            </div>
             <div>
                 <h3 className="centeredText">Summary</h3>
                 <ReactMarkdown>{ project.summary }</ReactMarkdown>
