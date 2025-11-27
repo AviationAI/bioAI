@@ -213,7 +213,6 @@ class ProjectRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
         currentViewers = [viewer.id  for viewer in project.viewers.all()]
         addedUsers = request.data.get("addedUsers", [])
         addedType = request.data.get("addedType", None)
-        print(f"{ addedType }, { addedUsers }")
         editors = request.data.get("editors", [])   
         viewers = request.data.get("viewers", [])
         remove = request.data.get("removed", [])
@@ -221,7 +220,6 @@ class ProjectRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
         newViewers = set(currentViewers) | set(viewers)
         # Typecasting to set to find the intersection
         intersection = newEditors & newViewers
-        print("declared vars")
         # Checking if each user has multiple instances
         for user in intersection:
             # Removing user from the instance not provided from the front end
@@ -234,7 +232,6 @@ class ProjectRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
                     newViewers.discard(user)
                 elif user in currentViewers:
                     newEditors.discard(user)
-        print("first for")
         for user in addedUsers:
             try:
                 userID = User.objects.get(username = user).id
@@ -244,8 +241,7 @@ class ProjectRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
                     elif addedType == "viewer":
                         newViewers.add(userID)
             except:
-                print("exception")
-        print("second for")
+                pass
         # Checking which users are in the remove list
         for user in remove:
             # Removing the user if from every other list
@@ -253,64 +249,51 @@ class ProjectRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
                 newEditors.discard(user)
             if user in newViewers: 
                 newViewers.discard(user)
-        print("third for")
         updateData = {
             "editors": list(newEditors),
             "viewers": list(newViewers)
         }
-        print("updated")
         print(updateData)
         serializer = self.get_serializer(project, data = updateData, partial = True)
-        print("serializer!")
         if not serializer.is_valid():
-            print("error")
             return Response({"error": "invalid data"}, status=status.HTTP_400_BAD_REQUEST)
         serializer.save()
-        print("home run!")
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-@csrf_exempt
-# Index() main page
-def index(request):
-    return render(request, "bioAIPrototype/index.html")
 
-def csrf_view(request):
-    return JsonResponse({"csrf_token": get_token(request)})
+class RAGviews(APIView):
+    permission_classes = [IsAuthenticated]
 
-def projects(request, filter):
-    user = request.user
-    if (filter == "owned_by_me"):
-        try:
-            projects = Project.objects.filter(user = user)
-        except:
-            projects = False
-    elif (filter == "shared_with_me"):
-        try:
-            projects = Project.objects.filter(viewers__id = user.id)
-        except:
-            projects = False
-    else:
-        projects = False
-    if projects:
-        return JsonResponse({"Success": True, "projects": [project.serialize() for project in projects]}, safe = False)
-    return JsonResponse({"error": "Not a valid filter."})
+    def post(self, request):
+        start =  datetime.now()
+        print(start)
+        data = request.data
+        url = data.get("url")
+        question = data.get("question")
+        # Loading the url
+        loader = WebBaseLoader(url)
+        documents = loader.load()
 
+        # Splitting the document into digestible chunks for the AI
+        chunks = text_splitter.split_documents(documents)
 
-def user(request):
-    user = request.user
-    if user.is_authenticated:
-        return JsonResponse({"Success": True, "user": user.serialize()})
-    return JsonResponse({"Success": False, "user": None})
+        # Setting the vector storage to a temporary Chroma DB
+        vectorstorage = Chroma(
+            collection_name="temporary_db",
+            embedding_function=embeddings
+        )
 
-
-def delete(request, project_id):
-    if request.method == "POST":
-        project = Project.objects.get(id = project_id)
-        if request.user == project.user:
-            project.delete()
-            return JsonResponse({"Success": "True"})
-        return JsonResponse({"Error": "User cannot delete project that they do not own."})
-    return JsonResponse({"Error": "Post method required."})
+        # Making it easier to perform a RAG pipeline with the db
+        retriever = vectorstorage.as_retriever()
+        # Adding docs to the vector store, turning it into vectors for the AI
+        vectorstorage.add_documents(chunks)
+        # Asking the vector store to retrieve documents based on the question 
+        docs = retriever.invoke(question)
+        docs_content = "\n\n".join(doc.page_content for doc in docs)
+        prompt = f"Context = {docs_content} Question = {question}"
+        response = chat.invoke(prompt)
+        print(datetime.now() - start)
+        return Response(response.content)
 
 def login_view(request):
     if request.method == "OPTIONS":
@@ -330,41 +313,6 @@ def login_view(request):
                 "message": "Invalid password and/or username"
             })
     return render(request, "bioAIPrototype/login.html")
-
-def project(request, project_id):
-    project = Project.objects.get(id = project_id)
-    summary = markdowner.convert(project.summary)
-    return render(request, "bioAIPrototype/project.html", {
-        "project": project,
-        "summary": summary
-    })
-
-@csrf_exempt
-def URLQuestion(request):
-    if request.method == "POST":
-        start =  datetime.now()
-        print(start)
-        data = json.loads(request.body)
-        url = data.get("url")
-        question = data.get("question")
-        loader = WebBaseLoader(url)
-        documents = loader.load()
-        chunks = text_splitter.split_documents(documents)
-
-        vectorstorage = Chroma(
-            collection_name="user_collection_one",
-            embedding_function=embeddings
-        )
-
-        retriever = vectorstorage.as_retriever()
-        vectorstorage.add_documents(chunks)
-        docs = retriever.invoke(question)
-        docs_content = "\n\n".join(doc.page_content for doc in docs)
-        prompt = f"Context = {docs_content} Question = {question}"
-        response = chat.invoke(prompt)
-        print(datetime.now() - start)
-        return JsonResponse({"Success": "True", "response": response.content})
-    return JsonResponse({"Error": "Post Method Required"})
 
 def edit(request, project_id):
     project = Project.objects.get(id = project_id)
