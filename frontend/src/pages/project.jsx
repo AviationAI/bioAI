@@ -7,6 +7,7 @@ import Screen404 from "../components/404";
 import ReactMarkdown from 'react-markdown';
 import Overlay from "../components/overlay";
 import InputTags from "../components/inputTags";
+import { Link } from "react-router-dom";
 
 function ProjectDetail(){
 
@@ -105,7 +106,7 @@ function ProjectDetail(){
     return (
         <>
         { (project !== null) ? (
-        <>
+        <div className="project">
             {/*isOverlayOpen is connected to isOpen, so any change of its state toggles the overlay*/}
         {userId === project.user.id &&
             <Overlay loading = {isLoading} isOpen = {isOverlayOpen} onClose = {() => {setIsOverlayOpen(false)}}>
@@ -180,9 +181,11 @@ function ProjectDetail(){
             <div className = "textButton">
                 <h1 className = "centeredText">{ project.topic }</h1>
                 {/*Setting isoverlay to true onclick*/}
-                {project.user.id === userId && <button className = "friendlyButton" onClick={() => {setIsOverlayOpen(true)}}>Share</button>}
+                {(project.user.id === userId) && <button className = "friendlyButton" onClick={() => {setIsOverlayOpen(true)}}>Share</button>}
             </div>
             <p className = "centeredText">{ project.description }</p>
+            {(project.user.id === userId || userId in project.editors.map(editor => editor.id)) && <Link  to = "#"className = "">Edit</Link>}
+            <hr/>
             <h3 className = "">Sources</h3>
             <div>
             <ul className = "sources">
@@ -190,12 +193,18 @@ function ProjectDetail(){
                     <li key = {source} className = "source">{ source }</li>
                 ))}
             </ul>
+            </div>
+            <div>
+                <div>
+                    
+                </div>
+                <input/>
             </div> 
             <div>
                 <h3 className="centeredText">Summary</h3>
                 <ReactMarkdown>{ project.summary }</ReactMarkdown>
             </div>
-        </>
+        </div>
         ):(
             <Screen404/>
         )
