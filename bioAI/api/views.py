@@ -1,11 +1,18 @@
+import pickle
+import time
+from .apiconfig import VECTOR_STORAGES
+from .backend import ExpiringVectorStore
+from trafilatura import extract_metadata, fetch_url
+from newspaper import Article
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponseRedirect, JsonResponse
+from django.core.cache import cache
 from django.shortcuts import render
 from django.urls import reverse
 from django.core.paginator import Paginator
-from .models import User, AIGeneratedResearchSteps, Project
+from .models import User, AIGeneratedResearchSteps, Project, Scores
 from django.contrib.auth.decorators import login_required   
 import json
 import decimal
@@ -21,7 +28,6 @@ from langchain_community.document_loaders import WebBaseLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_ollama import OllamaEmbeddings
 from langchain_core.vectorstores import InMemoryVectorStore
-from langchain_chroma import Chroma
 from django.middleware.csrf import get_token
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -32,11 +38,15 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from .permissions import IsOwner, IsEditor, IsViewer
 from rest_framework import status
+
+
 # Create your views here.
 markdowner = Markdown()
-chat = ChatOllama(model = "llama3.2:3b")
+chat = ChatOllama(model = "bioResearchBuddy")
+sourceChat = ChatOllama(model = "bioSourceBuddy")
 embeddings = OllamaEmbeddings(model = "nomic-embed-text")
-text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1500, chunk_overlap = 250)
+text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1250, chunk_overlap = 250)
+
 
 class ProjectListCreate(generics.ListCreateAPIView):
     serializer_class = ProjectBackendSerializer
@@ -265,99 +275,119 @@ class RAGviews(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        start =  datetime.now()
-        print(start)
         data = request.data
-        url = data.get("url")
-        question = data.get("question")
-        # Loading the url
-        loader = WebBaseLoader(url)
-        documents = loader.load()
+        url = data.get("url", None)
+        question = data.get("question", None)
+        vector_id = f"{request.user.id}_sources"
+        if url:
+            VECTOR_STORAGES[vector_id] = InMemoryVectorStore(embedding=embeddings)
+            vector_storage = VECTOR_STORAGES[vector_id]
+            ExpiringVectorStore(vector_id, 600)
+            start =  datetime.now()
+            # Loading the url
+            loader = WebBaseLoader(url)
+            documents = loader.load()
+            # Splitting the document into digestible chunks for the AI
+            chunks = text_splitter.split_documents(documents)
+            vector_storage.add_documents(chunks)
+            retriever = vector_storage.as_retriever(search_kwargs={"k": 5})
+            # invoking the vector storage
+            docs = retriever.invoke(
+                "Retrieve only the documents that evaluate or discuss the reliability, credibility, or overall quality of the source."
+            )
+            docs_content = "\n\n".join(doc.page_content.strip() for doc in docs)
 
-        # Splitting the document into digestible chunks for the AI
-        chunks = text_splitter.split_documents(documents)
+            html_content = fetch_url(url)
+            if html_content ==  None:
+                return Response("Website has anti scraping protocols")
+            metadata = extract_metadata(html_content)
+            print("start" + docs_content)
 
-        # Setting the vector storage to a temporary Chroma DB
-        vectorstorage = Chroma(
-            collection_name="temporary_db",
-            embedding_function=embeddings
-        )
-
-        # Making it easier to perform a RAG pipeline with the db
-        retriever = vectorstorage.as_retriever()
-
-        # Adding docs to the vector store, turning it into vectors for the AI
-        vectorstorage.add_documents(chunks)
-
-        # Asking the vector store to retrieve documents based on the question 
-        docs = retriever.invoke(question)
-        docs_content = "\n\n".join(doc.page_content for doc in docs)
-        prompt = f"Context = {docs_content} Question = {question}"
-        response = chat.invoke(prompt)
-
-        print(datetime.now() - start)
+            example_rating = {
+                "timeliness_score": 20,
+                "authority_score": 30,
+                "accuracy_score": 25,
+                "purpose_score": 25
+            }
+            prompt = f"""
+                Perform a complete rating of the source using the following source content below:
+                <content>
+                    {docs_content}
+                </content>
+                Do NOT use the content if it doesnt contain more than a total of 100 characters
+                The url of the source is:
+                <url>
+                    { url }
+                </url>
+                The metadata of the source is: 
+                    <metadata>
+                        { metadata }
+                    </metadata>
+                The metadata should be the basis of your review, but you can use the content if necessary
+                Your rating should consist of 5 scores:
+                timeliness score
+                    -The timeliness score should be an integer from 0-20 (inclusive)
+                    -The rubric for the score is (current date is {datetime.now().strftime('%Y-%m-%d')}):
+                        20 — Published ≤ 1 year ago
+                        19 — Published ≤ 2 years ago
+                        18 — Published ≤ 3 years ago
+                        17 — Published ≤ 4 years ago
+                        16 — Published ≤ 5 years ago
+                        15 — Published ≤ 6 years ago
+                        14 — Published ≤ 7 years ago
+                        13 — Published ≤ 8 years ago
+                        12 — Published ≤ 9 years ago
+                        11 — Published ≤ 10 years ago
+                        ≤10 — Published >10 years ago
+                    -If a source qualifies for two scores, choose the lower one
+                authority score
+                    -The authority score should be an integer from 0-30 (inclusive)
+                    -The score should be based on how trustable the source is (government website or random blog), and the credibility of an author
+                    -An example of a perfect score is a .gov or .edu website, with a reputable author, whose credentials are shown clearly
+                    -An example of a bad score is a random blog with a user posting a theory
+                accuracy score
+                    -The accuracy score should be an integer from 0-25 (inclusive)
+                    -The score should be based on how acccurate the information, if it has been proven to be false, and if the source is peer reviewed
+                purpose score
+                    -The purpose score should be an integer from 0-25 (inclusive)
+                    -The score should be based on the biasy of the source
+                    -If the source has any sort of monetary gain from changing the result in a certain way, dock off five points
+                    -If the source is known for lobbying and misleading information (especially in the field of the source), give it a maximum of ten points
+                    -If the content is blatantly, or even slightly biased, dock off 3 points
+                
+                Your response should use the same format as the following exampl, but may include different ratings:
+                <example>
+                    {json.dumps(example_rating)}
+                </example>
+                
+                Your ratings should be given in JSON format
+                All the ratings should be inclosed within curly braces
+                Your ratings should be a SINGLE JSON object
+            """
+            print(datetime.now() - start)
+            
+            response = sourceChat.invoke(prompt)
+            print(response.content)
+            validated_data = Scores.model_validate_json(response.content)
+            final_data = validated_data.model_dump_json()
+            print(final_data)
+            retriever = None
+            try:
+                return Response(final_data, status=status.HTTP_200_OK)
+            except:
+                return Response("Prompt error", status=status.HTTP_400_BAD_REQUEST)
         
-        return Response(response.content)
+        if question:
 
-def login_view(request):
-    if request.method == "OPTIONS":
-        return JsonResponse({"Success": True})
-    if request.method == "POST":
-        data = json.loads(request.body)
+            try:
+                vector_storage = VECTOR_STORAGES[vector_id]
+            except:
+                return Response("Session timed out.")
+            
+            retriever = vector_storage.as_retriever()
+            answerdocs = retriever.invoke(f"Retrieve only the chunks that will help answer the following question: {question}")
+            docs_content = "\n\n".join(doc.page_content for doc in answerdocs)
+            answer_prompt = f"Context = {docs_content} Question = {question}"
+            response = chat.invoke(answer_prompt)
 
-        username = data.get("username")
-        password = data.get("password")
-        user = authenticate(username = username, password = password)
-
-        if user is not None:
-            login(request, user)
-            return JsonResponse({"Success": "True", "user": user.serialize()})
-        else:
-            return render(request, "bioAIPrototype/login.html", {
-                "message": "Invalid password and/or username"
-            })
-    return render(request, "bioAIPrototype/login.html")
-
-def edit(request, project_id):
-    project = Project.objects.get(id = project_id)
-    if request.method == "POST":
-        data = json.loads(request.body)
-        description = data.get("description")  
-        topic = data.get("topic")
-        summary = data.get("summary")
-        sources = data.get("sources")
-
-        project.topic = topic
-        project.description = description
-        project.summary = summary
-        project.AIsteps["available_trusted_literatures"] = sources   
-        project.save()
-        return JsonResponse({"Success": "True"})
-    return render(request, "bioAIPrototype/edit.html", {
-        "project": project
-    })
-
-def register(request):
-    if request.method == "POST":
-        username = request.POST["username"]
-        password = request.POST["password"]
-        confirmation = request.POST["confirmation"]
-        email = request.POST["email"]
-
-        if password != confirmation:
-            return render(request, "bioAIPrototype/register.html", {
-                "message": "Password doesn't match confirmation"
-            })
-        try:
-            user = User.objects.create_user(username, email, password)
-        except IntegrityError:
-            return render(request, "bioAIPrototype/register.html", {
-                "message": "Username Taken"
-            })
-        login(request, user)
-        return HttpResponseRedirect(reverse("index"))
-    return render(request, "bioAIPrototype/register.html")
-
-def logout_view(request):
-    logout(request)
-    return HttpResponseRedirect(reverse("index"))
+            return Response(response.content)

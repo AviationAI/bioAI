@@ -2,7 +2,7 @@ from django.db import models
 from django.db.models import Avg, Count
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel, Field, HttpUrl, computed_field
 from typing import List, Dict
 import json
 import uuid
@@ -31,6 +31,21 @@ class Project(models.Model):
     
 class AIGeneratedResearchSteps(BaseModel):
     available_trusted_literatures: List[str] = Field(description = "All available sites/trusted literatures on the topic. Must be trustable websites.")
+
     model_config = {
         "extra": "ignore"
     }
+
+class Scores(BaseModel):
+    authority_score: int = Field(le = 30, ge = 0)
+    timeliness_score: int = Field(le = 20, ge = 0)
+    accuracy_score: int = Field(le = 25, ge = 0)
+    purpose_score: int = Field(le = 25, ge = 0)
+    
+    @computed_field
+    def total (self) -> int:
+        return (self.authority_score + self.timeliness_score + self.accuracy_score + self.purpose_score)
+    model_config = {
+        "extra": "ignore"
+    }
+
