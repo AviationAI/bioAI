@@ -357,3 +357,8 @@
     color: rgb(64, 95, 175);
     background-color: white;
 }
+
+.sourceOverview {
+    display: flex;
+    flex-direction: column;
+}

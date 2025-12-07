@@ -13,6 +13,10 @@ function ProjectDetail(){
 
     // Setting state variables
     const [isOverlayOpen, setIsOverlayOpen] = useState(false);
+    const [ greenPercent, setGreenPercent ] = useState(0);
+    const [ redPercent, setRedPercent ] = useState(0);
+    const [isSourceOverlayOpen, setIsSourceOverlayOpen ] = useState(false);
+    const [isSourceLoading, setIsSourceLoading] = useState(false);
     const [loading, setLoading] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
     const { projectID } = useParams();
@@ -26,7 +30,7 @@ function ProjectDetail(){
     const [dependency, setDependency] = useState(true);
     const [url, setURL] = useState("");
     const [question, setQuestion] = useState("");
-    const [response, setResponse] = useState("");
+    const [credibilityResponse, setCredibilityResponse] = useState(null);
 
 
     // handleChange handles the change of the dropdowns relating to the people currently shared in the project, and makes sure that the value is not different to the value it originally was
@@ -90,20 +94,31 @@ function ProjectDetail(){
         }
     }
 
-    async function handleRAGSubmit(event){
+    async function handleSourceInitializationSubmit(event){
         event.preventDefault();
-        if (url.trim().length > 0 && question.trim().length > 0 ){
+        if (url.trim().length > 0 ){
             try{
                 const token = await getToken();
                 const response = await AxiosInstance.post("/api/ask", {
-                    "url": url,
-                    "question": question
+                    "url": url
                 }, {
                     headers: {
                         "Authorization": `Bearer ${token}`
                     }
                 });
-                setResponse(response.data);
+                const data = JSON.parse(response.data);
+                const total = data.total;
+                setIsSourceOverlayOpen(true);
+                setCredibilityResponse(data);
+                if (total > 50){
+                    setGreenPercent(255 * (total/100) ** 2);
+                    console.log(255 * (total/100) ** 2);
+                    setRedPercent(255 * (1-(total/100) ** 2));
+                    console.log(255 * (1-(total/100) ** 2));
+                }else{
+                    setRedPercent(255);
+                    setGreenPercent(0);
+                }
             }catch (err){
                 console.log(err);
             }
@@ -135,6 +150,27 @@ function ProjectDetail(){
         { (project !== null) ? (
         <div className="project">
             {/*isOverlayOpen is connected to isOpen, so any change of its state toggles the overlay*/}
+        <Overlay loading = {isSourceLoading} isOpen = {isSourceOverlayOpen} onClose = {() => {setIsSourceOverlayOpen(false)}}>
+            {credibilityResponse &&
+            <div className = "sourceOverview">
+                <h2>Credibility</h2>
+                <h3 style = {{color: `rgb(${redPercent}, ${greenPercent}, 0)` }}>{credibilityResponse.total}/100</h3>
+                <strong>Authority Score: {credibilityResponse.authority_score}/30</strong>
+                <strong>Accuracy Score: {credibilityResponse.accuracy_score}/25</strong>
+                <strong>Timeliness Score: {credibilityResponse.timeliness_score}/20</strong>
+                <strong>Purpose Score: {credibilityResponse.purpose_score}/25</strong>
+                <div>
+
+                </div>
+                <form>
+                    <div className="mb-3">
+                        <textarea></textarea>
+                    </div>
+                    <button type = "submit" className = "friendlySubmitButton">Ask</button>
+                </form>
+            </div>
+            }
+        </Overlay>
         {userId === project.user.id &&
             <Overlay loading = {isLoading} isOpen = {isOverlayOpen} onClose = {() => {setIsOverlayOpen(false)}}>
                 <h2>Share</h2>
@@ -225,15 +261,11 @@ function ProjectDetail(){
                 <div className = "halfDiv">
                     <h3>Ask AI about a source</h3>
                     <div>
-                        <ReactMarkdown>{response}</ReactMarkdown>
                     </div>
-                    <form onSubmit = {handleRAGSubmit}>
+                    <form onSubmit = {handleSourceInitializationSubmit}>
                         <div className="mb-3">
                             <input value = {url} onChange = {(event) => {setURL(event.currentTarget.value)}} className = "midInput" placeholder="Enter URL for scraping"/>
                             <div className="form-text">Procceed at your own risk. By submitting this form you acknowledge that we have no legal liabilites regarding your web scraping request.</div>
-                        </div>
-                        <div className="mb-3">
-                            <textarea value = {question} onChange = {(event) => {setQuestion(event.currentTarget.value)}} className = "midTextarea" placeholder = "Question about source"></textarea>
                         </div>
                         <button type = "submit" className = "friendlySubmitButton">Ask</button>
                     </form>
