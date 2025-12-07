@@ -30,7 +30,8 @@ function ProjectDetail(){
     const [dependency, setDependency] = useState(true);
     const [url, setURL] = useState("");
     const [question, setQuestion] = useState("");
-    const [credibilityResponse, setCredibilityResponse] = useState(null);
+    const [credibilityResponse, setCredibilityResponse] = useState("");
+    const [questionResponse, setQuestionResponse] = useState("");
 
 
     // handleChange handles the change of the dropdowns relating to the people currently shared in the project, and makes sure that the value is not different to the value it originally was
@@ -110,6 +111,7 @@ function ProjectDetail(){
                 const total = data.total;
                 setIsSourceOverlayOpen(true);
                 setCredibilityResponse(data);
+                setURL("");
                 if (total > 50){
                     setGreenPercent(255 * (total/100) ** 2);
                     console.log(255 * (total/100) ** 2);
@@ -119,6 +121,26 @@ function ProjectDetail(){
                     setRedPercent(255);
                     setGreenPercent(0);
                 }
+            }catch (err){
+                console.log(err);
+            }
+        }
+    }
+
+    async function handleQuestionSubmit(event){
+        event.preventDefault();
+        if(question.trim().length > 0){
+            try{
+                const token = await getToken();
+                const response = await AxiosInstance.post("/api/ask", {
+                    "question": question
+                }, {
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                })
+                setQuestionResponse(response.data);
+                setQuestion("");
             }catch (err){
                 console.log(err);
             }
@@ -159,12 +181,12 @@ function ProjectDetail(){
                 <strong>Accuracy Score: {credibilityResponse.accuracy_score}/25</strong>
                 <strong>Timeliness Score: {credibilityResponse.timeliness_score}/20</strong>
                 <strong>Purpose Score: {credibilityResponse.purpose_score}/25</strong>
-                <div>
-
+                <div className = "response">
+                    <ReactMarkdown>{ questionResponse }</ReactMarkdown>
                 </div>
-                <form>
+                <form onSubmit = {handleQuestionSubmit}>
                     <div className="mb-3">
-                        <textarea></textarea>
+                        <textarea onChange = {(event) => {setQuestion(event.currentTarget.value)}}></textarea>
                     </div>
                     <button type = "submit" className = "friendlySubmitButton">Ask</button>
                 </form>
@@ -259,12 +281,12 @@ function ProjectDetail(){
                 </ul>
                 </div>
                 <div className = "halfDiv">
-                    <h3>Ask AI about a source</h3>
+                    <h3>See credibility of URL</h3>
                     <div>
                     </div>
                     <form onSubmit = {handleSourceInitializationSubmit}>
                         <div className="mb-3">
-                            <input value = {url} onChange = {(event) => {setURL(event.currentTarget.value)}} className = "midInput" placeholder="Enter URL for scraping"/>
+                            <input value = {url} onChange = {(event) => {setURL(event.currentTarget.value)}} className = "midInput" placeholder="Enter URL to get credibility"/>
                             <div className="form-text">Procceed at your own risk. By submitting this form you acknowledge that we have no legal liabilites regarding your web scraping request.</div>
                         </div>
                         <button type = "submit" className = "friendlySubmitButton">Ask</button>
