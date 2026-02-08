@@ -1,16 +1,17 @@
 # bioAI
 
 
-## Version: 0.7.9
-
+## Version: 0.8.3
 
 ```
 bioAI
 ├─ README.md
-├─ bioAI
+├─ backend
+│  ├─ Dockerfile
 │  ├─ api
 │  │  ├─ __init__.py
 │  │  ├─ admin.py
+│  │  ├─ apiconfig.py
 │  │  ├─ apps.py
 │  │  ├─ authentication.py
 │  │  ├─ media
@@ -33,15 +34,11 @@ bioAI
 │  │  │     └─ close_small.svg
 │  │  ├─ templates
 │  │  │  └─ bioAIPrototype
-│  │  │     ├─ create.html
-│  │  │     ├─ edit.html
-│  │  │     ├─ index.html
-│  │  │     ├─ layout.html
-│  │  │     ├─ login.html
-│  │  │     ├─ project.html
-│  │  │     └─ register.html
+│  │  │     └─ edit.html
 │  │  ├─ tests.py
 │  │  ├─ urls.py
+│  │  ├─ utils
+│  │  │  └─ backend.py
 │  │  └─ views.py
 │  ├─ bioAI
 │  │  ├─ __init__.py
@@ -50,42 +47,46 @@ bioAI
 │  │  ├─ urls.py
 │  │  └─ wsgi.py
 │  ├─ db.sqlite3
-│  └─ manage.py
-├─ frontend
-│  ├─ README.md
-│  ├─ eslint.config.js
-│  ├─ index.html
-│  ├─ package-lock.json
-│  ├─ package.json
-│  ├─ public
-│  │  └─ vite.svg
-│  ├─ src
-│  │  ├─ App.css
-│  │  ├─ App.jsx
-│  │  ├─ assets
-│  │  │  └─ react.svg
-│  │  ├─ components
-│  │  │  ├─ 404.jsx
-│  │  │  ├─ AxiosInstance.jsx
-│  │  │  ├─ getCookie.jsx
-│  │  │  ├─ layout.jsx
-│  │  │  ├─ overlay.jsx
-│  │  │  ├─ project-card.jsx
-│  │  │  └─ spinner.jsx
-│  │  ├─ hook
-│  │  ├─ icons
-│  │  │  ├─ close.svg
-│  │  │  └─ delete.svg
-│  │  ├─ images
-│  │  │  └─ Image404.jpg
-│  │  ├─ index.css
-│  │  ├─ main.jsx
-│  │  ├─ pages
-│  │  │  ├─ create.jsx
-│  │  │  ├─ index.jsx
-│  │  │  └─ project.jsx
-│  │  └─ styles.css
-│  └─ vite.config.js
-└─ requirements.txt
-
+│  ├─ docker-compose.yml
+│  ├─ manage.py
+│  └─ requirements.txt
+└─ frontend
+   ├─ README.md
+   ├─ eslint.config.js
+   ├─ index.html
+   ├─ package-lock.json
+   ├─ package.json
+   ├─ public
+   │  └─ vite.svg
+   ├─ src
+   │  ├─ App.css
+   │  ├─ App.jsx
+   │  ├─ assets
+   │  │  └─ react.svg
+   │  ├─ components
+   │  │  ├─ 404.jsx
+   │  │  ├─ AxiosInstance.jsx
+   │  │  ├─ getCookie.jsx
+   │  │  ├─ inputTags.jsx
+   │  │  ├─ layout.jsx
+   │  │  ├─ overlay.jsx
+   │  │  ├─ project-card.jsx
+   │  │  └─ spinner.jsx
+   │  ├─ hooks
+   │  ├─ icons
+   │  │  ├─ close.svg
+   │  │  └─ delete.svg
+   │  ├─ images
+   │  │  └─ Image404.jpg
+   │  ├─ index.css
+   │  ├─ main.jsx
+   │  ├─ pages
+   │  │  ├─ create.jsx
+   │  │  ├─ edit.jsx
+   │  │  ├─ index.jsx
+   │  │  └─ project.jsx
+   │  └─ styles.css
+   └─ vite.config.js
 ```
+
+**Beta release goal at 1.0.0**

@@ -15,7 +15,7 @@ function Create(){
         if (topic.length > 0 && description.length > 0){
         try {
             setLoading(true);
-            const token = await getToken()
+            const token = await getToken();
             const data = await AxiosInstance.post('/api/projects', {
                 "topic": topic,
                 "description": description

@@ -1,18 +1,9 @@
-import pickle
-import time
 from .apiconfig import VECTOR_STORAGES
-from .backend import ExpiringVectorStore
+from .utils.backend import ExpiringVectorStore
 from trafilatura import extract_metadata, fetch_url
 from newspaper import Article
-from django.shortcuts import render
-from django.contrib.auth import authenticate, login, logout
-from django.db import IntegrityError
-from django.http import HttpResponseRedirect, JsonResponse
-from django.core.cache import cache
-from django.shortcuts import render
-from django.urls import reverse
 from django.core.paginator import Paginator
-from .models import User, AIGeneratedResearchSteps, Project, Scores
+from .models import User, AIGeneratedResearchSteps, Project, Scores, Doc
 from django.contrib.auth.decorators import login_required   
 import json
 import decimal
@@ -20,7 +11,6 @@ from django.db.models import Count
 import ollama
 from langchain_ollama import ChatOllama
 from langchain_core.messages import HumanMessage
-from django.views.decorators.csrf import csrf_exempt
 import uuid
 from datetime import datetime
 from markdown2 import Markdown
@@ -32,7 +22,7 @@ from django.middleware.csrf import get_token
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .serializers import UserSerializer, ProjectFrontendSerializer, ProjectBackendSerializer
+from .serializers import UserSerializer, ProjectFrontendSerializer, ProjectBackendSerializer, DocBackendSerializer, DocFrontendSerializer
 from rest_framework import generics, permissions
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -53,7 +43,20 @@ class ProjectListCreate(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Project.objects.filter(user=self.request.user)
+        request = self.request
+        if request.method == "POST":
+            return None
+        user = request.user
+        owned = Project.objects.filter(user = user)
+        type = request.headers.get("Type", "owned")
+
+        # Shared queryset is all projects shared with the user
+        shared = Project.objects.filter(editors__in = [user]) | Project.objects.filter(viewers__in = [user])
+        if type == "shared":
+            return shared
+        elif type == "all":
+            return shared | owned
+        return owned
     
     def perform_create(self, serializer):
         title = self.request.data.get("topic")
@@ -271,6 +274,32 @@ class ProjectRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+# List create views for Doc model 
+
+class DocListCreate(generics.ListCreateAPIView):
+
+    serializer_class = DocBackendSerializer
+
+    # Checking which queryset we want to load from
+    def get_queryset(self):
+
+        # Checking if we want to query from the project the doc is from
+        user = self.request.user
+        isProject = self.request.headers["Is-Project"]
+
+        if isProject:
+            projectID = self.request.headers["project-id"]
+            project = Project.objects.get(pk = projectID)
+            return Doc.objects.filter(project = project)
+        else:
+            type = self.request.headers["Type"]
+            if type == "editor":
+                return Doc.objects.filter(editors__in = user)
+            elif type == "viewer":
+                return Doc.objects.filter(viewers__in = user)
+            return Doc.objects.filter(user = user)
+        
+
 class RAGviews(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -309,6 +338,9 @@ class RAGviews(APIView):
                 "accuracy_score": 25,
                 "purpose_score": 25
             }
+
+            # FIX PROMPT
+
             prompt = f"""
                 Perform a complete rating of the source using the following source content below:
                 <content>

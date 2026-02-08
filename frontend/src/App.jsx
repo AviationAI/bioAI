@@ -12,8 +12,9 @@ function App() {
     <Navbar/>
     <div id = "app">
       <Routes>
-        <Route path = "/" element = {<Home />} ></Route>
-        <Route path = "/projects/:projectID" element = {<ProjectDetail/>} ></Route>
+        <Route path = "/" element = {<Home />}></Route>
+        <Route path = "/projects/:projectID" element = {<ProjectDetail/>}></Route>
+        <Route path = "/projects/:projectID/edit"></Route>
         <Route path = "/create" element = {<SignedIn><Create/></SignedIn>}></Route>
       </Routes>
     </div>

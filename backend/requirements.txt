@@ -1,5 +1,6 @@
 Django>=4.2
 djangorestframework>=3.14
+djangorestframework-simplejwt
 
 trafilatura>=1.6
 newspaper3k>=0.2.8
@@ -12,3 +13,6 @@ langchain-ollama>=0.1.0
 
 markdown2>=2.4
 pydantic>=2.0
+django-cors-headers>=4.0
+
+clerk-backend-api
