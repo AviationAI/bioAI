@@ -61,6 +61,7 @@ class ProjectListCreate(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         title = self.request.data.get("topic")
         description = self.request.data.get("description")
+        rq = self.request.data.get("research_question")
 
         example_steps = AIGeneratedResearchSteps(
             available_trusted_literatures=[
@@ -78,11 +79,19 @@ class ProjectListCreate(generics.ListCreateAPIView):
             <study_topic>
                 {title}
             </study_topic>
-            The description of the study is the following. Use the description as the main guide for the following steps.: 
+
+            The research questiont that the study is aiming to answer is the folowing. Use the research question and the description as the main guide for the following steps.: 
+
+            <study_research_question>
+                { rq }
+            </study_research_question>
+
+            The description of the study is the following. Use the research question and the description as the main guide for the following steps.: 
 
             <study_description>
                 {description}
             </study_description>
+
 
             The following example is the exact format your response should follow:
             {example_steps.model_dump_json()}
@@ -106,7 +115,7 @@ class ProjectListCreate(generics.ListCreateAPIView):
             Do NOT include explanations, code fences, or any text outside the JSON object.
             Use strings instead of python objects 
             Do NOT use "=", instead use ":" (unless it is part of your url)
-            ALL OF YOU JSON OBJECT SHOULD BE INSIDE OF TWO CURLY BRACES 
+            ALL OF YOUR JSON OBJECT SHOULD BE INSIDE OF TWO CURLY BRACES 
             Your response should only include ONE field (available_trusted_literatures) and no extra fields
             Your response should be ONE JSON object with ONE key (available_trusted_literatures) containing an ARRAY of source strings.
             No symbols, letters, or numbers should be outside of the JSON object; Everything must be contained inside of it.
@@ -131,13 +140,20 @@ class ProjectListCreate(generics.ListCreateAPIView):
         print(validated_steps.model_dump_json())
 
         ai_prompt2 = f"""
-            You are an AI scientific research assistant. After researching instensively about a scientific topic based on the study's topic and description, your job is to summarize all the information you have found.
+            You are an AI scientific research assistant. After researching instensively about a scientific topic based on the study's topic, research question, and description, your job is to summarize all the information you have found.
             The topic of the study is the following:
 
             <study_topic>
                 {title}
             </study_topic>
-            The description of the study is the following. Use the description as the main guide for the following steps: 
+
+            The research question of the study is the following:
+
+            <study_research_question>
+                { rq }
+            </study_research_question>
+
+            The description of the study is the following. Use the description and the research queston as the main guide for the following steps: 
 
             <study_description>
                 {description}
@@ -157,7 +173,7 @@ class ProjectListCreate(generics.ListCreateAPIView):
                 Layer 2: A three sentence summary expanding on layer 1 (titled three sentence mini summary)
                 Layer 3: A 6-12 sentence comprehensive summary on your research (titled comprehensive 6-12 sentence detailed summary)
             Include facts and methodology and not history unless explicitly stated in the study topic / study description
-            Use the study description as your framework for the summary
+            Use the study description and research question as your framework for the summary
             Do NOT include any personal pronouns in the summary
             Do NOT reference the study, you are summarizing information relating to the study
         """
@@ -174,8 +190,6 @@ class ProjectListCreate(generics.ListCreateAPIView):
         
         serializer.save(
             user = self.request.user,
-            topic = title,
-            description = description,
             available_trusted_literatures = sources,
             summary = summary
         )
@@ -311,7 +325,7 @@ class RAGviews(APIView):
         if url:
             VECTOR_STORAGES[vector_id] = InMemoryVectorStore(embedding=embeddings)
             vector_storage = VECTOR_STORAGES[vector_id]
-            ExpiringVectorStore(vector_id, 600)
+            ExpiringVectorStore(vector_id, 300)
             start =  datetime.now()
             # Loading the url
             loader = WebBaseLoader(url)

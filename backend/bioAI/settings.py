@@ -158,7 +158,7 @@ CORS_ALLOW_HEADERS = [
     "access-control-allow-credentials"
 ]
 
-CLERK_API_SECRET_KEY = "sk_test_Tn5D8WGS8C4hY5jXVp3v4rtUjEdpuL0lK6LvHa2Md9"
+CLERK_API_SECRET_KEY = os.getenv("CLERK_SECRET_KEY")
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (

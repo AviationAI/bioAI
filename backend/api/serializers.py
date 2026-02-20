@@ -10,7 +10,7 @@ class UserSerializer(serializers.ModelSerializer):
 class ProjectFrontendSerializer(serializers.ModelSerializer):
     summary = serializers.CharField(required=False, allow_blank=True)
     available_trusted_literatures = serializers.JSONField(required=False)
-    objective = serializers.CharField(required = False)
+    research_question = serializers.CharField()
     editors = UserSerializer(many = True, required=False)
     viewers = UserSerializer(many = True, required=False)
     user = UserSerializer()
@@ -23,7 +23,7 @@ class ProjectFrontendSerializer(serializers.ModelSerializer):
 class ProjectBackendSerializer(serializers.ModelSerializer):
     summary = serializers.CharField(required=False, allow_blank=True)
     available_trusted_literatures = serializers.JSONField(required=False)
-    objective = serializers.CharField(required = False)
+    research_question = serializers.CharField()
     editors = serializers.PrimaryKeyRelatedField(many = True, queryset = User.objects.all(), required = False)
     viewers = serializers.PrimaryKeyRelatedField(many = True, queryset = User.objects.all(), required = False)
 

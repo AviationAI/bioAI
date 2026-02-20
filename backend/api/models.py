@@ -43,9 +43,10 @@ class Project(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     topic = models.CharField()
     description = models.CharField()
-    objective = models.CharField(default="none")
     available_trusted_literatures = models.JSONField()
     summary = models.CharField()
+    research_question = models.CharField()
+    thesis = models.CharField(blank = True)
     editors = models.ManyToManyField(User, related_name="editable_projects", blank = True)
     viewers = models.ManyToManyField(User, related_name="viewable_projects", blank = True)
 

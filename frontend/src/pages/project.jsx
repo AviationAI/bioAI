@@ -199,13 +199,14 @@ function ProjectDetail(){
                 <strong>Authority Score: {credibilityResponse.authority_score}/30</strong>
                 <strong>Accuracy Score: {credibilityResponse.accuracy_score}/25</strong>
                 <strong>Timeliness Score: {credibilityResponse.timeliness_score}/20</strong>
-                <strong>Purpose Score: {credibilityResponse.purpose_score}/25</strong>
+                <strong>Purpose Score: {credibilityResponse.purpose_score}/25</strong><br/>
+                <h4>Ask question</h4>
                 <div className = "response">
                     <ReactMarkdown>{ questionResponse }</ReactMarkdown>
                 </div>
                 <form onSubmit = {handleQuestionSubmit}>
                     <div className="mb-3">
-                        <textarea onChange = {(event) => {setQuestion(event.currentTarget.value)}}></textarea>
+                        <textarea placeholder = "Ask question on source"onChange = {(event) => {setQuestion(event.currentTarget.value)}}></textarea>
                     </div>
                     <button type = "submit" className = "friendlySubmitButton">Ask</button>
                 </form>
@@ -287,6 +288,7 @@ function ProjectDetail(){
                 {/*Setting isoverlay to true onclick*/}
                 {(project.user.id === userId) && <button className = "friendlyButton" onClick={() => {setIsOverlayOpen(true)}}>Share</button>}
             </div>
+            <p className = "centeredText">{ project.research_question }</p>
             <p className = "centeredText">{ project.description }</p>
             {(project.user.id === userId || userId in project.editors.map(editor => editor.id)) && <Link  to = "#"className = "">Edit</Link>}
             <hr/>
