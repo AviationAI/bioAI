@@ -39,6 +39,10 @@ function Edit(){
         }
         fetchProject();
     }, [projectID, dependency])
+
+    async function submit(){
+        
+    }
     
     // Checking if the project is loading or not
     if (loading) return (<Loader loading = {true}/>)

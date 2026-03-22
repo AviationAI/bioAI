@@ -1,3 +1,4 @@
+// USED FOR REFERENCE PURPOSES IN MOVE TO REACT, NOT USED IN PROJECT
 document.addEventListener('DOMContentLoaded', function(){
     const create = document.querySelector("#create");
     const edit = document.querySelector("#edit");

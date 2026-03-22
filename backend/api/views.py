@@ -213,16 +213,18 @@ class ProjectRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
             return ProjectFrontendSerializer
         return ProjectBackendSerializer
 
-    def put (self, request, *args, **kwargs):
+    def put (self, request):
         data = request.data
         topic = data.get("topic")
         description = data.get("description")
         sources = data.get("sources")
         summary = data.get("summary")
+        question = data.get("question")
         project = self.get_object()
         updateData = {
             "topic": topic,
             "description": description,
+            "research_question": question,
             "sources": sources,
             "summary": summary,
         }
@@ -234,7 +236,7 @@ class ProjectRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-    def patch (self, request, *args, **kwargs):
+    def patch (self, request):
         project = self.get_object()
         currentEditors = [editor.id for editor in project.editors.all()]
         currentViewers = [viewer.id  for viewer in project.viewers.all()]
