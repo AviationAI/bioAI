@@ -180,8 +180,7 @@ function ProjectDetail(){
         }
         fetchProject();
     }, [projectID, dependency])
-    console.log(project)
-    console.log(userId)
+
     if(loading) return <Loader loading = {true}/>;
     return (
         <>
@@ -290,7 +289,7 @@ function ProjectDetail(){
             </div>
             <p className = "centeredText">{ project.research_question }</p>
             <p className = "centeredText">{ project.description }</p>
-            {(project.user.id === userId || userId in project.editors.map(editor => editor.id)) && <Link  to = "#"className = "">Edit</Link>}
+            {(project.user.id === userId || userId in project.editors.map(editor => editor.id)) && <Link  to = "edit"className = "">Edit</Link>}
             <hr/>
             <div className = "sourceQuestionDiv">
                 <div className="halfDiv">
