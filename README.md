@@ -1,7 +1,7 @@
 # bioAI
 
 
-## Version: 0.8.3
+## Version: 0.8.5
 
 ```
 bioAI
