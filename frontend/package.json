@@ -11,8 +11,8 @@
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.56.2",
-    "axios": "^1.13.2",
-    "bootstrap  ": "^5.3.8",
+    "axios": "^1.14.0",
+    "bootstrap": "^5.3.8",
     "react": "^19.2.3",
     "react-bootstrap": "^2.10.10",
     "react-dom": "^19.2.3",
