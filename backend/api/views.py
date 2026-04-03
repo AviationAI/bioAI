@@ -1,7 +1,6 @@
 from .apiconfig import VECTOR_STORAGES
 from .utils.backend import ExpiringVectorStore
 from trafilatura import extract_metadata, fetch_url
-from newspaper import Article
 from django.core.paginator import Paginator
 from .models import User, AIGeneratedResearchSteps, Project, Scores, Doc
 from django.contrib.auth.decorators import login_required   
@@ -28,7 +27,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from .permissions import IsOwner, IsEditor, IsViewer
 from rest_framework import status
-
 
 # Create your views here.
 markdowner = Markdown()
@@ -215,17 +213,19 @@ class ProjectRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
 
     def put (self, request):
         data = request.data
-        topic = data.get("topic")
-        description = data.get("description")
-        sources = data.get("sources")
-        summary = data.get("summary")
-        question = data.get("question")
         project = self.get_object()
+
+        # If there is such field, set it to the field, otherwise set it to the current value in model object
+        topic = data.get("topic", project.topic)
+        description = data.get("description", project.description)
+        sources = data.get("sources", project.available_trusted_literatures)
+        summary = data.get("summary", project.summary)
+        question = data.get("question", project.research_question)
         updateData = {
             "topic": topic,
             "description": description,
             "research_question": question,
-            "sources": sources,
+            "available_trusted_literatures": sources,
             "summary": summary,
         }
         serializer = self.get_serializer(

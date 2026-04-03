@@ -18,7 +18,8 @@ class JWTAuthentication(BaseAuthentication):
             request_state = authenticate_request(
                 request,
                 AuthenticateRequestOptions(
-                    secret_key=settings.CLERK_API_SECRET_KEY
+                    secret_key=settings.CLERK_API_SECRET_KEY,
+                    clock_skew_in_ms=5000
                 )
             )
             if not request_state.is_signed_in:
