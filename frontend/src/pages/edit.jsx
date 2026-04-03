@@ -6,6 +6,10 @@ import { useEffect } from "react";
 import Screen404 from "../components/404";
 import AxiosInstance from "../components/AxiosInstance";
 import { useNavigate } from "react-router-dom";
+import { TextStyleKit } from '@tiptap/extension-text-style';
+import { EditorContent, useEditor } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import React from 'react';
 
 function Edit(){
     // Vars and hooks (getToken is for auth purposes)
@@ -130,7 +134,7 @@ function Edit(){
                         ))}
                         <button onClick = {() => {setSources(prev => [...prev, ""])}} type = "button">Add Source</button>
                     </div>
-                    <div>
+                    <div className="mb-3">
 
                     </div>
                 </form>

@@ -1,7 +1,7 @@
 # bioAI
 
 
-## Version: 0.8.7
+## Version: 0.8.8
 
 ```
 bioAI
@@ -88,5 +88,3 @@ bioAI
    │  └─ styles.css
    └─ vite.config.js
 ```
-
-**Beta release goal at 1.0.0**
