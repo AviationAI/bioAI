@@ -275,7 +275,7 @@ function ProjectDetail(){
             <button type = "submit" className="friendlyButton">
                 {(editors.length > 0 || viewers.length>0 || removed.length >0 || addedUsers.length > 0) ? (
                     <>Save</>
-                ): (
+                ):(
                     <>Close</>
                 )}
             </button>

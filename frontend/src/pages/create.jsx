@@ -60,7 +60,7 @@ function Create(){
             <div className="mb-3 create-container">
                 <textarea rows = "5" cols = "80"className = "description-control" placeholder = "Description of project" value = {description} onChange = {descriptionChange}></textarea>
             </div>
-            <button className="create-btn" type = "submit">Create Project</button>
+            <button disabled = {!topic || !description || !rq} className="create-btn" type = "submit">Create Project</button>
         </form>
         </>
     ); 
