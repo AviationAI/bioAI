@@ -211,7 +211,7 @@ class ProjectRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
             return ProjectFrontendSerializer
         return ProjectBackendSerializer
 
-    def put (self, request):
+    def put (self, request, *args, **kwargs):
         data = request.data
         project = self.get_object()
 
@@ -228,6 +228,7 @@ class ProjectRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
             "available_trusted_literatures": sources,
             "summary": summary,
         }
+        print(summary)
         serializer = self.get_serializer(
             project, data = updateData, partial = True
         )
@@ -236,7 +237,7 @@ class ProjectRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-    def patch (self, request):
+    def patch (self, request, *args, **kwargs):
         project = self.get_object()
         currentEditors = [editor.id for editor in project.editors.all()]
         currentViewers = [viewer.id  for viewer in project.viewers.all()]
@@ -403,7 +404,7 @@ class RAGviews(APIView):
                     -If the source is known for lobbying and misleading information (especially in the field of the source), give it a maximum of ten points
                     -If the content is blatantly, or even slightly biased, dock off 3 points
                 
-                Your response should use the same format as the following exampl, but may include different ratings:
+                Your response should use the same format as the following example, but may include different ratings (Do NOT include the XML tags in your response):
                 <example>
                     {json.dumps(example_rating)}
                 </example>
@@ -411,6 +412,8 @@ class RAGviews(APIView):
                 Your ratings should be given in JSON format
                 All the ratings should be inclosed within curly braces
                 Your ratings should be a SINGLE JSON object
+                Your response should be ONLY JSON, NO XML, or any other format
+                The guidelines above are STRICT, and must be followed EXACTLY
             """
             print(datetime.now() - start)
             
