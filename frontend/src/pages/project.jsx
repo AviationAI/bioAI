@@ -8,13 +8,10 @@ import ReactMarkdown from 'react-markdown';
 import Overlay from "../components/overlay";
 import InputTags from "../components/inputTags";
 import { Link } from "react-router-dom";
-import { createEditor } from "slate";
-import {Slate, Editable, withReact} from "slate-react";
 
 function ProjectDetail(){
 
     // Setting state variables
-    const [editor] = useState(() => withReact(createEditor()))
     const [content, setContent] = useState(null);
     const [isOverlayOpen, setIsOverlayOpen] = useState(false);
     const [isSourceCredLoading, setIsSourceCredLoading] = useState(false);
@@ -37,12 +34,6 @@ function ProjectDetail(){
     const [question, setQuestion] = useState("");
     const [credibilityResponse, setCredibilityResponse] = useState("");
     const [questionResponse, setQuestionResponse] = useState("");
-    const initialValue = [
-        {
-            type: 'paragraph',
-            children: [{ text: 'A line of text in a paragraph.' }],
-        },
-    ]
 
 
     // handleChange handles the change of the dropdowns relating to the people currently shared in the project, and makes sure that the value is not different to the value it originally was
@@ -185,10 +176,7 @@ function ProjectDetail(){
     return (
         <>
         { (project !== null) ? (
-        <div className="project">
-        <Slate editor={editor} initialValue={initialValue}>
-            <Editable />
-        </Slate>   
+        <div className="project"> 
             {/*isOverlayOpen is connected to isOpen, so any change of its state toggles the overlay*/}
         <Overlay loading = {isSourceLoading} isOpen = {isSourceOverlayOpen} onClose = {() => {setIsSourceOverlayOpen(false)}}>
             {credibilityResponse &&
@@ -295,8 +283,8 @@ function ProjectDetail(){
                 <div className="halfDiv">
                 <h3 className = "">Sources</h3>
                 <ul className = "sources">
-                    {project.available_trusted_literatures.map(source => (
-                        <li key = {source} className = "source">{ source }</li>
+                    {project.available_trusted_literatures.map((source, index) => (
+                        <li key = {index} className = "source">{ source }</li>
                     ))}
                 </ul>
                 </div>

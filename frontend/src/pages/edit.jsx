@@ -6,10 +6,13 @@ import { useEffect } from "react";
 import Screen404 from "../components/404";
 import AxiosInstance from "../components/AxiosInstance";
 import { useNavigate } from "react-router-dom";
-import { TextStyleKit } from '@tiptap/extension-text-style';
-import { EditorContent, useEditor } from '@tiptap/react';
+import { TextStyle } from '@tiptap/extension-text-style';
+import { EditorContent, useEditor, EditorContext } from '@tiptap/react';
+import { FloatingMenu, BubbleMenu } from '@tiptap/react/menus';
 import StarterKit from '@tiptap/starter-kit';
 import React from 'react';
+import { Markdown } from "tiptap-markdown";
+import { useRef } from "react";
 
 function Edit(){
     // Vars and hooks (getToken is for auth purposes)
@@ -25,7 +28,7 @@ function Edit(){
     const [description, setDescription] = useState(null);
     const [question, setQuestion] = useState(null);
     const [sources, setSources] = useState([]);
-    const [summary, setSummary] = useState(null);
+    const summaryContent = useRef(null);
 
     // Everything below are fields to check that the user editted the data
     const [ogTopic, setOGTopic] = useState(null);
@@ -34,6 +37,13 @@ function Edit(){
     const [ogSources, setOGSources] = useState([]);
     const [ogSummary, setOGSummary] = useState(null);
 
+    const summary = useEditor({
+        extensions: [StarterKit, Markdown],
+        content: "",
+        onUpdate: ({editor}) => {
+            summaryContent.current = editor.storage.markdown.getMarkdown();
+        }
+    });
 
     // Fetching project
     useEffect(() => {
@@ -51,12 +61,12 @@ function Edit(){
                 setDescription(response.data.description);
                 setSources(response.data.available_trusted_literatures);
                 setQuestion(response.data.research_question);
-                setSummary(response.data.summary);
                 setOGTopic(response.data.topic);
                 setOGDescription(response.data.description);
                 setOGSources(response.data.available_trusted_literatures);
                 setOGQuestion(response.data.research_question);
                 setOGSummary(response.data.summary);
+                summaryContent.current = response.data.summary;
             }catch (err){
                 console.log(err);
             }finally {
@@ -65,6 +75,13 @@ function Edit(){
         }
         fetchProject();
     }, [projectID, dependency])
+
+    useEffect(() => {
+        if (summary) {
+            summary.commands.setContent(ogSummary);
+            console.log("1");
+        }
+    }, [ogSummary])
 
     // Function that updates a certain source inside of sources array
     function updateSource(event){
@@ -79,28 +96,31 @@ function Edit(){
         const index = parseInt(event.currentTarget.dataset.index);
         
         // Loop through all sources, and if index is the set one, don't add to array
-        setSources(prev => prev.filter((item, i) => i !== index ));
+        setSources(prev => prev.filter((_, i) => i !== index ));
     }
 
     // submits editted data
-    async function submit(){
+    async function submit(event){
+        event.preventDefault();
         try {
-            setSources(prev => prev.map((item, _) => item.length > 0 && item));
+            const filtered =  sources.filter((item, _) => item.trim().length > 0 && item !== null && item.trim());
             const token = await getToken();
             const response = await AxiosInstance.put(`/api/projects/${projectID}`, {
                     // Using spread operator to only send the said field if the content is not none
-                    ...(topic.length > 0 && topic !== ogTopic && {topic}),
-                    ...(question.length > 0 && question !== ogQuestion &&{"research_question": question}),
-                    ...(description.length > 0 && description !== ogDescription &&{description}),
-                    ...(sources.length > 0 && sources !== ogSources && {sources}),
-                    ...(summary.length > 0 && summary !== ogSummary && {summary})
+                    ...(topic.trim().length > 0 && topic !== ogTopic && {"topic": topic.trim()}),
+                    ...(question.trim().length > 0 && question !== ogQuestion &&{"question": question.trim()}),
+                    ...(description.trim().length > 0 && description !== ogDescription &&{"description": description.trim()}),
+                    ...(filtered.length > 0 && JSON.stringify(filtered) !== JSON.stringify(ogSources) && {"sources": filtered}),
+                    ...(summaryContent.current.trim().length > 0 && summaryContent.current !== ogSummary && {"summary": summaryContent.current.trim()})
                 }, 
                 {headers: {
                     "Authorization": `Bearer ${token}`
                 }}
             );
+            console.log("hi");
+            console.log(response);
         } catch(err) {
-
+            console.log(err);
         } finally {
             navigate(`/projects/${projectID}`);
         }
@@ -113,7 +133,7 @@ function Edit(){
         <>
             <div className = "project">
                 <h1>{ project.topic }</h1>
-                <form className = "create-form">
+                <form className = "create-form" onSubmit={(event) => {submit(event)}}>
                     <div className="mb-3">
                         <input className="topic-control" type = "text" value = {topic} onChange = {(event) => {setTopic(event.currentTarget.value)}}/>
                     </div>
@@ -135,8 +155,11 @@ function Edit(){
                         <button onClick = {() => {setSources(prev => [...prev, ""])}} type = "button">Add Source</button>
                     </div>
                     <div className="mb-3">
-
+                        <EditorContext.Provider value={{ editor: summary }}>
+                            <EditorContent editor={summary} />
+                        </EditorContext.Provider>
                     </div>
+                    <button disabled = {!topic || !description || !question || !sources} className="create-btn" type = "submit">Save Edits</button>
                 </form>
             </div>
         </>
