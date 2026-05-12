@@ -1,18 +1,31 @@
+# Django
 Django>=4.2
-djangorestframework>=3.14
+djangorestframework
 djangorestframework-simplejwt
-
-trafilatura>=1.6
-newspaper3k>=0.2.8
-
-ollama>=0.1.8
-langchain-core>=0.2.0
-langchain-community>=0.2.0
-langchain-text-splitters>=0.2.0
-langchain-ollama>=0.1.0
-
-markdown2>=2.4
-pydantic>=2.0
-django-cors-headers>=4.0
-
+ 
+# LangChain
+langchain
+langchain-ollama
+langchain-community
+langchain-core
+langchain-text-splitters
+ 
+# Ollama
+ollama
+ 
+# Vector store / embeddings
+# (InMemoryVectorStore is part of langchain-core)
+ 
+# Web scraping / metadata
+trafilatura
+ 
+# Markdown
+markdown2
+ 
+# Pydantic (used for model validation)
+pydantic
+ 
+# Clerk authentication
 clerk-backend-api
+
+django-cors-headers

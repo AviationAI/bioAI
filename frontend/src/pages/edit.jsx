@@ -13,6 +13,8 @@ import StarterKit from '@tiptap/starter-kit';
 import React from 'react';
 import { Markdown } from "tiptap-markdown";
 import { useRef } from "react";
+import ToolbarTool from "../components/toolbar";
+import Underline from '@tiptap/extension-underline';
 
 function Edit(){
     // Vars and hooks (getToken is for auth purposes)
@@ -38,7 +40,7 @@ function Edit(){
     const [ogSummary, setOGSummary] = useState(null);
 
     const summary = useEditor({
-        extensions: [StarterKit, Markdown],
+        extensions: [StarterKit, Markdown, Underline],
         content: "",
         onUpdate: ({editor}) => {
             summaryContent.current = editor.storage.markdown.getMarkdown();
@@ -77,6 +79,7 @@ function Edit(){
     }, [projectID, dependency])
 
     useEffect(() => {
+        if (!summary || !ogSummary) return;
         if (summary) {
             summary.commands.setContent(ogSummary);
             console.log("1");
@@ -156,6 +159,7 @@ function Edit(){
                     </div>
                     <div className="mb-3">
                         <EditorContext.Provider value={{ editor: summary }}>
+                            <ToolbarTool editor = {summary}/>
                             <EditorContent editor={summary} />
                         </EditorContext.Provider>
                     </div>
