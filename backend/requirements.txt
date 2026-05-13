@@ -29,3 +29,7 @@ pydantic
 clerk-backend-api
 
 django-cors-headers
+
+tiktoken
+unstructured
+selenium

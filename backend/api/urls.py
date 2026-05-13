@@ -10,6 +10,5 @@ urlpatterns = [
     path('token/', TokenObtainPairView.as_view(), name = 'token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name = 'token_refresh'),
     path('projects/<str:pk>', views.ProjectRetrieveUpdateDestroy.as_view(), name = "project-retrieve-update-destroy"),
-    path('ask', views.RAGviews.as_view(), name = "urlQuestion"),
     path('docs', views.DocListCreate.as_view(), name = "doc-list-create")
 ]
