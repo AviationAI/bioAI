@@ -6,6 +6,7 @@ import Create from "./pages/create";
 import ProjectDetail from "./pages/project";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Edit from "./pages/edit";
+import Source from "./pages/overview";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path = "/projects/:projectID" element = {<ProjectDetail/>}></Route>
         <Route path = "/projects/:projectID/edit" element = {<Edit/>}></Route>
         <Route path = "/create" element = {<SignedIn><Create/></SignedIn>}></Route>
+        <Route path = "/source/:projectID" element = {<Source/>}> </Route>
       </Routes>
     </div>
     </BrowserRouter>

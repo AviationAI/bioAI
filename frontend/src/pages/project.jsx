@@ -8,17 +8,15 @@ import ReactMarkdown from 'react-markdown';
 import Overlay from "../components/overlay";
 import InputTags from "../components/inputTags";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 function ProjectDetail(){
 
     // Setting state variables
     const [content, setContent] = useState(null);
     const [isOverlayOpen, setIsOverlayOpen] = useState(false);
-    const [isSourceCredLoading, setIsSourceCredLoading] = useState(false);
     const [ greenPercent, setGreenPercent ] = useState(0);
     const [ redPercent, setRedPercent ] = useState(0);
-    const [isSourceOverlayOpen, setIsSourceOverlayOpen ] = useState(false);
-    const [isSourceLoading, setIsSourceLoading] = useState(false);
     const [loading, setLoading] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
     const { projectID } = useParams();
@@ -34,6 +32,8 @@ function ProjectDetail(){
     const [question, setQuestion] = useState("");
     const [credibilityResponse, setCredibilityResponse] = useState("");
     const [questionResponse, setQuestionResponse] = useState("");
+    const navigate = useNavigate();
+    
 
 
     // handleChange handles the change of the dropdowns relating to the people currently shared in the project, and makes sure that the value is not different to the value it originally was
@@ -97,60 +97,13 @@ function ProjectDetail(){
         }
     }
 
+    // Navigating to source page
     async function handleSourceInitializationSubmit(event){
         event.preventDefault();
-        if (url.trim().length > 0 ){
-            setIsSourceCredLoading(true);
-            try{
-                const token = await getToken();
-                const response = await AxiosInstance.post("/api/ask", {
-                    "url": url
-                }, {
-                    headers: {
-                        "Authorization": `Bearer ${token}`
-                    }
-                });
-                const data = JSON.parse(response.data);
-                const total = data.total;
-                setIsSourceOverlayOpen(true);
-                setCredibilityResponse(data);
-                setURL("");
-                if (total > 50){
-                    setGreenPercent(255 * (total/100) ** 2);
-                    console.log(255 * (total/100) ** 2);
-                    setRedPercent(255 * (1-(total/100) ** 2));
-                    console.log(255 * (1-(total/100) ** 2));
-                }else{
-                    setRedPercent(255);
-                    setGreenPercent(0);
-                }
-            }catch (err){
-                console.log(err);
-            }finally {
-                setIsSourceCredLoading(false);
-            }
-        }
+        navigate(`/source/${projectID}?url=` + encodeURIComponent(url));
     }
 
-    async function handleQuestionSubmit(event){
-        event.preventDefault();
-        if(question.trim().length > 0){
-            try{
-                const token = await getToken();
-                const response = await AxiosInstance.post("/api/ask", {
-                    "question": question
-                }, {
-                    headers: {
-                        "Authorization": `Bearer ${token}`
-                    }
-                })
-                setQuestionResponse(response.data);
-                setQuestion("");
-            }catch (err){
-                console.log(err);
-            }
-        }
-    }
+    
 
     useEffect(() => {
         async function fetchProject(){
@@ -177,29 +130,6 @@ function ProjectDetail(){
         <>
         { (project !== null) ? (
         <div className="project"> 
-            {/*isOverlayOpen is connected to isOpen, so any change of its state toggles the overlay*/}
-        <Overlay loading = {isSourceLoading} isOpen = {isSourceOverlayOpen} onClose = {() => {setIsSourceOverlayOpen(false)}}>
-            {credibilityResponse &&
-            <div className = "sourceOverview">
-                <h2>Credibility</h2>
-                <h3 style = {{color: `rgb(${redPercent}, ${greenPercent}, 0)` }}>{credibilityResponse.total}/100</h3>
-                <strong>Authority Score: {credibilityResponse.authority_score}/30</strong>
-                <strong>Accuracy Score: {credibilityResponse.accuracy_score}/25</strong>
-                <strong>Timeliness Score: {credibilityResponse.timeliness_score}/20</strong>
-                <strong>Purpose Score: {credibilityResponse.purpose_score}/25</strong><br/>
-                <h4>Ask question</h4>
-                <div className = "response">
-                    <ReactMarkdown>{ questionResponse }</ReactMarkdown>
-                </div>
-                <form onSubmit = {handleQuestionSubmit}>
-                    <div className="mb-3">
-                        <textarea placeholder = "Ask question on source"onChange = {(event) => {setQuestion(event.currentTarget.value)}}></textarea>
-                    </div>
-                    <button type = "submit" className = "friendlySubmitButton">Ask</button>
-                </form>
-            </div>
-            }
-        </Overlay>
         {userId === project.user.id &&
             <Overlay loading = {isLoading} isOpen = {isOverlayOpen} onClose = {() => {setIsOverlayOpen(false)}}>
                 <h2>Share</h2>
@@ -293,7 +223,6 @@ function ProjectDetail(){
                     <div>
                     </div>
                     <form onSubmit = {handleSourceInitializationSubmit}>
-                        <Loader loading = {isSourceCredLoading}/>
                         <div className="mb-3">
                             <input value = {url} onChange = {(event) => {setURL(event.currentTarget.value)}} className = "midInput" placeholder="Enter URL to get credibility"/>
                             <div className="form-text">Procceed at your own risk. By submitting this form you acknowledge that we have no legal liabilites regarding your web scraping request.</div>
