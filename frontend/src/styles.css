@@ -363,15 +363,6 @@
     flex-direction: column;
 }
 
-.chatlog {
-    padding: 10px;
-    overflow-y: auto;
-    font-size:  12px;
-    position: relative;     
-    max-width: 100vw;
-    max-height: 75vh;
-}
-
 .WYSIWYG-top {
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
@@ -458,11 +449,40 @@
   justify-content: center;
   background: lightblue;
   box-sizing: border-box;
-  border: 1px solid white;
 }
 
 .red_list {
     background-color: rgba(216, 42, 42, 0.7);
     border-radius: 10px;
     width: 50%;
+    text-align: center;
+}
+
+.sr-group {
+    display: flex;
+    flex-direction: column;
+    width: 90vw;
+    padding: 20px;
+    overflow-y: auto;
+    position: relative;     
+    max-width: 100vw;
+    max-height: 75vh;
+}
+
+.response-source {
+    padding: 15px;
+    align-self: flex-end;
+    max-width: 50vw;
+    max-height: 35vw;
+    background-color: #e0dcdc;
+    border-radius: 20px;
+}
+
+.question-source {
+    padding: 15px;
+    max-height: 35vw;
+    align-self: flex-start;
+    max-width: 50vw;
+    background-color: #c7c7c7;
+    border-radius: 20px;
 }

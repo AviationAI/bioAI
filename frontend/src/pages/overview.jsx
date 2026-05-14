@@ -35,6 +35,8 @@ function Source(){
 
     const [chatlogs, setChatlogs] = useState([]);
 
+    const [sessionID, setSessionID] = useState(null);
+
     const centerTextPlugin = {
         id: 'centerText',
         beforeDraw(chart) {
@@ -79,6 +81,7 @@ function Source(){
                 setSourceResponse(data);
                 console.log(data.scores.total, data.scores);
                 setLoading(false);
+                setSessionID(data.session_id);
             } catch (err) {
                 console.log(err)
                 return (<p>Server Error.</p>);  
@@ -92,10 +95,13 @@ function Source(){
         event.preventDefault();
         if(question.trim().length > 0){
             try{
+                const q = question;
+                setQuestion("");
                 setResponseLoading(true);
                 const token = await getToken();
                 const response = await AxiosInstance.post("/rag_api/ask", {
-                    "question": question
+                    "question": q,
+                    "session_id": sessionID
                 }, {
                     headers: {
                         "Authorization": `Bearer ${token}`
@@ -103,8 +109,7 @@ function Source(){
                 })
                 setQuestionResponse(response.data.response);
                 console.log(response.data.response);
-                setChatlogs([...chatlogs, [question, response.data.response]]);
-                setQuestion("");
+                setChatlogs([...chatlogs, [q, response.data.response]]);
             }catch (err){
                 console.log(err);
             } finally {
@@ -117,6 +122,8 @@ function Source(){
         try {
             const token = await getToken();
             const response = await AxiosInstance.delete("/rag_api/ask", {
+                "session_id": sessionID
+            }, {
                 headers: {
                     "Authorization": `Bearer ${token}`
                 }
@@ -237,14 +244,23 @@ function Source(){
             </div><br/>
             <h2>Ask Question About Source</h2>
             <div classname = "chatlog">
-                {questionResponse}
+                { chatlogs.map((item, index) => (
+                    <div className = "sr-group" key = {index}>
+                        <div className = "response-source">
+                            {item[0]}
+                        </div>
+                        <div className = "question-source">
+                            {item[1]}
+                        </div>
+                    </div>
+                ))}
                 <Loader loading = {responseLoading}/>
             </div>
             <form>
                 <div className = "mb-3">
-                    <textarea placeholder="Ask question..." className = "description-control" onChange = {(event) => {setQuestion(event.currentTarget.value)}} value = {question}/>
+                    <textarea disabled = {responseLoading} placeholder="Ask question..." className = "description-control" onChange = {(event) => {setQuestion(event.currentTarget.value)}} value = {question}/>
                 </div>
-                <button type = "submit" onClick = {handleQuestionSubmit}>Ask</button>
+                <button disabled = {responseLoading}type = "submit" onClick = {handleQuestionSubmit}>Ask</button>
             </form>        
             <button type = "button" className = "btn btn-danger" onClick={handleBack}>Go back</button>
         </div>
