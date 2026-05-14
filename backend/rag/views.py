@@ -8,25 +8,63 @@ from langchain_community.document_loaders import SeleniumURLLoader
 from langchain_ollama import ChatOllama
 from langchain_ollama import OllamaEmbeddings
 from langchain_core.vectorstores import InMemoryVectorStore
+from langchain_core.runnables.history import RunnableWithMessageHistory
+from langchain_core.chat_history import InMemoryChatMessageHistory
+from langchain_core.messages import trim_messages
+from langchain_core.messages import BaseMessage, AIMessage
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 import datetime
 import certifi
 import ssl
 import re
 import uuid
 from rest_framework.permissions import IsAuthenticated
-from .utils.backends import ExpiringVectorStore
-from .utils.apiconfig import VECTOR_STORAGES
+from .utils.backends import ExpiringVectorStore, get_session
+from .utils.apiconfig import VECTOR_STORAGES, SESSIONS
 
 
 ssl._create_default_https_context = lambda: ssl.create_default_context(cafile=certifi.where())
 
 # Initiating models for faster response times
 model = ChatOllama(
-    model = "mistral",
+    model = "mistral:latest",
     temperature = 0,
     top_p = 1,
     num_predict=512, 
     repeat_penalty=1.1
+)
+
+chat_model = ChatOllama(
+    model = "mistral:latest",
+    temperature = 0.3,
+    top_p = 0.4,
+    num_predict=512, 
+    repeat_penalty=1.1
+)
+prompt = ChatPromptTemplate.from_messages(
+    [
+        ("system", "You are an assistant who is good at {ability}"),
+        (MessagesPlaceholder(variable_name="history")),
+        ("human", """
+                Context related to user's question:
+                <context>
+                    {content}
+                </context> 
+                Question that user is asking:
+                <question>
+                    {question}
+                </question>
+        """)
+    ]
+)
+
+chain = prompt | chat_model
+
+chain_with_history = RunnableWithMessageHistory(
+    chain,
+    get_session,
+    input_messages_key="question",
+    history_messages_key="history"
 )
 
 model.invoke("Hello World!")
@@ -51,13 +89,15 @@ class EvaluateSource(APIView):
         data = request.data
         question = data.get("question", None)
         url = data.get("url", None)
-        id = f"{request.user.id}_sources"
         if url and not question:
+            id = uuid.uuid4()
+            print(id)
             current1 = datetime.datetime.now()
             data = request.data
             url = data.get("url", False)
             print(url)
             VECTOR_STORAGES[id] = InMemoryVectorStore(embedding=embeddings)
+            print(VECTOR_STORAGES[id])
             vector_store = VECTOR_STORAGES[id]
             ExpiringVectorStore(id, 600)
             # If the url is invalid or false, then return 400 status
@@ -287,9 +327,23 @@ class EvaluateSource(APIView):
                     }}
 
                 For the "claims" field:
-                    Add all claims states in the text that are not mentioned under red flags
-                    Do NOT use any text with quotation marks in the source (ie ""Hello!" John said.")
-                    You MUST include an exact phrase from the source
+                    A claim is a complete, assertive statement where the author asserts something is true.
+                    It must be a full sentence or independent clause — NOT a fragment, title, or phrase.
+                    
+                    Rules:
+                    - ONLY extract claims that are complete sentences asserting a fact or position
+                    - The sentence must stand alone and be understandable without surrounding context
+                    - Do NOT extract: titles, headings, bibliography entries, reference names, 
+                    partial phrases, or fragments
+                    - Do NOT extract any phrase that contains quotation marks within the source text
+                    - Do NOT include claims already listed under red_flags
+                    - You are FORBIDDEN from including semantically identical or near-identical 
+                    claims, even if phrased differently
+                    - If no clear claims exist in the text, return an empty list
+
+                    Good example: "Studies show that X treatment reduced symptoms by 40% in clinical trials"
+                    Bad example: "X treatment and symptoms" (fragment — not a claim)
+                    Bad example: "Loop-mediated isothermal amplification (LAMP)" (title — not a claim)
 
                 Output format:
                     {{
@@ -315,7 +369,7 @@ class EvaluateSource(APIView):
                 Do NOT include any part of the instructions in your response
 
                 **Important**
-                Before outputting your response, review it to make sure it satisfies the guidelines above
+                Before outputting your response, check over it again, making edits as necessary, to make sure it satisfies the guidelines above
             """
 
             # Validating response after invoking model
@@ -328,23 +382,23 @@ class EvaluateSource(APIView):
             print(datetime.datetime.now() - current1)
 
             vector_store = None
-            return Response({"scores": final_scores, "other": final_other}, status = status.HTTP_200_OK)
+            return Response({"scores": final_scores, "other": final_other, "session_id": id}, status = status.HTTP_200_OK)
         
         # If just question, ask question about source
         elif not url and question:
 
-            # Check if Vector Storage still exists
-            try:
-                vector_storage = VECTOR_STORAGES[id]
-            except:
-                return Response({"message": "Session timed out."}, status = status.HTTP_401_UNAUTHORIZED)
+            # Typecasting string to uuid format
+            vector_id = uuid.UUID(data.get("session_id"))
+            vector_storage = VECTOR_STORAGES[vector_id]
             
             # Ask the question with context
             retriever = vector_storage.as_retriever()
-            answerdocs = retriever.invoke(f"Retrieve only the chunks that will help answer the following question: {question}")
+            answerdocs = retriever.invoke(f"Retrieve all of the chunks that will help answer the following question: {question}")
             docs_content = "\n\n".join(doc.page_content for doc in answerdocs)
-            answer_prompt = f"Context = {docs_content} Question = {question}"
-            response = model.invoke(answer_prompt)
+            response = chain_with_history.invoke(
+                {"ability": "understanding and properly retrieving information from sources to answer questions.", "question": question, "content": docs_content},
+                config = {"configurable": {"session_id": vector_id}}
+            )
 
             return Response({"response": response.content}, status = status.HTTP_200_OK)
         else:
@@ -353,12 +407,12 @@ class EvaluateSource(APIView):
     # Delete the Vector Storage
     def delete(self, request):
 
-        user = request.user
-
-        id = f"{user.id}_sources" 
+        id = uuid.UUID(request.data.get("session_id"))
 
         if id in VECTOR_STORAGES:
             del VECTOR_STORAGES[id]
 
-        return Response(status=status.HTTP_200_OK)
+        if id in SESSIONS:
+            del SESSIONS[id]
 
+        return Response(status=status.HTTP_200_OK)
