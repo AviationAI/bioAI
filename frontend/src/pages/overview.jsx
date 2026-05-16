@@ -69,6 +69,7 @@ function Source(){
     useEffect(() => {
         async function fetch_source (){
             try {
+                console.log(url)
                 const token = await getToken();
                 const response = await AxiosInstance.post("/rag_api/ask", {
                     "url": url

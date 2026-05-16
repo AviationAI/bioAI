@@ -3,6 +3,16 @@
 
 ## Version: 0.9.1
 
+
+## Requirements to use (Docker)
+   - Ollama on machine
+   - Ollama can be accessed by all ports (0.0.0.0) instead of just local
+   - Ollama has the following models:
+      * Mistral:7b
+      * Llama3.2:3b
+      * Nomic Embed Text
+   - Ollama on local port 11434
+
 ```
 bioAI
 ├─ README.md

@@ -9,8 +9,24 @@ services:
       - .:/usr/src/bioAI/backend
     ports:
       - 8000:8000
-  ollama:
-    image: ollama/ollama:latest
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - PYTHONUNBUFFERED=1
+  redis:
+    image: docker.io/valkey/valkey:8-alpine
+    command: valkey-server --save 30 1 --loglevel warning
+  chrome:
+    image: selenium/standalone-chrome:latest
     ports:
-      - "11434:11434"
-
+      - "4444:4444"
+      - "7900:7900"
+    shm_size: '2gb'
+  searxng:
+    image: docker.io/searxng/searxng:latest
+    ports:
+      - "8080:8080"  # exposed to your host machine
+    volumes:
+      - ./searxng:/etc/searxng:rw
+    depends_on:
+      - redis

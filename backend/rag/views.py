@@ -19,19 +19,21 @@ import ssl
 import re
 import uuid
 from rest_framework.permissions import IsAuthenticated
-from .utils.backends import ExpiringVectorStore, get_session
+from .utils.backends import ExpiringVectorStore, get_session, CustomSeleniumURLLoader
 from .utils.apiconfig import VECTOR_STORAGES, SESSIONS
-
+from bioAI.settings import OLLAMA_BASE_URL, CHROME_DOCKER
 
 ssl._create_default_https_context = lambda: ssl.create_default_context(cafile=certifi.where())
 
+print("HI")
 # Initiating models for faster response times
 model = ChatOllama(
     model = "mistral:latest",
     temperature = 0,
     top_p = 1,
     num_predict=512, 
-    repeat_penalty=1.1
+    repeat_penalty=1.1,
+    base_url = OLLAMA_BASE_URL
 )
 
 chat_model = ChatOllama(
@@ -39,7 +41,8 @@ chat_model = ChatOllama(
     temperature = 0.3,
     top_p = 0.4,
     num_predict=512, 
-    repeat_penalty=1.1
+    repeat_penalty=1.1,
+    base_url = OLLAMA_BASE_URL
 )
 prompt = ChatPromptTemplate.from_messages(
     [
@@ -67,10 +70,10 @@ chain_with_history = RunnableWithMessageHistory(
     history_messages_key="history"
 )
 
-model.invoke("Hello World!")
 
 embeddings = OllamaEmbeddings(
-    model="nomic-embed-text"
+    model="nomic-embed-text",
+    base_url = OLLAMA_BASE_URL
 )
 
 # Setting up text splitter for faster response times
@@ -89,39 +92,33 @@ class EvaluateSource(APIView):
         data = request.data
         question = data.get("question", None)
         url = data.get("url", None)
+        print(data)
+        print("HI")
         if url and not question:
             id = uuid.uuid4()
-            print(id)
             current1 = datetime.datetime.now()
             data = request.data
             url = data.get("url", False)
-            print(url)
             VECTOR_STORAGES[id] = InMemoryVectorStore(embedding=embeddings)
-            print(VECTOR_STORAGES[id])
             vector_store = VECTOR_STORAGES[id]
             ExpiringVectorStore(id, 600)
             # If the url is invalid or false, then return 400 status
             try:
-                loader = SeleniumURLLoader(
-                        urls = [url],
-                        headless = True
-                    )
+                loader = CustomSeleniumURLLoader(
+                    urls = [url]
+                )
                 docs = loader.load()
             except Exception as e:
                 print(e)
                 return Response({"message": "Invalid URL"}, status=status.HTTP_400_BAD_REQUEST)
-            print(datetime.datetime.now() - current1)
 
             # Splitting docs, then joining back in chunks
             split_docs = text_splitter.split_documents(docs)
-            print(datetime.datetime.now() - current1)
             vector_store.add_documents(split_docs)
 
             retriever_general = vector_store.as_retriever(search_kwargs = {"k": 12})
 
             retriever_precise = vector_store.as_retriever(search_kwargs = {"k": 7})
-
-            print(datetime.datetime.now() - current1)
 
             cred_response = retriever_precise.invoke("""
                 Author name, author credentials, author biography, author expertise.
@@ -139,7 +136,6 @@ class EvaluateSource(APIView):
                 Conspiracy language, suppression of information, cover-up claims.
                 Celebrity endorsements, vague expert references, unnamed studies or scientists.
             """)
-            print(datetime.datetime.now() - current1)
             content = "\n\n".join([doc.page_content for doc in cred_response])
             # Creating example format
             example_rating = Rating_Source( 

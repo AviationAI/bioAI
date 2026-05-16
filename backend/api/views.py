@@ -25,13 +25,16 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from .permissions import IsOwner, IsEditor, IsViewer
 from rest_framework import status
+from bioAI.settings import OLLAMA_BASE_URL
 
 # Create your views here.
 markdowner = Markdown()
-chat = ChatOllama(model = "bioResearchBuddy")
-sourceChat = ChatOllama(model = "bioSourceBuddy")
-embeddings = OllamaEmbeddings(model = "nomic-embed-text")
-text_splitter = RecursiveCharacterTextSplitter(chunk_size = 1250, chunk_overlap = 250)
+chat = ChatOllama(
+    model = "llama3.2:3b",
+    temperature = 0.3,
+    top_p = 0.4,
+    base_url=OLLAMA_BASE_URL
+)
 
 
 class ProjectListCreate(generics.ListCreateAPIView):

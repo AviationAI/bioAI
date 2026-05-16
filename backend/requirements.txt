@@ -33,3 +33,10 @@ django-cors-headers
 tiktoken
 unstructured
 selenium
+webdriver-manager
+beautifulsoup4
+lxml
+requests
+
+# Postgres dependencies
+psycopg2-binary
