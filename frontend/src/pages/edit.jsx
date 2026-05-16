@@ -91,7 +91,11 @@ function Edit(){
         const elm = event.currentTarget;
         const index = parseInt(elm.dataset.index);
         // Loops through all sources, and if index is the one we want to update, sets it to new value, otherwise sets it to the item in list
-        setSources(prev => prev.map((item, i) => i === index ? elm.value : item));
+        if (elm.dataset.url === true) {
+            setSources(prev => prev.map((item, i) => i === index ? [item[0], elm.value] : item));
+        } else {
+            setSources(prev => prev.map((item, i) => i === index ? [elm.value, item[1]] : item));
+        }
     }
     
     // Funciton that removes a source from the array and from sources list
@@ -150,7 +154,8 @@ function Edit(){
                         {sources.map((source, index) => (
                             <div key = {index}className = "source-group">
                                 <div className="mb-3">
-                                    <input placeholder="Type a Source" data-index = {index} className = "topic-control" type = "text" value = {source} onChange = {(event) => {updateSource(event)}}/>
+                                    <input data-url = {false} placeholder="Type a Source Title" data-index = {index} className = "topic-control" type = "text" value = {source[0]} onChange = {(event) => {updateSource(event)}}/>
+                                    <input data-url = {true} placeholder = "Type a Source UR:" data-index = {index} className = "topic-control" type = "text" value = {source[1]} onChange = {(event) => {updateSource(event)}}/>
                                 </div>
                                 <button data-index = {index} type = "button" onClick = {(event) => {removeSource(event)}} className = "remove-btn">Remove</button>
                             </div>

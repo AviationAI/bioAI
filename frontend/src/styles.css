@@ -262,9 +262,10 @@
 }
 
 .access-select {
+    color: black;
+    background-color: white;
     float: right;
     cursor: pointer;
-    background-color: white;
     border-width: 0px;
     width: fit-content;
     border-radius: 5px;
@@ -390,6 +391,7 @@
 }
 
 .remove-btn {
+    align-self: center;
     padding: 5px;
     width: 75px;
     height: 50px;

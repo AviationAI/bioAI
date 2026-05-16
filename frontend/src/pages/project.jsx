@@ -30,8 +30,6 @@ function ProjectDetail(){
     const [dependency, setDependency] = useState(true);
     const [url, setURL] = useState("");
     const [question, setQuestion] = useState("");
-    const [credibilityResponse, setCredibilityResponse] = useState("");
-    const [questionResponse, setQuestionResponse] = useState("");
     const navigate = useNavigate();
     
 
@@ -214,7 +212,7 @@ function ProjectDetail(){
                 <h3 className = "">Sources</h3>
                 <ul className = "sources">
                     {project.available_trusted_literatures.map((source, index) => (
-                        <li key = {index} className = "source">{ source }</li>
+                        <li key = {index} className = "source"><p><b>{ source[0] }</b>, { source[1] }</p></li>
                     ))}
                 </ul>
                 </div>

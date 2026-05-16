@@ -165,7 +165,8 @@ CORS_ALLOW_HEADERS = [
     "user-agent",
     "x-csrftoken", 
     "x-requested-with",
-    "access-control-allow-credentials"
+    "access-control-allow-credentials",
+    "Type"
 ]
 
 CLERK_API_SECRET_KEY = os.getenv("CLERK_SECRET_KEY")
@@ -184,3 +185,5 @@ REST_FRAMEWORK = {
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 
 CHROME_DOCKER = os.getenv("CHROME_URL")
+
+SEARXNG_URL = os.getenv("SEARX_URL")

@@ -25,7 +25,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from .permissions import IsOwner, IsEditor, IsViewer
 from rest_framework import status
-from bioAI.settings import OLLAMA_BASE_URL
+from bioAI.settings import OLLAMA_BASE_URL, SEARXNG_URL
+from langchain_community.utilities import SearxSearchWrapper
 
 # Create your views here.
 markdowner = Markdown()
@@ -36,6 +37,7 @@ chat = ChatOllama(
     base_url=OLLAMA_BASE_URL
 )
 
+search = SearxSearchWrapper(searx_host = SEARXNG_URL)
 
 class ProjectListCreate(generics.ListCreateAPIView):
     serializer_class = ProjectBackendSerializer
@@ -48,6 +50,7 @@ class ProjectListCreate(generics.ListCreateAPIView):
         user = request.user
         owned = Project.objects.filter(user = user)
         type = request.headers.get("Type", "owned")
+        print(type)
 
         # Shared queryset is all projects shared with the user
         shared = Project.objects.filter(editors__in = [user]) | Project.objects.filter(viewers__in = [user])
@@ -62,82 +65,13 @@ class ProjectListCreate(generics.ListCreateAPIView):
         description = self.request.data.get("description")
         rq = self.request.data.get("research_question")
 
-        example_steps = AIGeneratedResearchSteps(
-            available_trusted_literatures=[
-                "Example Institution",
-                "Example Government",
-                "Example Organization",
-                "Example College",
-            ]
-        )
-        print (example_steps.model_dump_json())
-        ai_prompt = f"""
-            You are an AI scientific research assistant. Your task is to generate structured steps toward conducting a scientific research study.
-            The topic of the study is the following:
+        # Using SearXNG (localhosted) to search for sources based on the research question and topic
+        search_results = search.results(rq, num_results = 10, engines = [ "duckduckgo", "wikipedia"])
+        search_results2 = search.results(title, num_results = 10, engines = [ "duckduckgo", "wikipedia"])
+        sources = [[source["title"], source["link"]] for source in search_results]
+        sources.extend([[source["title"], source["link"]] for source in search_results2])
 
-            <study_topic>
-                {title}
-            </study_topic>
-
-            The research questiont that the study is aiming to answer is the folowing. Use the research question and the description as the main guide for the following steps.: 
-
-            <study_research_question>
-                { rq }
-            </study_research_question>
-
-            The description of the study is the following. Use the research question and the description as the main guide for the following steps.: 
-
-            <study_description>
-                {description}
-            </study_description>
-
-
-            The following example is the exact format your response should follow:
-            {example_steps.model_dump_json()}
-
-            Instructions for the content of your response: 
-            Available trustworthy literature: Find detailed and trustworthy sources/literatures towards the topic of the study. ONLY use real, existing sources. DO NOT invent sources. If all sources cannot be verified as real, write "NO TRUSTWORTHY SOURCES" instead. They should follow the following criteria:
-                a. Lack of bias (Bad source example: Oil company for the topic of climate change)
-                b. The source has a good online reputation for factual data
-                c. The source is recommended to be .edu .gov or .org, however .com is fine if the source follows all other criteria
-                d: The source is relevant towards the topic of the study
-                e: ONLY use real, existing sources. DO NOT invent URLs, DOIs, or articles. If all sources cannot be verified as real, write "NO TRUSTWORTHY SOURCES" instead.
-
-            
-
-            Do NOT respond with ``` or ```` or any other code fenced in your JSON response
-            Your response should be clean JSON, meant to be parsed as so
-            Your response should be structured exactly as the example given, but with different, reale, and valid values that follow parameters in the given instructions
-            Do NOT use ' (single quotation marks) instead use " (double quotation marks)
-            Do NOT use Python Dict format
-            Output must be valid JSON.
-            Do NOT include explanations, code fences, or any text outside the JSON object.
-            Use strings instead of python objects 
-            Do NOT use "=", instead use ":" (unless it is part of your url)
-            ALL OF YOUR JSON OBJECT SHOULD BE INSIDE OF TWO CURLY BRACES 
-            Your response should only include ONE field (available_trusted_literatures) and no extra fields
-            Your response should be ONE JSON object with ONE key (available_trusted_literatures) containing an ARRAY of source strings.
-            No symbols, letters, or numbers should be outside of the JSON object; Everything must be contained inside of it.
-        """
-        messages = [
-            HumanMessage(content = ai_prompt)
-        ]
-
-        response = chat.invoke(messages)
-        steps = response.content
-
-        if not steps.endswith("}"):
-            steps = steps.split("}")[0]
-            steps = steps + "}"
-
-        if not steps.startswith("{"):
-            steps = steps.split("{")[1]
-            steps = "{" + steps
-            
-        print(steps)
-        validated_steps = AIGeneratedResearchSteps.model_validate_json(steps)
-        print(validated_steps.model_dump_json())
-
+        print(sources)
         ai_prompt2 = f"""
             You are an AI scientific research assistant. After researching instensively about a scientific topic based on the study's topic, research question, and description, your job is to summarize all the information you have found.
             The topic of the study is the following:
@@ -162,7 +96,7 @@ class ProjectListCreate(generics.ListCreateAPIView):
             You may use the following sources:
 
             <study_sources>
-                {response}
+                {sources}
             </study_sources>
 
             Criteria:
@@ -184,8 +118,6 @@ class ProjectListCreate(generics.ListCreateAPIView):
         response = chat.invoke(messages2)
         
         summary = response.content
-        sources = json.loads(validated_steps.model_dump_json())["available_trusted_literatures"]
-
         
         serializer.save(
             user = self.request.user,

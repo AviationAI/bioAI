@@ -21,11 +21,12 @@ import uuid
 from rest_framework.permissions import IsAuthenticated
 from .utils.backends import ExpiringVectorStore, get_session, CustomSeleniumURLLoader
 from .utils.apiconfig import VECTOR_STORAGES, SESSIONS
-from bioAI.settings import OLLAMA_BASE_URL, CHROME_DOCKER
+from bioAI.settings import OLLAMA_BASE_URL, CHROME_DOCKER, SEARXNG_URL
+from langchain_community.utilities import SearxSearchWrapper
+
 
 ssl._create_default_https_context = lambda: ssl.create_default_context(cafile=certifi.where())
 
-print("HI")
 # Initiating models for faster response times
 model = ChatOllama(
     model = "mistral:latest",
@@ -81,6 +82,7 @@ text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
     chunk_size=1000 , chunk_overlap=100
 )
 
+search = SearxSearchWrapper(searx_host = SEARXNG_URL)
 
 # Evaluates Source
 class EvaluateSource(APIView):

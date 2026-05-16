@@ -16,7 +16,8 @@ function Home(){
                 const token = await getToken();
                 const response = await AxiosInstance.get('/api/projects',{
                     headers: {
-                    Authorization: `Bearer ${token}`
+                    Authorization: `Bearer ${token}`,
+                    Type: "all"
                 }
                 });
                 console.log('API Response:', response.data);
