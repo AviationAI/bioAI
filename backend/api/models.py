@@ -47,6 +47,7 @@ class Project(models.Model):
     summary = models.CharField()
     research_question = models.CharField()
     thesis = models.CharField(blank = True)
+    literature_summarized = models.CharField(blank = True)
     editors = models.ManyToManyField(User, related_name="editable_projects", blank = True)
     viewers = models.ManyToManyField(User, related_name="viewable_projects", blank = True)
 
@@ -70,6 +71,6 @@ class Doc(models.Model):
     name = models.CharField()
     content = models.TextField()
     project = models.ForeignKey(Project, blank = True, null = True, on_delete = models.CASCADE, related_name="documents")
-
+    
     def __str__(self):
         return f"{self.name}: Made by {self.user}, Project: {self.project}"

@@ -19,6 +19,7 @@ function ProjectDetail(){
     const [ redPercent, setRedPercent ] = useState(0);
     const [loading, setLoading] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
+    const [ litSummaryLoading, setLitSummaryLoading] = useState(false);
     const { projectID } = useParams();
     const { getToken, userId } = useAuth();
     const [project, setProject] = useState(null);
@@ -101,6 +102,23 @@ function ProjectDetail(){
         navigate(`/source/${projectID}?url=` + encodeURIComponent(url));
     }
 
+    // Sending request to RAG API to generate the summary
+    async function generateSummary(event) {
+        setLitSummaryLoading(true);
+        try {
+            const token = await getToken();
+            const response = await AxiosInstance.post(`/rag_api/summarize/${projectID}`,{}, {
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+            setProject({...project, literature_summarized: response.data.summary})
+        } catch (err){
+            console.log(err);
+        } finally {
+            setLitSummaryLoading(false);
+        }
+    }
     
 
     useEffect(() => {
@@ -232,6 +250,22 @@ function ProjectDetail(){
             <div>
                 <h3 className="centeredText">Summary</h3>
                 <ReactMarkdown>{ project.summary }</ReactMarkdown>
+            </div>
+            <div>
+                <h3 className = "centeredText">Literatures Summarized</h3>
+                <Loader loading = {litSummaryLoading}/> <br/>
+                {project.literature_summarized ?(
+                    <>
+                        <ReactMarkdown>{ project.literature_summarized }</ReactMarkdown>
+                        <button disabled = {litSummaryLoading} type = "button" onClick = {generateSummary}>Regenerate Summary</button>
+                    </>        
+                ):(
+                    project.user.id === userId ?(
+                        <button disabled = {litSummaryLoading} type = "button" onClick = {generateSummary}>Generate Summary</button>
+                    ):(
+                        <p>You must own this project to generate the literature summary.</p>
+                    )
+                )}
             </div>
         </div>
         ):(

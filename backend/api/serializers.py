@@ -14,6 +14,7 @@ class ProjectFrontendSerializer(serializers.ModelSerializer):
     editors = UserSerializer(many = True, required=False)
     viewers = UserSerializer(many = True, required=False)
     user = UserSerializer()
+    literature_sumarized = serializers.CharField(allow_blank = True, required = False)
 
     class Meta:
         model = Project
@@ -26,6 +27,7 @@ class ProjectBackendSerializer(serializers.ModelSerializer):
     research_question = serializers.CharField()
     editors = serializers.PrimaryKeyRelatedField(many = True, queryset = User.objects.all(), required = False)
     viewers = serializers.PrimaryKeyRelatedField(many = True, queryset = User.objects.all(), required = False)
+    literature_sumarized = serializers.CharField(allow_blank = True, required = False)
 
     class Meta:
         model = Project

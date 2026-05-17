@@ -23,7 +23,10 @@ from .utils.backends import ExpiringVectorStore, get_session, CustomSeleniumURLL
 from .utils.apiconfig import VECTOR_STORAGES, SESSIONS
 from bioAI.settings import OLLAMA_BASE_URL, CHROME_DOCKER, SEARXNG_URL
 from langchain_community.utilities import SearxSearchWrapper
-
+from rest_framework.generics import GenericAPIView
+from api.models import Project
+from api.serializers import ProjectBackendSerializer
+from api.permissions import IsOwner
 
 ssl._create_default_https_context = lambda: ssl.create_default_context(cafile=certifi.where())
 
@@ -37,12 +40,17 @@ model = ChatOllama(
     base_url = OLLAMA_BASE_URL
 )
 
+summary_model = ChatOllama(
+    model = "llama3.2:3b",
+    temperature = 0.3,
+    top_p = 0.9,
+    base_url = OLLAMA_BASE_URL
+)
+
 chat_model = ChatOllama(
     model = "mistral:latest",
-    temperature = 0.3,
-    top_p = 0.4,
-    num_predict=512, 
-    repeat_penalty=1.1,
+    temperature = 0.4,
+    top_p = 0.9,
     base_url = OLLAMA_BASE_URL
 )
 prompt = ChatPromptTemplate.from_messages(
@@ -414,3 +422,134 @@ class EvaluateSource(APIView):
             del SESSIONS[id]
 
         return Response(status=status.HTTP_200_OK)
+    
+
+class SummarizeSources(GenericAPIView):
+
+    queryset = Project.objects.all()
+    serializer_class = ProjectBackendSerializer
+    permission_classes = [IsOwner]
+
+    def post(self, *args, **kwargs):
+        start = datetime.datetime.now()
+
+        project = self.get_object()
+
+        
+        # Getting the project detalis
+        sources = project.available_trusted_literatures
+        topic = project.topic
+        rq = project.research_question
+
+        # Extracting urls from every source
+        urls = [source[1] for source in sources]
+
+        # Initializing Vector Storage
+        id = uuid.uuid4()
+        ExpiringVectorStore(id = id, time = 300)
+        VECTOR_STORAGES[id] = InMemoryVectorStore(embedding = embeddings)
+        vector_store = VECTOR_STORAGES[id]
+
+        try:
+            
+            # loading urls
+            loader = CustomSeleniumURLLoader(urls = urls)
+            docs = loader.load()
+            print(datetime.datetime.now() - start)
+
+            # Splitting the documents
+            split = text_splitter.split_documents(docs)
+
+            # Adding documents to vector storage
+            vector_store.add_documents(split)
+
+            # Retrieving from vector store
+            retriever = vector_store.as_retriever()
+            retrieval_prompt = f"""
+                Retrieve all chunks that are relevant to the following research topic and research question.
+        
+                Research Topic: {topic}
+                Research Question: {rq}
+                
+                Prioritize chunks that:
+                - Directly address or answer the research question
+                - Provide background, context, or findings related to the topic
+                - Contain data, statistics, or conclusions relevant to the research question
+                - Discuss methods or approaches related to the topic
+            """
+            response = retriever.invoke(retrieval_prompt)
+
+            docs = "\n\n".join([doc.page_content for doc in response])
+
+            # Asking mistral to summarize the documents retrieved by the vector storage
+            prompt = f"""
+                        Your task is to synthesize the provided literature chunks into a single coherent academic literature review grounded only in the given sources.
+
+                        Research Topic: {topic}
+                        Research Question: {rq}
+
+                        Literature Chunks:
+                        <chunks>
+                        {docs}
+                        </chunks>
+
+                        ---
+
+                        OUTPUT REQUIREMENTS:
+
+                        Write a single continuous academic literature review (no section headers, no bullet points, no numbered lists).
+
+                        The response should be 800–1200 words and must:
+
+                        1. Synthesize all sources into a unified narrative rather than repeating ideas across sections.
+                        2. Prioritize integration of concepts over listing studies or examples.
+                        3. Group related findings together (mechanisms, applications, limitations, clinical translation).
+                        4. Avoid repeating the same idea using different wording.
+                        5. Move from mechanisms → applications → clinical relevance → limitations → overall interpretation in a natural flow.
+
+                        ---
+
+                        CONTENT GUIDELINES:
+
+                        - Focus on synthesis, not summary of individual sources.
+                        - Do NOT restate CRISPR’s general importance multiple times.
+                        - Do NOT repeat the same disease examples unless they serve a new analytical purpose.
+                        - Only include claims directly supported by the provided chunks.
+                        - When citing evidence, embed short direct quotes sparingly and only when necessary for support.
+                        - Do not fabricate or infer beyond the provided text.
+
+                        ---
+
+                        STYLE REQUIREMENTS:
+
+                        - Formal academic tone (journal literature review style)
+                        - No section titles or explicit structure markers
+                        - No bullet points or lists
+                        - No repetitive phrasing or paraphrasing of the same idea
+                        - Avoid filler phrases like “the literatures suggest” repeatedly
+                        - Prefer analytical language over descriptive statements
+
+                        ---
+
+                        CRITICAL RULE:
+
+                        If two ideas are similar, MERGE them into a single stronger synthesis statement instead of repeating them in different words.
+            """
+            response = summary_model.invoke(prompt)
+            vector_store = None
+        except:
+            return Response(status = status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        serializer = self.get_serializer(
+            project, 
+            data = {
+                "literature_summarized": response.content
+            },
+            partial = True
+        )
+        if not serializer.is_valid():
+            return Response(status = status.HTTP_500_INTERNAL_SERVER_ERROR)
+        print(datetime.datetime.now() - start)
+        serializer.save()
+        return Response({"summary": response.content}, status = status.HTTP_200_OK)
+
