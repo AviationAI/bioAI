@@ -26,7 +26,7 @@ from langchain_community.utilities import SearxSearchWrapper
 from rest_framework.generics import GenericAPIView
 from api.models import Project
 from api.serializers import ProjectBackendSerializer
-from api.permissions import IsOwner
+from api.permissions import IsOwner, IsPremium, IsBasic, IsPremium_Deluxe, IsPro
 
 ssl._create_default_https_context = lambda: ssl.create_default_context(cafile=certifi.where())
 
@@ -428,7 +428,7 @@ class SummarizeSources(GenericAPIView):
 
     queryset = Project.objects.all()
     serializer_class = ProjectBackendSerializer
-    permission_classes = [IsOwner]
+    permission_classes = [IsOwner & (IsPremium | IsPremium_Deluxe)]
 
     def post(self, *args, **kwargs):
         start = datetime.datetime.now()

@@ -4,7 +4,9 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from pydantic import BaseModel, Field, HttpUrl, computed_field
 from typing import List, Dict
+from django.utils.translation import gettext_lazy as _
 import uuid
+import math
 
 # Create your models here.
 
@@ -29,7 +31,40 @@ class Scores(BaseModel):
     }
 
 class User(AbstractUser):
+
+    class Plans(models.TextChoices):
+        BASIC = "basic", _("Free Tier")
+        PRO = "pro", _("Professional")
+        PREMIUM = "prem", _("Premium")
+        PREMIUM_DELUXE = "prem_del", _("Premium Deluxe")
+
     id = models.CharField(primary_key=True, editable=False)
+    plan = models.CharField(choices = Plans, max_length=10, default = Plans.BASIC)
+
+    def is_basic(self):
+        return self.plan == self.Plans.BASIC
+    
+    def is_pro(self):
+        return self.plan == self.Plans.PRO
+    
+    def is_prem(self):
+        return self.plan == self.Plans.PREMIUM
+    
+    def is_prem_del(self):
+        return self.plan == self.Plans.PREMIUM_DELUXE
+    
+    def project_limit(self):
+        
+        if self.is_basic():
+            return 3
+        
+        if self.is_pro():
+            return 5
+        
+        if self.is_prem():
+            return 10
+        
+        return math.inf
 
     def __str__(self):
         return f"{self.username}"
@@ -39,6 +74,7 @@ class User(AbstractUser):
     
 
 class Project(models.Model):
+        
     id = models.UUIDField(primary_key=True, default = uuid.uuid4)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     topic = models.CharField()

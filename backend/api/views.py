@@ -23,7 +23,7 @@ from .serializers import UserSerializer, ProjectFrontendSerializer, ProjectBacke
 from rest_framework import generics, permissions
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
-from .permissions import IsOwner, IsEditor, IsViewer
+from .permissions import IsOwner, IsEditor, IsViewer, Can_Create_Project
 from rest_framework import status
 from bioAI.settings import OLLAMA_BASE_URL, SEARXNG_URL
 from langchain_community.utilities import SearxSearchWrapper
@@ -41,7 +41,6 @@ search = SearxSearchWrapper(searx_host = SEARXNG_URL)
 
 class ProjectListCreate(generics.ListCreateAPIView):
     serializer_class = ProjectBackendSerializer
-    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         request = self.request
@@ -60,6 +59,11 @@ class ProjectListCreate(generics.ListCreateAPIView):
             return shared | owned
         return owned
     
+    def get_permissions(self):
+        if self.request.method == "POST":
+            return [IsAuthenticated(), Can_Create_Project()]
+        return [IsAuthenticated()]
+
     def perform_create(self, serializer):
         title = self.request.data.get("topic")
         description = self.request.data.get("description")
