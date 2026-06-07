@@ -74,18 +74,20 @@ class User(AbstractUser):
     
 
 class Project(models.Model):
-        
+    
     id = models.UUIDField(primary_key=True, default = uuid.uuid4)
+    scan_mode = models.BooleanField(default = False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     topic = models.CharField()
     description = models.CharField()
-    available_trusted_literatures = models.JSONField()
-    summary = models.CharField()
-    research_question = models.CharField()
+    available_trusted_literatures = models.JSONField(blank = True, null = True)
+    summary = models.CharField(blank = True)
+    research_question = models.CharField(blank = True, null=True)
     thesis = models.CharField(blank = True)
     literature_summarized = models.CharField(blank = True)
     editors = models.ManyToManyField(User, related_name="editable_projects", blank = True)
     viewers = models.ManyToManyField(User, related_name="viewable_projects", blank = True)
+    subtopics = models.JSONField(blank = True)
 
     def __str__(self):
         return f"{self.topic} by {self.user}"

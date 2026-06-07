@@ -83,11 +83,13 @@ TEMPLATES = [
 WSGI_APPLICATION = 'bioAI.wsgi.application'
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173"
+    "http://localhost:5173",
+    "http://localhost:5174"
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:5173"
+    "http://localhost:5173",
+    "http://localhost:5174"
 ]
 
 CSRF_COOKIE_HTTPONLY = False
@@ -180,6 +182,12 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
         'api.permissions.IsOwner'
     ),
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.ScopedRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'sensitive_address': '5/minute',  # Options include: second, minute, hour, day
+    }
 }
 
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")

@@ -23,10 +23,13 @@ from .serializers import UserSerializer, ProjectFrontendSerializer, ProjectBacke
 from rest_framework import generics, permissions
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
-from .permissions import IsOwner, IsEditor, IsViewer, Can_Create_Project
+from .permissions import IsOwner, IsEditor, IsViewer, Can_Create_Project, IsBasic, IsPremium, IsPremium_Deluxe, IsPro
 from rest_framework import status
 from bioAI.settings import OLLAMA_BASE_URL, SEARXNG_URL
 from langchain_community.utilities import SearxSearchWrapper
+from rag.pipeline import ResearchPipeline
+from rest_framework.serializers import ValidationError
+
 
 # Create your views here.
 markdowner = Markdown()
@@ -37,10 +40,30 @@ chat = ChatOllama(
     base_url=OLLAMA_BASE_URL
 )
 
+model = ChatOllama(
+    model = "mistral:latest",
+    temperature = 0.4,
+    top_p = 0.9,
+    base_url = OLLAMA_BASE_URL
+)
+
 search = SearxSearchWrapper(searx_host = SEARXNG_URL)
+
+embeddings = OllamaEmbeddings(
+    model="nomic-embed-text",
+    base_url = OLLAMA_BASE_URL
+)
+
+# Setting up text splitter for faster response times
+text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+    chunk_size=1000 , chunk_overlap=100
+)
+
+pipeline = ResearchPipeline(model, chat, search, text_splitter, embeddings)
 
 class ProjectListCreate(generics.ListCreateAPIView):
     serializer_class = ProjectBackendSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         request = self.request
@@ -68,66 +91,33 @@ class ProjectListCreate(generics.ListCreateAPIView):
         title = self.request.data.get("topic")
         description = self.request.data.get("description")
         rq = self.request.data.get("research_question")
+        scan_mode = self.request.data.get("scan_mode", False)
 
-        # Using SearXNG (localhosted) to search for sources based on the research question and topic
-        search_results = search.results(rq, num_results = 10, engines = [ "duckduckgo", "wikipedia"])
-        search_results2 = search.results(title, num_results = 10, engines = [ "duckduckgo", "wikipedia"])
-        sources = [[source["title"], source["link"]] for source in search_results]
-        sources.extend([[source["title"], source["link"]] for source in search_results2])
+        # Two options, scan mode or not scan mode
+        if not scan_mode:
 
-        print(sources)
-        ai_prompt2 = f"""
-            You are an AI scientific research assistant. After researching instensively about a scientific topic based on the study's topic, research question, and description, your job is to summarize all the information you have found.
-            The topic of the study is the following:
-
-            <study_topic>
-                {title}
-            </study_topic>
-
-            The research question of the study is the following:
-
-            <study_research_question>
-                { rq }
-            </study_research_question>
-
-            The description of the study is the following. Use the description and the research queston as the main guide for the following steps: 
-
-            <study_description>
-                {description}
-            </study_description>
-
-            Your job is to generate an organized of the study topic.
-            You may use the following sources:
-
-            <study_sources>
-                {sources}
-            </study_sources>
-
-            Criteria:
-            Your summary should be professional and formal
-            Your summary should consist of 3 layers: 
-                Layer 1: A one to two sentence short summary on your research (titled 1-2 sentence conclusion)
-                Layer 2: A three sentence summary expanding on layer 1 (titled three sentence mini summary)
-                Layer 3: A 6-12 sentence comprehensive summary on your research (titled comprehensive 6-12 sentence detailed summary)
-            Include facts and methodology and not history unless explicitly stated in the study topic / study description
-            Use the study description and research question as your framework for the summary
-            Do NOT include any personal pronouns in the summary
-            Do NOT reference the study, you are summarizing information relating to the study
-        """
-
-        messages2 = [
-            HumanMessage(content = ai_prompt2)
-        ]
-
-        response = chat.invoke(messages2)
-        
-        summary = response.content
-        
-        serializer.save(
-            user = self.request.user,
-            available_trusted_literatures = sources,
-            summary = summary
-        )
+            # Finding available literature and summarizing in not scan mode
+            sources = pipeline.find_available_literature(title, rq)
+            
+            summary = pipeline.summarize_topic(title, description, sources, rq)
+            serializer.save(
+                user = self.request.user,
+                available_trusted_literatures = sources,
+                summary = summary,
+                scan_mode = False,
+                description = description
+            )
+        else:
+            # Scanning the topic in scan mode
+            subtopics = pipeline.scan_topic(title, description)
+            serializer.save(
+                subtopics = subtopics,
+                user = self.request.user,
+                scan_mode = True,
+                description = description
+            )
+                
+            
 
 class ProjectRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     queryset = Project.objects.all()
@@ -157,18 +147,22 @@ class ProjectRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
         description = data.get("description", project.description)
         sources = data.get("sources", project.available_trusted_literatures)
         summary = data.get("summary", project.summary)
-        question = data.get("question", project.research_question)
+        rq = data.get("question", project.research_question)
+        literature_summarized = data.get("literature_summarized", project.literature_summarized)
+
+        # Creating update data and getting the serializer
         updateData = {
             "topic": topic,
             "description": description,
-            "research_question": question,
+            "research_question": rq,
             "available_trusted_literatures": sources,
             "summary": summary,
+            "literature_summarized": literature_summarized
         }
-        print(summary)
         serializer = self.get_serializer(
             project, data = updateData, partial = True
         )
+
         if not serializer.is_valid():
             return Response({"error": "invalid data"}, status=status.HTTP_400_BAD_REQUEST)
         serializer.save()
@@ -226,29 +220,90 @@ class ProjectRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
             return Response({"error": "invalid data"}, status=status.HTTP_400_BAD_REQUEST)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+# View to change out of scan mode
+class ProjectChangeMode(generics.GenericAPIView):
+
+    queryset = Project.objects.all()
+    lookup_field = "pk"
+    permission_classes = [IsOwner]
+    serializer_class = ProjectBackendSerializer
+
+    def post(self, request, *args, **kwargs):
+
+        project = self.get_object()
+
+        updateData = {
+            "scan_mode": False
+        }
+
+        serializer = self.get_serializer(project, data = updateData, partial = True)
+        # Changing mode out of scan mode
+        if not serializer.is_valid():
+            return Response(status = status.HTTP_400_BAD_REQUEST)
+
+        serializer.save()
+        return Response(status = status.HTTP_200_OK)
+
+# View to generate summary
+class GenerateSummary(APIView):
+
+    permission_classes = [IsAuthenticated]
+    throttle_scope = 'sensitive_address'
+
+    def post(self, request):
+
+        # Request data to generate summary
+        data = self.request.data
+
+        # Topic & RQ & Sources
+        topic = data.get("topic")
+        rq = data.get("research_question")
+        description = data.get("description")
+
+        # Generating summary then returning
+        summary = pipeline.summarize_topic(topic, description, rq)
+        return Response({"summary": summary}, status = status.HTTP_200_OK)
+
+# View to generate sources
+class GenerateSources(APIView):
+
+    permission_classes = [IsAuthenticated]
+    throttle_scope = 'sensitive_address'
+
+    def post(self, request):
+
+        # Request data to generate sources
+        data = self.request.data
+
+        # Topic & RQ
+        topic = data.get("topic")
+        rq = data.get("research_question")
+
+        # Generating sources and then returning them
+        sources = pipeline.find_available_literature(topic, rq)
+        return Response({"sources": sources}, status = status.HTTP_200_OK)
 
 
-# List create views for Doc model 
+class GenerateSourceSummary(generics.GenericAPIView):
 
-class DocListCreate(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    throttle_scope = 'sensitive_address'
 
-    serializer_class = DocBackendSerializer
+    def post(self, *args, **kwargs):
+        
+        # request data
+        data = self.request.data
 
-    # Checking which queryset we want to load from
-    def get_queryset(self):
+        # Getting the project detalis
+        topic = data.get("topic")
+        rq = data.get("research_question")
+        sources = data.get("sources")
+        description = data.get("description")
 
-        # Checking if we want to query from the project the doc is from
-        user = self.request.user
-        isProject = self.request.headers["Is-Project"]
+        # Summarizing sources
+        summary = pipeline.summarize_sources(topic, rq, description, sources)
 
-        if isProject:
-            projectID = self.request.headers["project-id"]
-            project = Project.objects.get(pk = projectID)
-            return Doc.objects.filter(project = project)
-        else:
-            type = self.request.headers["Type"]
-            if type == "editor":
-                return Doc.objects.filter(editors__in = user)
-            elif type == "viewer":
-                return Doc.objects.filter(viewers__in = user)
-            return Doc.objects.filter(user = user)
+        return Response({"summary": summary}, status = status.HTTP_200_OK)
+        
+        

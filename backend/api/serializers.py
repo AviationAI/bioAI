@@ -10,29 +10,57 @@ class UserSerializer(serializers.ModelSerializer):
 class ProjectFrontendSerializer(serializers.ModelSerializer):
     summary = serializers.CharField(required=False, allow_blank=True)
     available_trusted_literatures = serializers.JSONField(required=False)
-    research_question = serializers.CharField()
+    research_question = serializers.CharField(allow_blank=True, required = False)
     editors = UserSerializer(many = True, required=False)
     viewers = UserSerializer(many = True, required=False)
     user = UserSerializer()
-    literature_sumarized = serializers.CharField(allow_blank = True, required = False)
+    literature_summarized = serializers.CharField(allow_blank = True, required = False)
 
     class Meta:
         model = Project
         fields = '__all__'
         read_only_fields = ['id', 'user']
+    
+    def validate(self, attrs):
+        user = self.context["request"].user
+        
+        # Getting the field values
+        scan_mode = attrs.get("scan_mode", self.instance.scan_mode)
+        rq = attrs.get("research_question", self.instance.research_question)
+        
+        if not scan_mode and (not rq):
+            raise serializers.ValidationError("NO Research Question")
+
+        if user.is_basic() and scan_mode:
+            raise serializers.ValidationError("Basic User cannot go in scan mode.")
+        return super().validate(attrs)
 
 class ProjectBackendSerializer(serializers.ModelSerializer):
     summary = serializers.CharField(required=False, allow_blank=True)
     available_trusted_literatures = serializers.JSONField(required=False)
-    research_question = serializers.CharField()
+    research_question = serializers.CharField(allow_blank=True, required = False)
     editors = serializers.PrimaryKeyRelatedField(many = True, queryset = User.objects.all(), required = False)
     viewers = serializers.PrimaryKeyRelatedField(many = True, queryset = User.objects.all(), required = False)
-    literature_sumarized = serializers.CharField(allow_blank = True, required = False)
+    literature_summarized = serializers.CharField(allow_blank = True, required = False)
 
     class Meta:
         model = Project
         fields = '__all__'
         read_only_fields = ['id', 'user']
+
+    def validate(self, attrs):
+        user = self.context["request"].user
+        
+        # Getting the field values
+        scan_mode = attrs.get("scan_mode", self.instance.scan_mode)
+        rq = attrs.get("research_question", self.instance.research_question)
+        
+        if not scan_mode and (not rq):
+            raise serializers.ValidationError("NO Research Question")
+
+        if user.is_basic() and scan_mode:
+            raise serializers.ValidationError("Basic User cannot go in scan mode.")
+        return super().validate(attrs)
 
 # Doc serializers
 

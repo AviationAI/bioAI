@@ -36,7 +36,7 @@ class JWTAuthentication(BaseAuthentication):
                 )
             user, _ = User.objects.get_or_create(
                 id = request_state.payload["sub"],
-                defaults={"email": email.email_address, "username": username, "Plan": User.Plans.BASIC}
+                defaults={"email": email.email_address, "username": username, "plan": User.Plans.BASIC}
             )
             return(user, token)
         except Exception as e:

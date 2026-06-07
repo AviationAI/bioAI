@@ -40,3 +40,6 @@ requests
 
 # Postgres dependencies
 psycopg2-binary
+
+# classification
+scikit-learn
