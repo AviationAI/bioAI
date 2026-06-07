@@ -6,6 +6,9 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from bioAI.settings import CHROME_DOCKER
 from langchain_community.document_loaders import SeleniumURLLoader
+import joblib 
+import os
+from .classification_training.main import train
 
 # With an id & time, this class deletes a vector store after a custom time limit ends
 class ExpiringVectorStore:
@@ -36,3 +39,10 @@ def get_session(session_id: uuid.UUID) -> InMemoryChatMessageHistory:
     if session_id not in SESSIONS:
         SESSIONS[session_id] = InMemoryChatMessageHistory()
     return SESSIONS[session_id]
+
+def get_classifier():
+
+    # Training and returning model
+    model = train()
+
+    return model
