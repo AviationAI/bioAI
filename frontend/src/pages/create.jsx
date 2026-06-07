@@ -9,18 +9,21 @@ function Create(){
     const {getToken} = useAuth();
     const [topic, setTopic] = useState("");
     const [description, setDescription] = useState("");
-    const [rq, setRq] = useState("")
+    const [rq, setRq] = useState("");
+    const [scan, setScan] = useState(false);
     const navigate = useNavigate();
+
     const send = async (event) => {
         event.preventDefault();
-        if (topic.length > 0 && description.length > 0 && rq.length > 0){
+        if ((!scan && topic.length > 0 && description.length > 0 && rq.length > 0) || (scan && topic.length > 0 && description.length > 0)){
         try {
             setLoading(true);
             const token = await getToken();
             const data = await AxiosInstance.post('/api/projects', {
                 "topic": topic,
                 "description": description,
-                "research_question": rq
+                ...(!scan && {"research_question": rq}),
+                "scan_mode": scan
             },
             {headers: {
                 "Authorization": `Bearer ${token}`
@@ -49,6 +52,9 @@ function Create(){
     return (
         <>
         <h1 className = "centeredText">Create Project</h1>
+        <p className = "centeredText font-light">Create a project to research on</p><br/>
+        <div className="createDiv">
+        {(!scan) ? (
         <form className = "create-form container-fluid" onSubmit = {send}>
             <Loader loading = {loading}/>
             <div className="mb-3 create-container">
@@ -62,6 +68,21 @@ function Create(){
             </div>
             <button disabled = {!topic || !description || !rq} className="create-btn" type = "submit">Create Project</button>
         </form>
+        ):(
+            <form className = "create-form container-fluid" onSubmit = {send}>
+                <Loader loading = {loading}/>
+                <div className="mb-3 create-container">
+                <input className = "topic-control" placeholder = "Project Topic" type = "text" value = {topic} onChange = {topicChange}/>
+                </div>
+                <div className="mb-3 create-container">
+                    <textarea rows = "5" cols = "80"className = "description-control" placeholder = "Description of project" value = {description} onChange = {descriptionChange}></textarea>
+                </div>
+                <button disabled = {!topic || !description} className="create-btn" type = "submit">Create Project</button>
+            </form>
+        )
+        }
+        <button className = "btn btn-danger centered" type = "button" onClick = {() => {setScan(!scan)}}>Toggle Scan Mode</button>
+        </div>
         </>
     ); 
 }

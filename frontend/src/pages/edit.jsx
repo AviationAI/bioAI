@@ -87,17 +87,17 @@ function Edit(){
     }, [ogSummary])
 
     // Function that updates a certain source inside of sources array
-    function updateSource(event){
+    const updateSource = (event) => {
         const elm = event.currentTarget;
         const index = parseInt(elm.dataset.index);
+        const part = parseInt(elm.dataset.part);
         // Loops through all sources, and if index is the one we want to update, sets it to new value, otherwise sets it to the item in list
-        if (elm.dataset.url === true) {
+        if (part === 1) {
             setSources(prev => prev.map((item, i) => i === index ? [item[0], elm.value] : item));
-        } else {
+        } else if (part === 0){
             setSources(prev => prev.map((item, i) => i === index ? [elm.value, item[1]] : item));
         }
     }
-    
     // Funciton that removes a source from the array and from sources list
     function removeSource(event){
         const index = parseInt(event.currentTarget.dataset.index);
@@ -110,7 +110,8 @@ function Edit(){
     async function submit(event){
         event.preventDefault();
         try {
-            const filtered =  sources.filter((item, _) => item.trim().length > 0 && item !== null && item.trim());
+            const filtered =  sources.filter((item, _) => item[0].trim().length > 0 && item !== null && item[1].trim().length > 0 && item);
+            console.log(filtered);
             const token = await getToken();
             const response = await AxiosInstance.put(`/api/projects/${projectID}`, {
                     // Using spread operator to only send the said field if the content is not none
@@ -154,13 +155,13 @@ function Edit(){
                         {sources.map((source, index) => (
                             <div key = {index}className = "source-group">
                                 <div className="mb-3">
-                                    <input data-url = {false} placeholder="Type a Source Title" data-index = {index} className = "topic-control" type = "text" value = {source[0]} onChange = {(event) => {updateSource(event)}}/>
-                                    <input data-url = {true} placeholder = "Type a Source UR:" data-index = {index} className = "topic-control" type = "text" value = {source[1]} onChange = {(event) => {updateSource(event)}}/>
+                                    <input data-part = {0} placeholder="Type a Source Title" data-index = {index} className = "topic-control" type = "text" value = {source[0]} onChange = {(event) => {updateSource(event)}}/>
+                                    <input data-part = {1} placeholder = "Type a Source URL" data-index = {index} className = "topic-control" type = "text" value = {source[1]} onChange = {(event) => {updateSource(event)}}/>
                                 </div>
                                 <button data-index = {index} type = "button" onClick = {(event) => {removeSource(event)}} className = "remove-btn">Remove</button>
                             </div>
                         ))}
-                        <button onClick = {() => {setSources(prev => [...prev, ""])}} type = "button">Add Source</button>
+                        <button className = "text-white" onClick = {() => {setSources(prev => [...prev, ["", ""]])}} type = "button">Add Source</button>
                     </div>
                     <div className="mb-3">
                         <EditorContext.Provider value={{ editor: summary }}>

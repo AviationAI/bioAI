@@ -12,7 +12,6 @@ import { useNavigate } from "react-router-dom";
 
 function ProjectDetail(){
 
-    // Setting state variables
     const [content, setContent] = useState(null);
     const [isOverlayOpen, setIsOverlayOpen] = useState(false);
     const [ greenPercent, setGreenPercent ] = useState(0);
@@ -32,17 +31,13 @@ function ProjectDetail(){
     const [url, setURL] = useState("");
     const [question, setQuestion] = useState("");
     const navigate = useNavigate();
-    
 
-
-    // handleChange handles the change of the dropdowns relating to the people currently shared in the project, and makes sure that the value is not different to the value it originally was
     function handleChange(event){
         const el = event.currentTarget;
         const value = el.value;
         const user = el.dataset.user;
         if (value.toLowerCase() !== el.dataset.type.toLowerCase() && value.toLowerCase() !== el.dataset.default.toLowerCase()){
             el.dataset.type = value;
-            //Handling cases if the value is editor, viewer, or removed access
             if (value.toLowerCase() === "editor"){
                 setEditors([...editors, user]);
                 setViewers(viewers.filter(viewer => viewer !== user));
@@ -65,7 +60,6 @@ function ProjectDetail(){
         }
     }
     
-    // handleSubmit handles the submitting of the edits the owner has made to which people have what access to the project
     async function handleSubmit(event){
         event.preventDefault();
         if (editors.length > 0 || viewers.length > 0 || removed.length > 0 || addedUsers.length > 0 ){
@@ -96,13 +90,11 @@ function ProjectDetail(){
         }
     }
 
-    // Navigating to source page
     async function handleSourceInitializationSubmit(event){
         event.preventDefault();
         navigate(`/source/${projectID}?url=` + encodeURIComponent(url));
     }
 
-    // Sending request to RAG API to generate the summary
     async function generateSummary(event) {
         setLitSummaryLoading(true);
         try {
@@ -119,7 +111,6 @@ function ProjectDetail(){
             setLitSummaryLoading(false);
         }
     }
-    
 
     useEffect(() => {
         async function fetchProject(){
@@ -127,7 +118,6 @@ function ProjectDetail(){
                 const token = await getToken();
                 const response = await AxiosInstance.get(`/api/projects/${projectID}`, {
                     headers: {
-                        //Bearer token matches layout required in backend
                         "Authorization": `Bearer ${token}`
                     }
                 });
@@ -141,30 +131,43 @@ function ProjectDetail(){
         fetchProject();
     }, [projectID, dependency])
 
-    if(loading) return <Loader loading = {true}/>;
+    if(loading) return <Loader loading={true}/>;
     return (
         <>
         { (project !== null) ? (
+        <>
+        {(project.scan_mode) ? (
+            <div className="project">
+                <h1>{ project.topic }</h1><br/>
+                <ul>
+                    {project.subtopics.subtopics.map((subtopic, index) =>
+                        <li key={index}>
+                            <h3>{ subtopic.subtopic }</h3>
+                            <p>{ subtopic.description }</p>
+                        </li>
+                    )}
+                </ul>
+            </div>
+        ):(
         <div className="project"> 
         {userId === project.user.id &&
-            <Overlay loading = {isLoading} isOpen = {isOverlayOpen} onClose = {() => {setIsOverlayOpen(false)}}>
+            <Overlay loading={isLoading} isOpen={isOverlayOpen} onClose={() => {setIsOverlayOpen(false)}}>
                 <h2>Share</h2>
                 <div>
                     <strong>Owner: </strong> 
                     { project.user.username }
                 </div>
-                <form onSubmit={handleSubmit} onKeyDown = {(event) => {if (event.key === "Enter") {event.preventDefault()}}}>
-                { (project.editors.length > 0 || project.viewers.length >0) ?  (
+                <form onSubmit={handleSubmit} onKeyDown={(event) => {if (event.key === "Enter") {event.preventDefault()}}}>
+                { (project.editors.length > 0 || project.viewers.length > 0) ? (
                 <>
                 <h4>Editors</h4>
                 <div>
-                    {project.editors.length >0 ? (
+                    {project.editors.length > 0 ? (
                     <>
-                        {/* renderring text showing every editor */}
                         {project.editors.map(editor => (
-                        <div key = {editor.id}>
+                        <div key={editor.id} className="flex items-center gap-2 mb-2">
                             <strong>{ editor.username }</strong> 
-                            <select data-default = "editor" onChange = {handleChange} data-user = {editor.id} data-type = "editor" className = "access-select">
+                            <select data-default="editor" onChange={handleChange} data-user={editor.id} data-type="editor" className="access-select">
                                 <option>Editor</option>
                                 <option>Viewer</option>
                                 <option>Remove Access</option>
@@ -180,34 +183,32 @@ function ProjectDetail(){
                 {project.viewers.length > 0 ? (
                 <>
                     {project.viewers.map(viewer => (
-                        <div>
+                        <div key={viewer.id} className="flex items-center gap-2 mb-2">
                             <strong>{ viewer.username }</strong> 
-                            <select data-default = "viewer" onChange = {handleChange} data-user = {viewer.id} data-type = "viewer" className = "viewers access-select">
+                            <select data-default="viewer" onChange={handleChange} data-user={viewer.id} data-type="viewer" className="access-select">
                                 <option>Viewer</option>
                                 <option>Editor</option>
                                 <option>Remove Access</option>
                             </select>
                         </div>
-                        
                     ))}
                 </>
                 ):(
                     <p>No viewers</p>
-                )
-                }
+                )}
             </>
             ):(
                 <strong>No viewers nor editors yet</strong>
             )}
-            <InputTags tags = {addedUsers} setTags={setAddedUsers}/>
+            <InputTags tags={addedUsers} setTags={setAddedUsers}/>
             {addedUsers.length > 0 && 
-                <select value = {type} onChange={(event) => setType(event.currentTarget.value)}>
+                <select value={type} onChange={(event) => setType(event.currentTarget.value)} className="mt-2">
                     <option>Editor</option>
                     <option>Viewer</option>
                 </select>
             }
-            <button type = "submit" className="friendlyButton">
-                {(editors.length > 0 || viewers.length>0 || removed.length >0 || addedUsers.length > 0) ? (
+            <button type="submit" className="friendlyButton mt-3">
+                {(editors.length > 0 || viewers.length > 0 || removed.length > 0 || addedUsers.length > 0) ? (
                     <>Save</>
                 ):(
                     <>Close</>
@@ -216,62 +217,77 @@ function ProjectDetail(){
             </form>
             </Overlay>
             }
-            <div className = "textButton">
-                <h1 className = "centeredText">{ project.topic }</h1>
-                {/*Setting isoverlay to true onclick*/}
-                {(project.user.id === userId) && <button className = "friendlyButton" onClick={() => {setIsOverlayOpen(true)}}>Share</button>}
+            <div className="textButton">
+                <h1 className="centeredText">{ project.topic }</h1>
+                {(project.user.id === userId) && 
+                    <button className="friendlyButton" onClick={() => {setIsOverlayOpen(true)}}>Share</button>
+                }
             </div>
-            <p className = "centeredText">{ project.research_question }</p>
-            <p className = "centeredText">{ project.description }</p>
-            {(project.user.id === userId || userId in project.editors.map(editor => editor.id)) && <Link  to = "edit"className = "">Edit</Link>}
-            <hr/>
-            <div className = "sourceQuestionDiv">
+            <p className="centeredText">{ project.research_question }</p>
+            <p className="centeredText">{ project.description }</p>
+            {(project.user.id === userId || userId in project.editors.map(editor => editor.id)) && 
+                <Link to="edit" className="inline-block mb-3">Edit</Link>
+            }
+            <hr className="my-4"/>
+            <div className="sourceQuestionDiv">
                 <div className="halfDiv">
-                <h3 className = "">Sources</h3>
-                <ul className = "sources">
-                    {project.available_trusted_literatures.map((source, index) => (
-                        <li key = {index} className = "source"><p><b>{ source[0] }</b>, { source[1] }</p></li>
-                    ))}
-                </ul>
+                    <h3 className="semi-heading">Sources</h3>
+                    <ol className="sources">
+                        {project.available_trusted_literatures.map((source, index) => (
+                            <li key={index} className="source">
+                                <p><b>{ source[0] }</b>, { source[1] }</p>
+                            </li>
+                        ))}
+                    </ol>
                 </div>
-                <div className = "halfDiv">
-                    <h3>See credibility of URL</h3>
-                    <div>
-                    </div>
-                    <form onSubmit = {handleSourceInitializationSubmit}>
+                <div className="halfDiv">
+                    <h3 className="text-2xl font-semibold">See credibility of URL</h3>
+                    <form onSubmit={handleSourceInitializationSubmit}>
                         <div className="mb-3">
-                            <input value = {url} onChange = {(event) => {setURL(event.currentTarget.value)}} className = "midInput" placeholder="Enter URL to get credibility"/>
-                            <div className="form-text">Procceed at your own risk. By submitting this form you acknowledge that we have no legal liabilites regarding your web scraping request.</div>
+                            <input
+                                value={url}
+                                onChange={(event) => {setURL(event.currentTarget.value)}}
+                                className="midInput"
+                                placeholder="Enter URL to get credibility"
+                            />
+                            <p className="text-sm text-gray-500 mt-1">
+                                Proceed at your own risk. By submitting this form you acknowledge that we have no legal liabilities regarding your web scraping request.
+                            </p>
                         </div>
-                        <button type = "submit" className = "friendlySubmitButton">Ask</button>
+                        <button type="submit" className="friendlySubmitButton">Ask</button>
                     </form>
                 </div> 
             </div>
-            <div>
+            <div className="mt-6">
                 <h3 className="centeredText">Summary</h3>
                 <ReactMarkdown>{ project.summary }</ReactMarkdown>
             </div>
-            <div>
-                <h3 className = "centeredText">Literatures Summarized</h3>
-                <Loader loading = {litSummaryLoading}/> <br/>
-                {project.literature_summarized ?(
+            <div className="mt-6">
+                <h3 className="centeredText semi-heading">Literatures Summarized</h3>
+                <Loader loading={litSummaryLoading}/> <br/>
+                {project.literature_summarized ? (
                     <>
                         <ReactMarkdown>{ project.literature_summarized }</ReactMarkdown>
-                        <button disabled = {litSummaryLoading} type = "button" onClick = {generateSummary}>Regenerate Summary</button>
+                        <button disabled={litSummaryLoading} type="button" onClick={generateSummary} className="mt-3">
+                            Regenerate Summary
+                        </button>
                     </>        
                 ):(
-                    project.user.id === userId ?(
-                        <button disabled = {litSummaryLoading} type = "button" onClick = {generateSummary}>Generate Summary</button>
+                    project.user.id === userId ? (
+                        <button disabled={litSummaryLoading} type="button" onClick={generateSummary} className="mt-3">
+                            Generate Summary
+                        </button>
                     ):(
                         <p>You must own this project to generate the literature summary.</p>
                     )
                 )}
             </div>
         </div>
+        )}
+        </>
         ):(
             <Screen404/>
-        )
-        }
+        )}
         </>
     );
 }
