@@ -2,15 +2,15 @@
 function ToolbarTool({editor}) {
   return (
     <div>
-        <div className = "toolbar">
-            <button type = "button" onClick={() => editor.chain().focus().toggleBold().run()} className={editor.isActive('bold') ? 'is-active' : 'text-styler'}>
-                <b>bold</b>
+        <div className = "flex flex-row border-t border-r border-l border-b-0 rounded-t-md">
+            <button type = "button" onClick={() => editor.chain().focus().toggleBold().run()} className = "bg-transparent m-0.5">
+                <b>B</b>
             </button>
-            <button type = "button" onClick = {() => editor.chain().focus().toggleItalic().run()} className = {editor.isActive('italic') ? "is-active": "text-styler"}>
-                <i>italic</i>
+            <button type = "button" onClick = {() => editor.chain().focus().toggleItalic().run()} className = "bg-transparent m-0.5">
+                <i>I</i>
             </button>
-            <button type = "button" onClick = {() => editor.chain().focus().toggleUnderline().run()} className = {editor.isActive('underline') ? "is-active": "text-styler"}>
-                <u>underline</u>
+            <button type = "button" onClick = {() => editor.chain().focus().toggleUnderline().run()} className = "bg-transparent m-0.5">
+                <u>U</u>
             </button>
         </div>
     </div>
