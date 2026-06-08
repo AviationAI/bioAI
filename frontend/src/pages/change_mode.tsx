@@ -1,10 +1,9 @@
-import { useNavigate, useSearchParams, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import AxiosInstance from "../components/AxiosInstance";
 import Loader from "../components/spinner";
 import { useState } from "react";
 import { useEffect } from "react";
 import { useAuth } from "@clerk/clerk-react";
-import Subtopics from "../components/subtopic_section";
 import Choose from "../components/edit_details";
 import Sources from "../components/generate_sources_and_edit_section";
 import Summary from "../components/generate_summary_and_edit_section";
@@ -12,7 +11,7 @@ import { useRef } from "react";
 import useProject from "../hooks/getproject";
 import Finalize from "../components/finalize_section";
 import SummarizeSources from "../components/generate_source_summary_section";
-import ProjectDetail from "./project";
+import SubtopicsSection from "../components/subtopic_section";
 
 function ChangeMode() {
     
@@ -29,13 +28,13 @@ function ChangeMode() {
     const [state, setState] = useState(0);
     const [page, setPage] = useState(0);
 
-    const {projectID} = useParams();
-    const {project, loading} = useProject(projectID);
+    const {projectID} = useParams <{projectID: string}>();
+    const {project, loading} = useProject(projectID ?? "");
 
     // Data needed to change the mode
-    const [topic, setTopic] = useState("");
+    const [topic, setTopic] = useState <string>("");
     const [rq, setRQ] = useState("");
-    const [sources, setSources] = useState([]);
+    const [sources, setSources] = useState <string[][]>([]);
     const summary = useRef("");
     const sources_summarized = useRef("");
     const description = useRef("");
@@ -125,7 +124,7 @@ function ChangeMode() {
             <main className = "flex flex-1">
                 {project !== null &&
                     <>
-                        {page === 0 && <Subtopics project = {project} increment = {incrementPage}/>}
+                        {page === 0 && <SubtopicsSection project = {project} increment = {incrementPage}/>}
                         {page === 1 && <Choose increment = {incrementPage} decrement = {decrementPage} topic = {topic} rq = {rq} setTopic = {setTopic} setRQ = {setRQ} description = {description}/>}
                         {page === 2 && <Summary setCount = {setSummaryCount} increment = {incrementPage} decrement = {decrementPage} topic = {topic} rq = {rq} summary = {summary} description={description} generated = {summarygen} setGenerated = {setSummarygen}/>}
                         {page === 3 && <Sources increment = {incrementPage} decrement = {decrementPage} topic = {topic} rq = {rq} sources = {sources} setSources = {setSources} generated = {sourcesgen} setGenerated = {setSourcesgen}/>}

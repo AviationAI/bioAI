@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Doughnut } from "react-chartjs-2";
 import { useAuth } from "@clerk/clerk-react";
+import type { SourceResponse } from "../interfaces";
 
 ChartJS.register(ArcElement, Tooltip, Legend); 
 
@@ -17,7 +18,7 @@ function Source(){
     const url = params.get("url");
 
     // Things going to be set by evaluated source
-    const [sourceResponse, setSourceResponse] = useState(null);
+    const [sourceResponse, setSourceResponse] = useState <SourceResponse | null>(null);
 
     // Loaders
     const [loading, setLoading] = useState(true);
@@ -33,13 +34,13 @@ function Source(){
     const [question, setQuestion] = useState("");
     const [questionResponse, setQuestionResponse] = useState("");
 
-    const [chatlogs, setChatlogs] = useState([]);
+    const [chatlogs, setChatlogs] = useState <[string, string] []>([]);
 
     const [sessionID, setSessionID] = useState(null);
 
     const centerTextPlugin = {
         id: 'centerText',
-        beforeDraw(chart) {
+        beforeDraw(chart: any) {
             const { width, height, ctx } = chart;
             const { label, value } = chart.options.centerText || {};
 
@@ -92,7 +93,7 @@ function Source(){
     }, [url, dependency]);
 
     // Submits quesiton about source
-    async function handleQuestionSubmit(event){
+    async function handleQuestionSubmit(event: any){
         event.preventDefault();
         if(question.trim().length > 0){
             try{
@@ -123,8 +124,9 @@ function Source(){
         try {
             const token = await getToken();
             const response = await AxiosInstance.delete("/rag_api/ask", {
-                "session_id": sessionID
-            }, {
+                data: {
+                    "session_id": sessionID
+                },
                 headers: {
                     "Authorization": `Bearer ${token}`
                 }
@@ -155,54 +157,54 @@ function Source(){
                         datasets: [
                             {
                                 label: "Score",
-                                data: [sourceResponse.scores.total, 100 - sourceResponse.scores.total],
+                                data: [(sourceResponse?.scores?.total ?? 0), (100 - (sourceResponse?.scores?.total ?? 0))],
                                 backgroundColor: [
-                                    `rgb(${255 * (1 - (sourceResponse.scores.total/100)) ** 2}, ${255 * (sourceResponse.scores.total/100) ** 2}, 0)`,
+                                    `rgb(${255 * (1 - ((sourceResponse?.scores?.total ?? 0)/100)) ** 2}, ${255 * (sourceResponse?.scores?.total ?? 0) ** 2}, 0)`,
                                     `rgb(158, 25, 13)`
                                 ]
                             },
                         ]
                     }}
                     plugins={[centerTextPlugin]}
-                    options = {{centerText: { label: 'out of 100', value: sourceResponse.scores.total },}}
+                    options = {{centerText: { label: 'out of 100', value: sourceResponse?.scores.total },} as any}
                />
             </div>
             <div className="grid">
                 <div className = "box">
                     <h3 >Credibility</h3>
-                    <h5>{sourceResponse.scores.credibility_score.total}</h5>
+                    <h5>{sourceResponse?.scores.credibility_score.total}</h5>
                     <p>out of 25</p>
-                    <h6>Author Subscore: {sourceResponse.scores.credibility_score.author_score}/10</h6>
-                    <h6>Publisher Subscore: {sourceResponse.scores.credibility_score.publisher_score}/10</h6>
-                    <h6>Citations Subscore: {sourceResponse.scores.credibility_score.citation_score}/5</h6>
+                    <h6>Author Subscore: {sourceResponse?.scores.credibility_score.author_score}/10</h6>
+                    <h6>Publisher Subscore: {sourceResponse?.scores.credibility_score.publisher_score}/10</h6>
+                    <h6>Citations Subscore: {sourceResponse?.scores.credibility_score.citation_score}/5</h6>
                 </div>
                 <div className = "box">
                     <h3>Evidence</h3>
-                    <h5>{sourceResponse.scores.evidence_score.total}</h5>
+                    <h5>{sourceResponse?.scores.evidence_score.total}</h5>
                     <p>out of 25</p>
-                    <h6>Support for Claims Subscore: {sourceResponse.scores.evidence_score.supported_score}/10</h6>
-                    <h6>Confliction of Information Subscore: {sourceResponse.scores.evidence_score.cross_score}/5</h6>
-                    <h6>Factual Information Subscore: {sourceResponse.scores.evidence_score.factual_score}/10</h6>
+                    <h6>Support for Claims Subscore: {sourceResponse?.scores.evidence_score.supported_score}/10</h6>
+                    <h6>Confliction of Information Subscore: {sourceResponse?.scores.evidence_score.cross_score}/5</h6>
+                    <h6>Factual Information Subscore: {sourceResponse?.scores.evidence_score.factual_score}/10</h6>
                 </div>
                 <div className = "box">
                     <h3>Objectivity</h3>
-                    <h5>{sourceResponse.scores.objectivity_score.total}</h5>
+                    <h5>{sourceResponse?.scores.objectivity_score.total}</h5>
                     <p>out of 20</p>
-                    <h6>Perspectives Subscore: {sourceResponse.scores.objectivity_score.perspectives_score}/5</h6>
-                    <h6>Bias in Language Subscore: {sourceResponse.scores.objectivity_score.language_use_score}/7</h6>
-                    <h6>Monetary Gain Subscore: {sourceResponse.scores.objectivity_score.monetary_gain_score}/8</h6>
+                    <h6>Perspectives Subscore: {sourceResponse?.scores.objectivity_score.perspectives_score}/5</h6>
+                    <h6>Bias in Language Subscore: {sourceResponse?.scores.objectivity_score.language_use_score}/7</h6>
+                    <h6>Monetary Gain Subscore: {sourceResponse?.scores.objectivity_score.monetary_gain_score}/8</h6>
                 </div>
                 <div className = "box">
                     <h3>Relevance</h3>
-                    <h5>{sourceResponse.scores.relevance_score.total}</h5>
+                    <h5>{sourceResponse?.scores.relevance_score.total}</h5>
                     <p>out of 15</p>
-                    <h6>Timeliness Subscore: {sourceResponse.scores.relevance_score.timeliness_score}/7</h6>
-                    <h6>Helpfulness Subscore: {sourceResponse.scores.relevance_score.helpfulness_score}/8</h6>
+                    <h6>Timeliness Subscore: {sourceResponse?.scores.relevance_score.timeliness_score}/7</h6>
+                    <h6>Helpfulness Subscore: {sourceResponse?.scores.relevance_score.helpfulness_score}/8</h6>
                     <h6>Easter Egg!</h6>
                 </div>
                 <div className = "box">
                     <h3>Purpose</h3>
-                    <h5>{sourceResponse.scores.purpose_score}</h5>
+                    <h5>{sourceResponse?.scores.purpose_score}</h5>
                     <p>out of 15</p>
                     <h6>No subcategories</h6>
                 </div>
@@ -210,8 +212,8 @@ function Source(){
             <div className = "red_list">
                 <h2>Red Flags</h2>
                 <ul>
-                    {sourceResponse.other.red_flags.length > 0 ? (
-                        sourceResponse.other.red_flags.map((item, index) => (
+                    {(sourceResponse?.other.red_flags ?? []).length > 0 ? (
+                        sourceResponse?.other.red_flags.map((item, index) => (
                         <li key={index}>"{item}"</li>
                         ))
                     ) : (
@@ -222,8 +224,8 @@ function Source(){
             <div>
                 <h2>Claims Made</h2>
                 <ul>
-                    {sourceResponse.other.claims.length > 0 ? (
-                        sourceResponse.other.claims.map((item, index) => (
+                    {(sourceResponse?.other.claims ?? []).length > 0 ? (
+                        sourceResponse?.other.claims.map((item, index) => (
                         <li key={index}>"{item}"</li>
                         ))
                     ) : (
@@ -234,8 +236,8 @@ function Source(){
             <div>
                 <h2>Corporations Mentioned</h2>
                 <ul>
-                    {sourceResponse.other.corporations.length > 0 ? (
-                        sourceResponse.other.corporations.map((item, index) => (
+                    {(sourceResponse?.other.corporations ?? []).length > 0 ? (
+                        sourceResponse?.other.corporations.map((item, index) => (
                         <li key={index}>"{item}"</li>
                         ))
                     ) : (
@@ -244,7 +246,7 @@ function Source(){
                 </ul>
             </div><br/>
             <h2>Ask Question About Source</h2>
-            <div classname = "chatlog">
+            <div className = "chatlog">
                 { chatlogs.map((item, index) => (
                     <div className = "sr-group" key = {index}>
                         <div className = "response-source">

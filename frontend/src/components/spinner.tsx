@@ -1,7 +1,6 @@
 import { ClipLoader } from "react-spinners";
-import { useState } from "react";
 
-function Loader({ loading }){
+function Loader({ loading }: {loading: boolean}){
 
     return (
         <>

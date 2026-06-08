@@ -1,8 +1,9 @@
 import AxiosInstance from "./AxiosInstance";
 import { useAuth } from "@clerk/clerk-react";
 import { useState } from "react";
+import React from "react";
 
-function Sources({topic, rq, decrement, increment, sources, setSources, generated, setGenerated}){
+function Sources({topic, rq, decrement, increment, sources, setSources, generated, setGenerated}: {topic: string, rq: string, decrement: any, increment: any, sources: string[][], setSources: React.Dispatch<React.SetStateAction<string[][]>>, generated: boolean, setGenerated: any}){
 
     // State Vars
     
@@ -34,7 +35,7 @@ function Sources({topic, rq, decrement, increment, sources, setSources, generate
     }
 
     // Function that updates a certain source inside of sources array
-    const updateSource = (event) => {
+    const updateSource = (event: any) => {
         const elm = event.currentTarget;
         const index = parseInt(elm.dataset.index);
         const part = parseInt(elm.dataset.part);
@@ -47,7 +48,7 @@ function Sources({topic, rq, decrement, increment, sources, setSources, generate
     }
 
     // Function that removes a source from the array and from sources list
-    const deleteSource = (event) => {
+    const deleteSource = (event: any) => {
         const index = parseInt(event.currentTarget.dataset.index);
         
         // Loop through all sources, and if index is the set one, don't add to array

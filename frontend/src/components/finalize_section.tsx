@@ -1,4 +1,6 @@
-function Finalize({finalize, topic, decrement, setPage, description, rq, sources, summaryCount, ssCount, sourcesgen, summarygen, ssGen}){  
+import type React from "react";
+
+function Finalize({finalize, topic, decrement, setPage, description, rq, sources, summaryCount, ssCount, sourcesgen, summarygen, ssGen}: { finalize: any, topic: string, decrement: any, setPage: React.Dispatch<React.SetStateAction<number>>, description: any, rq: string, sources: string[][], summaryCount: any, ssCount: any, sourcesgen: boolean, summarygen: boolean, ssGen: boolean}){  
     return (
         <div className = "flex flex-col">
             <h3 className = "text-3xl font-bold">Finalize</h3>
@@ -70,7 +72,10 @@ function Finalize({finalize, topic, decrement, setPage, description, rq, sources
                 <div className = "border-2 p-3 m-3 rounded-md">
                     <h4 className = "font-semibold text-xl">Ready to Finalize?</h4>
                     <p className = "text-sm font-extralight">Once you finalize, your project will be set outside of scan mode. You can edit your project at any time.</p><br/>
-                    <button type = "button" onClick={() => { console.log("clicked"); finalize(); }} className = "text-white self-end">Finalize</button>
+                    <button type = "button" onClick={() => { finalize(); }} className = "text-white self-end">Finalize</button>
+                </div>
+                <div className = "m-3">
+                    <button className = "w-fit text-[#f4f4f4] text-lg py-0 px-3" type = "button" onClick = {decrement}>←</button>
                 </div>
             </div>
         </div>

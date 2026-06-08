@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import AxiosInstance from "./AxiosInstance";
 import { Markdown } from "tiptap-markdown";
-import { useRef } from "react";
 import ToolbarTool from "../components/toolbar";
 import Underline from '@tiptap/extension-underline';
 import { useEditor, useEditorState } from "@tiptap/react";
@@ -10,7 +9,7 @@ import StarterKit from '@tiptap/starter-kit';
 import CharacterCount from '@tiptap/extension-character-count';
 import { EditorContext, EditorContent } from "@tiptap/react";
 
-function Summary({setCount, topic, rq, increment, decrement, summary, description, generated, setGenerated}) {
+function Summary({setCount, topic, rq, increment, decrement, summary, description, generated, setGenerated}: {setCount: any, topic: any, rq: any, increment: any, decrement: any, summary: any, description: any, generated: any, setGenerated: any}) {
 
     // State Vars
 
@@ -29,8 +28,8 @@ function Summary({setCount, topic, rq, increment, decrement, summary, descriptio
         ],
         content: summary.current,
         onUpdate: ({editor}) => {
-            summary.current = editor.storage.markdown.getMarkdown();
-        }
+            summary.current = (editor.storage as any).markdown.getMarkdown();
+        } 
     });
 
     // Character & Word count

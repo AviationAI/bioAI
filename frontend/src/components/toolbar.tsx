@@ -1,5 +1,5 @@
 
-function ToolbarTool({editor}) {
+function ToolbarTool({editor}: {editor: any}) {
   return (
     <div>
         <div className = "flex flex-row border-t border-r border-l border-b-0 rounded-t-md">

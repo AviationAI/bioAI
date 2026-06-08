@@ -25,8 +25,8 @@ class ProjectFrontendSerializer(serializers.ModelSerializer):
         user = self.context["request"].user
         
         # Getting the field values
-        scan_mode = attrs.get("scan_mode", self.instance.scan_mode)
-        rq = attrs.get("research_question", self.instance.research_question)
+        scan_mode = attrs.get("scan_mode", self.instance.scan_mode if self.instance else False)
+        rq = attrs.get("research_question", self.instance.scan_mode if self.instance else None)
         
         if not scan_mode and (not rq):
             raise serializers.ValidationError("NO Research Question")
@@ -52,8 +52,8 @@ class ProjectBackendSerializer(serializers.ModelSerializer):
         user = self.context["request"].user
         
         # Getting the field values
-        scan_mode = attrs.get("scan_mode", self.instance.scan_mode)
-        rq = attrs.get("research_question", self.instance.research_question)
+        scan_mode = attrs.get("scan_mode", self.instance.scan_mode if self.instance else False)
+        rq = attrs.get("research_question", self.instance.scan_mode if self.instance else None)     
         
         if not scan_mode and (not rq):
             raise serializers.ValidationError("NO Research Question")

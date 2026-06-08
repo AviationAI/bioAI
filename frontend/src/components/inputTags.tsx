@@ -1,9 +1,9 @@
 import { useState } from "react";
 
-function InputTags({tags, setTags}){
+function InputTags({tags, setTags}: {tags: string[], setTags: React.Dispatch<React.SetStateAction<string[]>>}){
     const [inputValue, setInputValue] = useState("");
 
-    function handleKeyDown(event){
+    function handleKeyDown(event: any){
         if (event.key === "Enter" && inputValue.trim().length > 0 && !tags.includes(inputValue)){
             setTags([...tags, inputValue]); 
             setInputValue("");                  
@@ -13,7 +13,7 @@ function InputTags({tags, setTags}){
         }
     }
 
-    function close (tag){
+    function close (tag: any){
         setTags(tags.filter(item => item !== tag));
     }
 

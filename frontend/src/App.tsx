@@ -1,7 +1,7 @@
 import Navbar from "./components/layout";
 import './styles.css';
 import Home from "./pages";
-import { SignedIn, SignedOut, SignInButton, useAuth } from "@clerk/clerk-react";
+import { SignedIn } from "@clerk/clerk-react";
 import Create from "./pages/create";
 import ProjectDetail from "./pages/project";
 import { BrowserRouter, Routes, Route } from "react-router-dom";

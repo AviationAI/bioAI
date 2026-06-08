@@ -1,13 +1,12 @@
 import { Markdown } from "tiptap-markdown";
-import { useRef } from "react";
 import ToolbarTool from "../components/toolbar";
 import Underline from '@tiptap/extension-underline';
-import { useEditor, useEditorState } from "@tiptap/react";
+import { useEditor } from "@tiptap/react";
 import StarterKit from '@tiptap/starter-kit';
-import CharacterCount from '@tiptap/extension-character-count';
 import { EditorContext, EditorContent } from "@tiptap/react";
+import type React from "react";
 
-function Choose({topic, rq, setTopic, description, setRQ, increment, decrement}) {
+function Choose({topic, rq, setTopic, description, setRQ, increment, decrement}: {topic: string, rq: string, setTopic: React.Dispatch<React.SetStateAction<string>>, description: any, setRQ: React.Dispatch<React.SetStateAction<string>>, increment: any, decrement: any}) {
 
     // Text Editor
     const editor = useEditor({
@@ -18,7 +17,7 @@ function Choose({topic, rq, setTopic, description, setRQ, increment, decrement})
         ],
         content: description.current,
         onUpdate: ({editor}) => {
-            description.current = editor.storage.markdown.getMarkdown();
+            description.current = (editor.storage as any).markdown.getMarkdown();
         }
     });
 

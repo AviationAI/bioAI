@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import AxiosInstance from "./AxiosInstance";
 import { Markdown } from "tiptap-markdown";
@@ -11,7 +11,7 @@ import CharacterCount from '@tiptap/extension-character-count';
 import { EditorContext, EditorContent } from "@tiptap/react";
 import { useEffect } from "react";
 
-function SummarizeSources({setCount, topic, rq, increment, decrement, summary, description, generated, setGenerated, sources}) {
+function SummarizeSources({setCount, topic, rq, increment, decrement, summary, description, generated, setGenerated, sources}: {setCount: React.Dispatch<React.SetStateAction<any>>, topic: string, rq: string, increment: any, decrement: any, summary: any, description: any, generated: boolean, setGenerated: React.Dispatch<React.SetStateAction<boolean>>, sources: string[][]}) {
 
     // State Vars
 
@@ -30,7 +30,7 @@ function SummarizeSources({setCount, topic, rq, increment, decrement, summary, d
         ],
         content: summary.current,
         onUpdate: ({editor}) => {
-            summary.current = editor.storage.markdown.getMarkdown();
+            summary.current = (editor.storage as any).markdown.getMarkdown();
         }
     });
 

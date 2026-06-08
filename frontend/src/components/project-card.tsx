@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '@clerk/clerk-react';
 import AxiosInstance from './AxiosInstance';
+import type { Project } from '../interfaces';
 
-function Project({project}){
+function ProjectCard({project}: {project: Project}){
     const {getToken} = useAuth();
-    async function deleteProject(event){
+    async function deleteProject(event: any){
         event.preventDefault();
         let confirmed = window.confirm("Are you sure you want to delete this project? This action is irreversable.");
         if (confirmed){
@@ -45,4 +46,4 @@ function Project({project}){
     );
 }
 
-export default Project;
+export default ProjectCard;

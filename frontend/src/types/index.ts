@@ -1,0 +1,1 @@
+export type Plan = "basic" | "pro" | "prem" | "prem_del"

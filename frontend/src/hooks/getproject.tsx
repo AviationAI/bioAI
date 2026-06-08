@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import AxiosInstance from "../components/AxiosInstance";
+import type { Project } from "../interfaces";
 
-function useProject(projectID) {
+function useProject(projectID: string) {
 
     // Variables
     const {getToken} = useAuth();
     
     // States
     const [loading, setLoading] = useState(true);
-    const [project, setProject] = useState(null);
+    const [project, setProject] = useState <Project | null>(null);
 
     useEffect(() => {
         async function getProject() {

@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
-import Project from "../components/project-card";
-import { Link } from 'react-router-dom';
+import ProjectCard from "../components/project-card";
 import { SignedIn, SignedOut } from "@clerk/clerk-react";
 import AxiosInstance from "../components/AxiosInstance";
 import { useAuth } from "@clerk/clerk-react";
 import Loader from "../components/spinner";
+import type { Project } from "../interfaces";
 
 function Home(){
-    const [projects, setProjects ] = useState(null);
+    const [projects, setProjects ] = useState <Project[] | null>(null);
     const { getToken } = useAuth();
     const [loading, setLoading] = useState(true);
     useEffect(() => {
@@ -39,7 +39,7 @@ function Home(){
             <div className = "projects">
             {projects && projects.length > 0 ? (
                 projects.map(project => (
-                    <Project key = {project.id} project = {project} />
+                    <ProjectCard key = {project.id} project = {project} />
                 ))
             ):(
                 <p>No projects yet</p>

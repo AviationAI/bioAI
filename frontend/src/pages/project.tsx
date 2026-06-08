@@ -9,30 +9,27 @@ import Overlay from "../components/overlay";
 import InputTags from "../components/inputTags";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import type { Project, User } from "../interfaces";
 
 function ProjectDetail(){
 
-    const [content, setContent] = useState(null);
     const [isOverlayOpen, setIsOverlayOpen] = useState(false);
-    const [ greenPercent, setGreenPercent ] = useState(0);
-    const [ redPercent, setRedPercent ] = useState(0);
     const [loading, setLoading] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
     const [ litSummaryLoading, setLitSummaryLoading] = useState(false);
     const { projectID } = useParams();
     const { getToken, userId } = useAuth();
-    const [project, setProject] = useState(null);
-    const [editors, setEditors] = useState([]);
-    const [viewers, setViewers] = useState([]);
-    const [removed, setRemoved] = useState([]);
-    const [addedUsers, setAddedUsers] = useState([]);
+    const [project, setProject] = useState <Project | null>(null);
+    const [editors, setEditors] = useState <User[]>([]);
+    const [viewers, setViewers] = useState <User[]>([]);
+    const [removed, setRemoved] = useState <User[]>([]);
+    const [addedUsers, setAddedUsers] = useState <string[]>([]);
     const [type, setType] = useState("editor");
     const [dependency, setDependency] = useState(true);
     const [url, setURL] = useState("");
-    const [question, setQuestion] = useState("");
     const navigate = useNavigate();
 
-    function handleChange(event){
+    function handleChange(event: any){
         const el = event.currentTarget;
         const value = el.value;
         const user = el.dataset.user;
@@ -60,13 +57,13 @@ function ProjectDetail(){
         }
     }
     
-    async function handleSubmit(event){
+    async function handleSubmit(event: any){
         event.preventDefault();
         if (editors.length > 0 || viewers.length > 0 || removed.length > 0 || addedUsers.length > 0 ){
             setIsLoading(true);
             try{
                 const token = await getToken();
-                const request = await AxiosInstance.patch(`/api/projects/${project.id}`, {
+                const request = await AxiosInstance.patch(`/api/projects/${project?.id}`, {
                     "removed": removed,
                     "editors": editors,
                     "viewers": viewers,
@@ -90,12 +87,12 @@ function ProjectDetail(){
         }
     }
 
-    async function handleSourceInitializationSubmit(event){
+    async function handleSourceInitializationSubmit(event: any){
         event.preventDefault();
         navigate(`/source/${projectID}?url=` + encodeURIComponent(url));
     }
 
-    async function generateSummary(event) {
+    async function generateSummary() {
         setLitSummaryLoading(true);
         try {
             const token = await getToken();
@@ -104,7 +101,7 @@ function ProjectDetail(){
                     "Authorization": `Bearer ${token}`
                 }
             });
-            setProject({...project, literature_summarized: response.data.summary})
+            setProject({...project, literature_summarized: response.data.summary} as Project)
         } catch (err){
             console.log(err);
         } finally {
@@ -140,7 +137,7 @@ function ProjectDetail(){
             <div className="project">
                 <h1>{ project.topic }</h1><br/>
                 <ul>
-                    {project.subtopics.subtopics.map((subtopic, index) =>
+                    {project?.subtopics?.subtopics.map((subtopic, index) =>
                         <li key={index}>
                             <h3>{ subtopic.subtopic }</h3>
                             <p>{ subtopic.description }</p>
@@ -225,7 +222,7 @@ function ProjectDetail(){
             </div>
             <p className="centeredText">{ project.research_question }</p>
             <p className="centeredText">{ project.description }</p>
-            {(project.user.id === userId || userId in project.editors.map(editor => editor.id)) && 
+            {(project.user.id === userId || (userId ?? "" )in project.editors.map(editor => editor.id)) && 
                 <Link to="edit" className="inline-block mb-3">Edit</Link>
             }
             <hr className="my-4"/>
@@ -233,7 +230,7 @@ function ProjectDetail(){
                 <div className="halfDiv">
                     <h3 className="semi-heading">Sources</h3>
                     <ol className="sources">
-                        {project.available_trusted_literatures.map((source, index) => (
+                        {project?.available_trusted_literatures?.map((source, index) => (
                             <li key={index} className="source">
                                 <p><b>{ source[0] }</b>, { source[1] }</p>
                             </li>

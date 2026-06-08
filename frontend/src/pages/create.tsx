@@ -5,13 +5,22 @@ import { useNavigate } from "react-router-dom";
 import Loader from "../components/spinner";
 
 function Create(){
+
+    // State variables
+
     const [loading, setLoading] = useState(false);
     const {getToken} = useAuth();
     const [topic, setTopic] = useState("");
     const [description, setDescription] = useState("");
     const [rq, setRq] = useState("");
     const [scan, setScan] = useState(false);
+
+    // Navigation
     const navigate = useNavigate();
+
+    // Sections of sidebar
+    const reg_sections = ["Set Project Details", "Generate Summary", "Generate Sources", "Summarize Sources", "Finalize"];
+    const scan_sections = ["Set Project Details", "Generate Subtopics", "Finalize"]
 
     const send = async (event) => {
         event.preventDefault();
