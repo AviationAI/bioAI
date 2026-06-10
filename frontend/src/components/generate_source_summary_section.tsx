@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import AxiosInstance from "./AxiosInstance";
 import { Markdown } from "tiptap-markdown";
-import { useRef } from "react";
 import ToolbarTool from "../components/toolbar";
 import Underline from '@tiptap/extension-underline';
 import { useEditor, useEditorState } from "@tiptap/react";

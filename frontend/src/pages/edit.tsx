@@ -6,77 +6,59 @@ import { useEffect } from "react";
 import Screen404 from "../components/404";
 import AxiosInstance from "../components/AxiosInstance";
 import { useNavigate } from "react-router-dom";
-import { TextStyle } from '@tiptap/extension-text-style';
 import { EditorContent, useEditor, EditorContext } from '@tiptap/react';
-import { FloatingMenu, BubbleMenu } from '@tiptap/react/menus';
 import StarterKit from '@tiptap/starter-kit';
-import React from 'react';
 import { Markdown } from "tiptap-markdown";
 import { useRef } from "react";
 import ToolbarTool from "../components/toolbar";
 import Underline from '@tiptap/extension-underline';
+import useProject from "../hooks/getproject";
 
 function Edit(){
     // Vars and hooks (getToken is for auth purposes)
-    const {getToken, userID} = useAuth();
-    const [project, setProject] = useState(null);
+    const {getToken} = useAuth();
     const {projectID} = useParams();
-    const [dependency, setDependency] = useState(true);
-    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
+    const {project, loading} = useProject(projectID ?? "");
+
     // Everything below are fields that are going to be editted by user
-    const [topic, setTopic] = useState(null);
-    const [description, setDescription] = useState(null);
-    const [question, setQuestion] = useState(null);
-    const [sources, setSources] = useState([]);
-    const summaryContent = useRef(null);
+    const [topic, setTopic] = useState("");
+    const [description, setDescription] = useState("");
+    const [question, setQuestion] = useState("");
+    const [sources, setSources] = useState <string[][]>([]);
+    const summaryContent = useRef("");
 
     // Everything below are fields to check that the user editted the data
-    const [ogTopic, setOGTopic] = useState(null);
-    const [ogDescription, setOGDescription] = useState(null);
-    const [ogQuestion, setOGQuestion] = useState(null);
-    const [ogSources, setOGSources] = useState([]);
-    const [ogSummary, setOGSummary] = useState(null);
+    const [ogTopic, setOGTopic] = useState("");
+    const [ogDescription, setOGDescription] = useState("");
+    const [ogQuestion, setOGQuestion] = useState("");
+    const [ogSources, setOGSources] = useState <string[][]>([]);
+    const [ogSummary, setOGSummary] = useState("");
 
     const summary = useEditor({
         extensions: [StarterKit, Markdown, Underline],
         content: "",
         onUpdate: ({editor}) => {
-            summaryContent.current = editor.storage.markdown.getMarkdown();
+            summaryContent.current = (editor.storage as any).markdown.getMarkdown();
         }
     });
 
     // Fetching project
     useEffect(() => {
-        async function fetchProject(){
-            try {
-                const token = await getToken();
-                const response = await AxiosInstance.get(`/api/projects/${projectID}`, {
-                    headers: {
-                        //Bearer token matches layout required in backend
-                        "Authorization": `Bearer ${token}`
-                    }
-                });
-                setProject(response.data);
-                setTopic(response.data.topic);
-                setDescription(response.data.description);
-                setSources(response.data.available_trusted_literatures);
-                setQuestion(response.data.research_question);
-                setOGTopic(response.data.topic);
-                setOGDescription(response.data.description);
-                setOGSources(response.data.available_trusted_literatures);
-                setOGQuestion(response.data.research_question);
-                setOGSummary(response.data.summary);
-                summaryContent.current = response.data.summary;
-            }catch (err){
-                console.log(err);
-            }finally {
-                setLoading(false);
-            }
-        }
-        fetchProject();
-    }, [projectID, dependency])
+
+        // Setting fields
+        setTopic(project?.topic ?? "");
+        setDescription(project?.description ?? "");
+        setSources(project?.available_trusted_literatures ?? []);
+        setQuestion(project?.research_question ?? "");
+        setOGTopic(project?.topic ?? "");
+        setOGDescription(project?.description ?? "");
+        setOGSources(project?.available_trusted_literatures ?? []);
+        setOGQuestion(project?.research_question ?? "");
+        setOGSummary(project?.summary ?? "");
+        summaryContent.current = project?.summary ?? "";
+    }, [project])
 
     useEffect(() => {
         if (!summary || !ogSummary) return;
@@ -87,7 +69,7 @@ function Edit(){
     }, [ogSummary])
 
     // Function that updates a certain source inside of sources array
-    const updateSource = (event) => {
+    const updateSource = (event: any) => {
         const elm = event.currentTarget;
         const index = parseInt(elm.dataset.index);
         const part = parseInt(elm.dataset.part);
@@ -99,7 +81,7 @@ function Edit(){
         }
     }
     // Funciton that removes a source from the array and from sources list
-    function removeSource(event){
+    function removeSource(event: any){
         const index = parseInt(event.currentTarget.dataset.index);
         
         // Loop through all sources, and if index is the set one, don't add to array
@@ -107,7 +89,7 @@ function Edit(){
     }
 
     // submits editted data
-    async function submit(event){
+    async function submit(event: any){
         event.preventDefault();
         try {
             const filtered =  sources.filter((item, _) => item[0].trim().length > 0 && item !== null && item[1].trim().length > 0 && item);
@@ -119,7 +101,7 @@ function Edit(){
                     ...(question.trim().length > 0 && question !== ogQuestion &&{"question": question.trim()}),
                     ...(description.trim().length > 0 && description !== ogDescription &&{"description": description.trim()}),
                     ...(filtered.length > 0 && JSON.stringify(filtered) !== JSON.stringify(ogSources) && {"sources": filtered}),
-                    ...(summaryContent.current.trim().length > 0 && summaryContent.current !== ogSummary && {"summary": summaryContent.current.trim()})
+                    ...((summaryContent.current as string).trim().length > 0 && summaryContent.current !== ogSummary && {"summary": summaryContent.current.trim()})
                 }, 
                 {headers: {
                     "Authorization": `Bearer ${token}`
@@ -140,7 +122,7 @@ function Edit(){
     return (
         <>
             <div className = "project">
-                <h1>{ project.topic }</h1>
+                <h1>{ project?.topic }</h1>
                 <form className = "create-form" onSubmit={(event) => {submit(event)}}>
                     <div className="mb-3">
                         <input className="topic-control" type = "text" value = {topic} onChange = {(event) => {setTopic(event.currentTarget.value)}}/>

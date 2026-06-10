@@ -109,7 +109,7 @@ function Summary({setCount, topic, rq, increment, decrement, summary, descriptio
                 <h4 className = "font-semibold text-xl">Edit or Manually Create Summary</h4><br/>
                 <EditorContext.Provider value={{ editor: editor }}>
                     <ToolbarTool editor = {editor}/>
-                    <EditorContent editor={editor} className = "border-2 rounded-b-md"/>
+                    <EditorContent editor={editor} className = "border-2 rounded-b-md p-2"/>
                 </EditorContext.Provider>
             </div>
             <div className = "flex flex-row gap-1">

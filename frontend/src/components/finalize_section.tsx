@@ -11,7 +11,7 @@ function Finalize({finalize, topic, decrement, setPage, description, rq, sources
                     <p className = "text-sm font-extralight">Overview of basic details of Project.</p><br/>
                     <div className = "mb-3">
                         <h6 className="text-sm font-extralight">Topic of Study</h6>
-                        <p>{topic}</p>
+            a            <p>{topic}</p>
                     </div>
                     <div className = "mb-3">
                         <h6 className="text-sm font-extralight">Research Question</h6>
@@ -21,7 +21,7 @@ function Finalize({finalize, topic, decrement, setPage, description, rq, sources
                         <h6 className="text-sm font-extralight">Description of Study</h6>
                         <p>{description.current}</p>
                     </div>
-                    <button type = "button" onClick = {() => {setPage(1)}} className = "w-fit text-gray-100 bg-green-400">Edit</button>
+                    <button type = "button" onClick = {() => {setPage(1)}} className = "self-end w-fit text-gray-100 bg-green-400">Edit</button>
                 </div>
                 <div className = "flex flex-row m-3 "> 
                     <div className = "flex-1 border p-3 rounded-md mr-1 flex flex-col  h-full">
@@ -69,14 +69,12 @@ function Finalize({finalize, topic, decrement, setPage, description, rq, sources
                         <button type = "button" onClick = {() => {setPage(4)}} className = "w-fit text-gray-100 bg-green-400 mt-auto">Edit</button>
                     </div>
                 </div>
-                <div className = "border-2 p-3 m-3 rounded-md">
+                <div className = "border-2 p-3 m-3 rounded-md flex flex-end">
                     <h4 className = "font-semibold text-xl">Ready to Finalize?</h4>
-                    <p className = "text-sm font-extralight">Once you finalize, your project will be set outside of scan mode. You can edit your project at any time.</p><br/>
+                    <p className = "text-sm font-extralight">Once you finalize, your project will be set in research mode. You can edit your project at any time.</p><br/>
                     <button type = "button" onClick={() => { finalize(); }} className = "text-white self-end">Finalize</button>
                 </div>
-                <div className = "m-3">
-                    <button className = "w-fit text-[#f4f4f4] text-lg py-0 px-3" type = "button" onClick = {decrement}>←</button>
-                </div>
+                <button className = "w-fit text-[#f4f4f4] text-lg py-0 px-3 self-end" type = "button" onClick = {decrement}>←</button>
             </div>
         </div>
     );

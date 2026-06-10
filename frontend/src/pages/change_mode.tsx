@@ -25,8 +25,8 @@ function ChangeMode() {
 
     // Current state of navbar & all states possible + page
     const sections = ["Review Subtopics", "Edit Project Details", "Generate Summary", "Generate Sources", "Summarize Sources", "Finalize"];
-    const [state, setState] = useState(0);
-    const [page, setPage] = useState(0);
+    const [state, setState] = useState <number>(0);
+    const [page, setPage] = useState <number>(0);
 
     const {projectID} = useParams <{projectID: string}>();
     const {project, loading} = useProject(projectID ?? "");
@@ -48,7 +48,10 @@ function ChangeMode() {
         charactersCount: 0,
         wordsCount: 0,
     });
-    const [ssCount, setSSCount] = useState(0);
+    const [ssCount, setSSCount] = useState({
+        charactersCount: 0,
+        wordsCount: 0,
+    });
 
     // Data determining if certain parts of project have been generated or not
     const [summarygen, setSummarygen] = useState(false);
@@ -83,7 +86,7 @@ function ChangeMode() {
     async function finalize() {
         try {
             const token = await getToken();
-            const response = await AxiosInstance.put(`/api/projects/${projectID}`, {
+            await AxiosInstance.put(`/api/projects/${projectID}`, {
                     // Using spread operator to only send the said field if the content is not none
                     ...(topic.trim().length > 0 &&  {"topic": topic.trim()}),
                     ...(rq.trim().length > 0 && {"question": rq.trim()}),
@@ -95,7 +98,7 @@ function ChangeMode() {
                 {headers: {
                     "Authorization": `Bearer ${token}`
             }});
-            const change_mode = await AxiosInstance.post(`/api/projects/${projectID}/change`, {}, {
+            await AxiosInstance.post(`/api/projects/${projectID}/change`, {}, {
                 headers: {
                     "Authorization": `Bearer ${token}`
                 }
@@ -115,7 +118,7 @@ function ChangeMode() {
                     <p className = "text-2xl font-bold">Steps to Change Mode</p>
                 </div>
                 {sections.map((section, index)=>
-                    <button key = {index} data-index = {index} className = "p-3 sidebar-portion flex flex-row justify-center items-center gap-1">
+                    <button onClick = {(event: any) => {setPage(parseInt(event.currentTarget.dataset.index)); }}key = {index} data-index = {index} className = "p-3 sidebar-portion flex flex-row justify-center items-center gap-1">
                         {state > index && <span className = "text-green-700">&#x2713;</span>}
                         <p className = "text-me font-semibold">{section}</p>
                     </button>
@@ -125,7 +128,7 @@ function ChangeMode() {
                 {project !== null &&
                     <>
                         {page === 0 && <SubtopicsSection project = {project} increment = {incrementPage}/>}
-                        {page === 1 && <Choose increment = {incrementPage} decrement = {decrementPage} topic = {topic} rq = {rq} setTopic = {setTopic} setRQ = {setRQ} description = {description}/>}
+                        {page === 1 && <Choose helper = "After reviewing your subtopics, decide on a topic and research question for your study. This will be used to generate available sources and a summary/overview regarding the topic." scan = {false} increment = {incrementPage} decrement = {decrementPage} topic = {topic} rq = {rq} setTopic = {setTopic} setRQ = {setRQ} description = {description}/>}
                         {page === 2 && <Summary setCount = {setSummaryCount} increment = {incrementPage} decrement = {decrementPage} topic = {topic} rq = {rq} summary = {summary} description={description} generated = {summarygen} setGenerated = {setSummarygen}/>}
                         {page === 3 && <Sources increment = {incrementPage} decrement = {decrementPage} topic = {topic} rq = {rq} sources = {sources} setSources = {setSources} generated = {sourcesgen} setGenerated = {setSourcesgen}/>}
                         {page === 4 && <SummarizeSources setCount = {setSSCount} increment = {incrementPage} decrement = {decrementPage}topic = {topic} rq = {rq} sources={sources} summary = {sources_summarized} description={description} generated = {ssGen} setGenerated = {setSSGen}/>}
