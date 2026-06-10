@@ -13,5 +13,7 @@ urlpatterns = [
     path('projects/<str:pk>/change', views.ProjectChangeMode.as_view(), name = "project-change-mode"),
     path('generate/sources', views.GenerateSources.as_view(), name = "generate-sources"),
     path('generate/summary', views.GenerateSummary.as_view(), name = "generate-summary"),
-    path('generate/summarize_literature', views.GenerateSourceSummary.as_view(), name = "generate-source-summary")
+    path('generate/summarize_literature', views.GenerateSourceSummary.as_view(), name = "generate-source-summary"),
+    path('generate/subtopics', views.GenerateSubtopics.as_view(), name = "generate-subtopics"),
+    path('user', views.UserRetrieveUpdateDestroy.as_view(), name = "user-retrieve-update-destroy"),
 ]

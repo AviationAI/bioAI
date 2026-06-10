@@ -64,6 +64,7 @@ pipeline = ResearchPipeline(model, chat, search, text_splitter, embeddings)
 class ProjectListCreate(generics.ListCreateAPIView):
     serializer_class = ProjectBackendSerializer
     permission_classes = [IsAuthenticated]
+    throttle_scope = 'moderate_address'
 
     def get_queryset(self):
         request = self.request
@@ -88,40 +89,57 @@ class ProjectListCreate(generics.ListCreateAPIView):
         return [IsAuthenticated()]
 
     def perform_create(self, serializer):
-        title = self.request.data.get("topic")
-        description = self.request.data.get("description")
-        rq = self.request.data.get("research_question")
-        scan_mode = self.request.data.get("scan_mode", False)
+        data = self.request.data
+        title = data.get("topic")
+        description = data.get("description")
+        rq = data.get("research_question")
+        scan_mode = data.get("scan_mode", False)
 
         # Two options, scan mode or not scan mode
         if not scan_mode:
 
-            # Finding available literature and summarizing in not scan mode
-            sources = pipeline.find_available_literature(title, rq)
-            
-            summary = pipeline.summarize_topic(title, description, sources, rq)
+            # Accesing request data specific to not scan mode (research mode)
+            summary = data.get("summary")
+            sources = data.get("sources")
+            literature_summarized = data.get("literature_summarized")
+
             serializer.save(
                 user = self.request.user,
+                topic = title,
+                research_question = rq,
                 available_trusted_literatures = sources,
                 summary = summary,
                 scan_mode = False,
-                description = description
+                description = description,
+                literature_summarized = literature_summarized
             )
         else:
-            # Scanning the topic in scan mode
-            subtopics = pipeline.scan_topic(title, description)
+            # Saving the project in scan mode
+            subtopics = data.get("subtopics")
+
             serializer.save(
                 subtopics = subtopics,
                 user = self.request.user,
                 scan_mode = True,
                 description = description
             )
-                
-            
+
+# Class for User controls such as retrieving or updating fields    
+class UserRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+    # GET
+    def get_object(self):
+
+        # Returns user, drf automatically serializes and puts in response obj
+        return self.request.user
 
 class ProjectRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     queryset = Project.objects.all()
     lookup_field = "pk"
+    throttle_scope = 'moderate_address'
+
     def get_permissions(self):
         request = self.request
         if request.method == "GET":
@@ -261,6 +279,11 @@ class GenerateSummary(APIView):
         rq = data.get("research_question")
         description = data.get("description")
 
+        try:
+            assert topic is not None and rq is not None and description is not None
+        except:
+            return Response(status = status.HTTP_400_BAD_REQUEST)
+
         # Generating summary then returning
         summary = pipeline.summarize_topic(topic, description, rq)
         return Response({"summary": summary}, status = status.HTTP_200_OK)
@@ -280,11 +303,17 @@ class GenerateSources(APIView):
         topic = data.get("topic")
         rq = data.get("research_question")
 
+        try:
+            assert topic is not None and rq is not None
+        except:
+            return Response(status = status.HTTP_400_BAD_REQUEST)
+
         # Generating sources and then returning them
         sources = pipeline.find_available_literature(topic, rq)
         return Response({"sources": sources}, status = status.HTTP_200_OK)
 
 
+# View to summarize literature
 class GenerateSourceSummary(generics.GenericAPIView):
 
     permission_classes = [IsAuthenticated]
@@ -301,9 +330,41 @@ class GenerateSourceSummary(generics.GenericAPIView):
         sources = data.get("sources")
         description = data.get("description")
 
+        try:
+            assert topic is not None and rq is not None and sources is not None and description is not None
+        except:
+            return Response(status = status.HTTP_400_BAD_REQUEST)
+
         # Summarizing sources
         summary = pipeline.summarize_sources(topic, rq, description, sources)
 
         return Response({"summary": summary}, status = status.HTTP_200_OK)
+
+# View to generate subtopics
+class GenerateSubtopics(generics.GenericAPIView):
+
+    permission_classes = [IsAuthenticated, (IsPro | IsPremium | IsPremium_Deluxe)]
+    throttle_scope = 'sensitive_address'
+
+    # POST request
+    def post (self, *args, **kwargs):
+
+
+        # request data
+        data = self.request.data
+
+        # fields
+        topic = data.get("topic")
+        description = data.get("description")
         
+        try:
+            assert topic is not None and description is not None
+        except:
+            return Response(status = status.HTTP_400_BAD_REQUEST)
         
+        # Generating subtopics
+        try: 
+            subtopics = pipeline.scan_topic(topic, description)
+        except json.decoder.JSONDecodeError:
+            return Response(status = status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({"subtopics": subtopics}, status = status.HTTP_200_OK)

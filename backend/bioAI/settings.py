@@ -184,9 +184,12 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.ScopedRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'sensitive_address': '5/minute',  # Options include: second, minute, hour, day
+        'sensitive_address': '5/minute',
+        'moderate_address': '60/minute',
+        'user': '15000/day'
     }
 }
 

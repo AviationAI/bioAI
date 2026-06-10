@@ -87,7 +87,7 @@ class Project(models.Model):
     literature_summarized = models.CharField(blank = True)
     editors = models.ManyToManyField(User, related_name="editable_projects", blank = True)
     viewers = models.ManyToManyField(User, related_name="viewable_projects", blank = True)
-    subtopics = models.JSONField(blank = True)
+    subtopics = models.JSONField(blank = True, null = True)
 
     def __str__(self):
         return f"{self.topic} by {self.user}"
