@@ -3,7 +3,7 @@ import { useAuth } from "@clerk/clerk-react";
 import { useState } from "react";
 import React from "react";
 
-function Sources({topic, rq, decrement, increment, sources, setSources, generated, setGenerated}: {topic: string, rq: string, decrement: any, increment: any, sources: string[][], setSources: React.Dispatch<React.SetStateAction<string[][]>>, generated: boolean, setGenerated: any}){
+function GenerateSources({topic, rq, decrement, increment, sources, setSources, generated, setGenerated}: {topic: string, rq: string, decrement: any, increment: any, sources: string[][], setSources: React.Dispatch<React.SetStateAction<string[][]>>, generated: boolean, setGenerated: any}){
 
     // State Vars
     
@@ -115,4 +115,4 @@ function Sources({topic, rq, decrement, increment, sources, setSources, generate
     );
 }
 
-export default Sources;
+export default GenerateSources;

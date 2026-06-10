@@ -10,16 +10,23 @@ import InputTags from "../components/inputTags";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import type { Project, User } from "../interfaces";
+import SubtopicsList from "../components/subtopics";
+import type { Subtopic } from "../interfaces";
+import useProject from "../hooks/getproject";
+import ProjectOverview from "../components/project_overview_section";
+import Sources from "../components/sources_section";
+import LiteratureSummarized from "../components/literature_summarized_section";
+import GoToEdit from "../components/go_to_edit_section";
 
 function ProjectDetail(){
 
+    // State vars
     const [isOverlayOpen, setIsOverlayOpen] = useState(false);
-    const [loading, setLoading] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
     const [ litSummaryLoading, setLitSummaryLoading] = useState(false);
     const { projectID } = useParams();
     const { getToken, userId } = useAuth();
-    const [project, setProject] = useState <Project | null>(null);
+    const {project, loading} = useProject(projectID as string);
     const [editors, setEditors] = useState <User[]>([]);
     const [viewers, setViewers] = useState <User[]>([]);
     const [removed, setRemoved] = useState <User[]>([]);
@@ -27,7 +34,22 @@ function ProjectDetail(){
     const [type, setType] = useState("editor");
     const [dependency, setDependency] = useState(true);
     const [url, setURL] = useState("");
+
+    // Navigation
     const navigate = useNavigate();
+
+    // Sidebar
+    const [page, setPage] = useState(0);
+    const sections = ["Overview", `Sources (${project?.available_trusted_literatures?.length})`, "Literature Summarized", "Edit"]
+
+    // Functions to increment/decrement page
+    const increment = () => {
+        if (page < 3) setPage(page => page + 1);
+    }
+
+    const decrement = () => {
+        if (page > 0) setPage(page => page -1);
+    }
 
     function handleChange(event: any){
         const el = event.currentTarget;
@@ -92,61 +114,24 @@ function ProjectDetail(){
         navigate(`/source/${projectID}?url=` + encodeURIComponent(url));
     }
 
-    async function generateSummary() {
-        setLitSummaryLoading(true);
-        try {
-            const token = await getToken();
-            const response = await AxiosInstance.post(`/rag_api/summarize/${projectID}`,{}, {
-                headers: {
-                    "Authorization": `Bearer ${token}`
-                }
-            });
-            setProject({...project, literature_summarized: response.data.summary} as Project)
-        } catch (err){
-            console.log(err);
-        } finally {
-            setLitSummaryLoading(false);
-        }
-    }
-
-    useEffect(() => {
-        async function fetchProject(){
-            try {
-                const token = await getToken();
-                const response = await AxiosInstance.get(`/api/projects/${projectID}`, {
-                    headers: {
-                        "Authorization": `Bearer ${token}`
-                    }
-                });
-                setProject(response.data);
-            }catch (err){
-                console.log(err);
-            }finally {
-                setLoading(false);
-            }
-        }
-        fetchProject();
-    }, [projectID, dependency])
-
     if(loading) return <Loader loading={true}/>;
     return (
         <>
         { (project !== null) ? (
         <>
         {(project.scan_mode) ? (
-            <div className="project">
-                <h1>{ project.topic }</h1><br/>
-                <ul>
-                    {project?.subtopics?.subtopics.map((subtopic, index) =>
-                        <li key={index}>
-                            <h3>{ subtopic.subtopic }</h3>
-                            <p>{ subtopic.description }</p>
-                        </li>
-                    )}
-                </ul>
+            <div className = "flex flex-col">
+                <h3 className = "font-bold text-3xl">{ project.topic }</h3>
+                <p className = "font-light text-base">{ project.description }</p><br/>
+                <hr/>
+                <div className = "flex flex-col m-3 border-2 rounded-md p-3">
+                    <h4 className = "font-semibold text-xl">Subtopics</h4>
+                    <SubtopicsList subtopics = {project?.subtopics?.subtopics as Subtopic[]}/>
+                </div>
+                <button className = "w-fit self-end text-[#f4f4f4]" onClick = {() => {navigate("change")}}>Change Mode</button>
             </div>
         ):(
-        <div className="project"> 
+        <div className="flex flex-row min-h-screen gap-7"> 
         {userId === project.user.id &&
             <Overlay loading={isLoading} isOpen={isOverlayOpen} onClose={() => {setIsOverlayOpen(false)}}>
                 <h2>Share</h2>
@@ -214,71 +199,23 @@ function ProjectDetail(){
             </form>
             </Overlay>
             }
-            <div className="textButton">
-                <h1 className="centeredText">{ project.topic }</h1>
-                {(project.user.id === userId) && 
-                    <button className="friendlyButton" onClick={() => {setIsOverlayOpen(true)}}>Share</button>
-                }
-            </div>
-            <p className="centeredText">{ project.research_question }</p>
-            <p className="centeredText">{ project.description }</p>
-            {(project.user.id === userId || (userId ?? "" )in project.editors.map(editor => editor.id)) && 
-                <Link to="edit" className="inline-block mb-3">Edit</Link>
-            }
-            <hr className="my-4"/>
-            <div className="sourceQuestionDiv">
-                <div className="halfDiv">
-                    <h3 className="semi-heading">Sources</h3>
-                    <ol className="sources">
-                        {project?.available_trusted_literatures?.map((source, index) => (
-                            <li key={index} className="source">
-                                <p><b>{ source[0] }</b>, { source[1] }</p>
-                            </li>
-                        ))}
-                    </ol>
-                </div>
-                <div className="halfDiv">
-                    <h3 className="text-2xl font-semibold">See credibility of URL</h3>
-                    <form onSubmit={handleSourceInitializationSubmit}>
-                        <div className="mb-3">
-                            <input
-                                value={url}
-                                onChange={(event) => {setURL(event.currentTarget.value)}}
-                                className="midInput"
-                                placeholder="Enter URL to get credibility"
-                            />
-                            <p className="text-sm text-gray-500 mt-1">
-                                Proceed at your own risk. By submitting this form you acknowledge that we have no legal liabilities regarding your web scraping request.
-                            </p>
-                        </div>
-                        <button type="submit" className="friendlySubmitButton">Ask</button>
-                    </form>
-                </div> 
-            </div>
-            <div className="mt-6">
-                <h3 className="centeredText">Summary</h3>
-                <ReactMarkdown>{ project.summary }</ReactMarkdown>
-            </div>
-            <div className="mt-6">
-                <h3 className="centeredText semi-heading">Literatures Summarized</h3>
-                <Loader loading={litSummaryLoading}/> <br/>
-                {project.literature_summarized ? (
-                    <>
-                        <ReactMarkdown>{ project.literature_summarized }</ReactMarkdown>
-                        <button disabled={litSummaryLoading} type="button" onClick={generateSummary} className="mt-3">
-                            Regenerate Summary
-                        </button>
-                    </>        
-                ):(
-                    project.user.id === userId ? (
-                        <button disabled={litSummaryLoading} type="button" onClick={generateSummary} className="mt-3">
-                            Generate Summary
-                        </button>
-                    ):(
-                        <p>You must own this project to generate the literature summary.</p>
-                    )
+            <aside className = "w-60 -mt-[25px] -ml-[25px] border-r">
+                {sections.map((section, index)=>
+                    <button onClick = {(event: any) => {setPage(parseInt(event.currentTarget.dataset.index)); }}key = {index} data-index = {index} className = "p-3 sidebar-portion flex flex-row justify-center items-center gap-1">
+                        <p className = {page !== index ? "font-semibold" : "font-extrabold"}>{section}</p>
+                    </button>
                 )}
-            </div>
+            </aside>
+            <main className = "flex flex-col flex-1 m-1">
+                <div className = "flex flex-row justify-between">
+                    <h2 className = "text-4xl font-bold">{ project?.topic }</h2>
+                    <button className = "bg-[#53a2e7] text-[#f4f4f4] hover:bg-[#1f558f]" onClick = {() => {setIsOverlayOpen(true);}}>Share</button>
+                </div><br/>
+                {page === 0 && <ProjectOverview topic = {project?.topic} rq = {project?.research_question as string} description = {project?.description} summary = {project?.summary as string} increment = {increment}/>}
+                {page === 1 && <Sources sources = {project?.available_trusted_literatures as string[][]} increment = {increment} decrement = {decrement}/>}
+                {page === 2 && <LiteratureSummarized summary = {project?.literature_summarized as string} increment = {increment} decrement = {decrement}/>}
+                {page === 3 && <GoToEdit decrement = {decrement}/>}
+            </main>
         </div>
         )}
         </>

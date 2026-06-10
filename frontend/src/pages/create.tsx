@@ -9,12 +9,12 @@ import ChooseMode from "../components/choose_mode_Section";
 import useUserProfile from "../hooks/getuserprofile";
 import Choose from "../components/edit_details";
 import Summary from "../components/generate_summary_and_edit_section";
-import Sources from "../components/generate_sources_and_edit_section";
 import SummarizeSources from "../components/generate_source_summary_section";
 import Finalize from "../components/finalize_section";
 import type { Subtopics } from "../interfaces";
 import GenerateSubtopics from "../components/generate_subtopics_section";
 import FinalizeScan from "../components/finalize_scan_section";
+import GenerateSources from "../components/generate_sources_and_edit_section";
 
 function Create(){
 
@@ -143,7 +143,7 @@ function Create(){
                 <>
                     {page === 1 && <Choose topic = {topic} setTopic = {setTopic} description = {description} rq = {rq} setRQ = {setRq} increment = {increment} decrement = {decrement} helper = {"This section is for deciding on a topic and research question for your study. This will be used to generate available sources and a summary/overview regarding the topic."} scan = {scan}/>}
                     {page === 2 && <Summary topic = {topic} rq = {rq} description = {description} summary = {summary} increment = {increment} decrement = {decrement} generated = {summaryGen} setGenerated = {setSummaryGen} setCount = {setSummaryCount}/>}
-                    {page === 3 && <Sources topic = {topic} rq = {rq} sources = {sources} setSources = {setSources} generated = {sourceGen} setGenerated = {setSourceGen} increment = {increment} decrement = {decrement}/>}
+                    {page === 3 && <GenerateSources topic = {topic} rq = {rq} sources = {sources} setSources = {setSources} generated = {sourceGen} setGenerated = {setSourceGen} increment = {increment} decrement = {decrement}/>}
                     {page === 4 && <SummarizeSources description = {description} summary = {sourceSummary} sources = {sources} topic = {topic} rq = {rq} generated = {ssGen} setGenerated = {setSSGen} setCount = {setSSCount} increment = {increment} decrement = {decrement}/>}
                     {page === 5 && <Finalize finalize = {send} summaryCount = {summaryCount} ssCount = {ssCount} sources = {sources} decrement = {decrement} topic = {topic} rq = {rq} setPage = {setPage} description={description} sourcesgen = { sourceGen } summarygen = {summaryGen} ssGen = {ssGen}/> } 
                 </>
