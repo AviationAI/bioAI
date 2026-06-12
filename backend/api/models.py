@@ -105,8 +105,17 @@ class Manuscript(models.Model):
     editors = models.ManyToManyField(User, related_name="editable_docs", blank = True)
     viewers = models.ManyToManyField(User, related_name="viewable_docs", blank = True)
     name = models.CharField()
-    content = models.TextField()
     project = models.ForeignKey(Project, on_delete = models.CASCADE, related_name="manuscripts")
     
     def __str__(self):
         return f"{self.name}: Made by {self.user}, Project: {self.project}"
+    
+class ManuscriptSection(models.Model):
+    id = models.UUIDField(default = uuid.uuid4, primary_key = True)
+    title = models.CharField(max_length=100)
+    content = models.TextField(blank = True)
+    order = models.PositiveIntegerField()
+    manuscript = models.ForeignKey(Manuscript, on_delete = models.CASCADE, related_name = "sections")
+
+    class Meta:
+        ordering = ["order"]

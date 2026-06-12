@@ -1,6 +1,6 @@
 from trafilatura import extract_metadata, fetch_url
 from django.core.paginator import Paginator
-from .models import User, AIGeneratedResearchSteps, Project, Scores, Manuscript
+from .models import User, AIGeneratedResearchSteps, Project, Scores, Manuscript, ManuscriptSection
 from django.contrib.auth.decorators import login_required   
 import json
 import decimal
@@ -19,7 +19,7 @@ from django.middleware.csrf import get_token
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .serializers import UserSerializer, ProjectFrontendSerializer, ProjectBackendSerializer, ManuscriptBackendSerializer, ManuscriptFrontendSerializer
+from .serializers import UserSerializer, ProjectFrontendSerializer, ProjectBackendSerializer, ManuscriptBackendSerializer, ManuscriptFrontendSerializer, ManuscriptSectionSerializer
 from rest_framework import generics, permissions
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -28,7 +28,7 @@ from rest_framework import status
 from bioAI.settings import OLLAMA_BASE_URL, SEARXNG_URL
 from langchain_community.utilities import SearxSearchWrapper
 from rag.pipeline import ResearchPipeline
-from rest_framework.serializers import ValidationError
+from rest_framework.exceptions import ValidationError, NotFound
 
 
 # Create your views here.
@@ -68,12 +68,11 @@ class ProjectListCreate(generics.ListCreateAPIView):
 
     def get_queryset(self):
         request = self.request
-        if request.method == "POST":
+        if request.method != "GET":
             return None
         user = request.user
         owned = Project.objects.filter(user = user)
         type = request.headers.get("Type", "owned")
-        print(type)
 
         # Shared queryset is all projects shared with the user
         shared = Project.objects.filter(editors__in = [user]) | Project.objects.filter(viewers__in = [user])
@@ -267,6 +266,112 @@ class ProjectChangeMode(generics.GenericAPIView):
 
         serializer.save()
         return Response(status = status.HTTP_200_OK)
+    
+# Manuscript view
+class ManuscriptListCreate(generics.ListCreateAPIView):
+
+    permission_classes = [IsAuthenticated]
+    throttle_scope = 'moderate_address'
+
+    def get_queryset(self):
+        
+        # returning queryset only if GET
+        request = self.request
+        
+        if request.method != "GET":
+            return None
+        
+        project_id = self.kwargs.get("project_id", None)
+
+        # filtering user and/or project for queryset
+        if project_id is None:
+            return Manuscript.objects.filter(user = request.user)
+        
+        try:
+            project = Project.objects.get(pk = project_id, user = request.user)
+        except:
+            raise NotFound("User does not own project or invalid project")
+
+        return Manuscript.objects.filter(project = project)
+
+    def get_serializer(self):
+        
+        request = self.request
+
+        # Returning serializer based on request method
+        
+        if request.method != "GET":
+            return ProjectBackendSerializer
+        return ProjectFrontendSerializer
+    
+    def perform_create(self):
+        
+        data = self.request.data
+
+        # fields
+        user = self.request.user
+        name = data.get("name")
+        project_id = data.get("project")
+
+        # checking if project is related to user
+        try:
+            project = Project.objects.get(user = user, pk = project_id)
+        except:
+            return Response(status = status.HTTP_400_BAD_REQUEST)
+        
+        serializer = self.get_serializer(project = project, name = name, user = user)
+
+        if not serializer.is_valid():
+            return Response(status = status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        
+class ManuscriptSectionListCreate(generics.ListCreateAPIView):
+
+    serializer_class = ManuscriptSection
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        
+        request = self.request
+
+        # returning queryset only if GET
+
+        if request.method != "GET":
+            return None
+        
+        user = request.user
+        manuscript_id = self.kwargs.get("manuscript_id")
+
+        if manuscript_id is None:
+            raise NotFound("Manuscript id is not given")
+        
+        try:
+            manuscript = Manuscript.objects.get(user = user, pk = manuscript_id)
+            return ManuscriptSection.objects.filter(manuscript = manuscript)
+        except:
+            raise NotFound("Invaid Manuscript ID or lack of permissions")
+    
+    def perform_create(self):
+
+        user = self.request.user
+        data = self.request.data
+        
+        # fields
+        name = data.get("name")
+        order = data.get("order")
+        manuscript_id = data.get("manuscript")
+
+        # Checking if user belongs to specific manuscript while querying it
+        try:
+            manuscript = Manuscript.objects.get(user = user, pk = manuscript_id)
+        except:
+            return Response(status = status.HTTP_400_BAD_REQUEST)
+        
+        serializer = self.get_serializer(name = name, order = order, manuscript = manuscript, user = user)
+
+        if not serializer.is_valid():
+            return Response(status = status.HTTP_400_BAD_REQUEST)
+        return Response(status = status.HTTP_400_BAD_REQUEST)
 
 # View to generate summary
 class GenerateSummary(APIView):

@@ -1,4 +1,4 @@
-from .models import User, Project, Manuscript
+from .models import User, Project, Manuscript, ManuscriptSection
 from rest_framework import routers, serializers, viewsets
 
 class UserSerializer(serializers.ModelSerializer):
@@ -6,6 +6,40 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = '__all__'
         read_only_fields = ['id']
+
+
+# Manuscript & ManuscriptSection serializers
+
+class ManuscriptSectionSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        fields = '__all__'
+        read_only_fields = ['']
+
+# Serializer for frontend with user objects
+
+class ManuscriptFrontendSerializer(serializers.ModelSerializer):
+    editors = UserSerializer(many = True, required = False)
+    viewers = UserSerializer(many = True, required = False)
+    sections = ManuscriptSectionSerializer(many = True, read_only = True)
+
+    class Meta:
+        model = Manuscript
+        fields = '__all__'
+        read_only_fields = ['id', 'user']
+
+# Serializer for backend with user primary keys
+
+class ManuscriptBackendSerializer(serializers.ModelSerializer):
+    sections = serializers.PrimaryKeyRelatedField(many = True, read_only = True)
+
+    class Meta:
+        model = Manuscript
+        fields = '__all__'
+        read_only_fields = ['id', 'user']
+
+    
+# Project serializers
 
 class ProjectFrontendSerializer(serializers.ModelSerializer):
     summary = serializers.CharField(required=False, allow_blank=True)
@@ -15,6 +49,7 @@ class ProjectFrontendSerializer(serializers.ModelSerializer):
     viewers = UserSerializer(many = True, required=False)
     user = UserSerializer()
     literature_summarized = serializers.CharField(allow_blank = True, required = False)
+    manuscripts = ManuscriptBackendSerializer(many = True, read_only = True)
 
     class Meta:
         model = Project
@@ -42,6 +77,7 @@ class ProjectBackendSerializer(serializers.ModelSerializer):
     editors = serializers.PrimaryKeyRelatedField(many = True, queryset = User.objects.all(), required = False)
     viewers = serializers.PrimaryKeyRelatedField(many = True, queryset = User.objects.all(), required = False)
     literature_summarized = serializers.CharField(allow_blank = True, required = False)
+    manuscripts = serializers.PrimaryKeyRelatedField(many = True, read_only = True)
 
     class Meta:
         model = Project
@@ -61,27 +97,3 @@ class ProjectBackendSerializer(serializers.ModelSerializer):
         if user.is_basic() and scan_mode:
             raise serializers.ValidationError("Basic User cannot go in scan mode.")
         return super().validate(attrs)
-
-# Doc serializers
-
-# Serializer for frontend with user objects
-
-class ManuscriptFrontendSerializer(serializers.ModelSerializer):
-    editors = UserSerializer(many = True, required = False)
-    viewers = UserSerializer(many = True, required = False)
-
-    class Meta:
-        model = Manuscript
-        fields = '__all__'
-        read_only_fields = ['id', 'user']
-
-# Serializer for backend with user primary keys
-
-class ManuscriptBackendSerializer(serializers.ModelSerializer):
-    editors = serializers.PrimaryKeyRelatedField(many = True, required = False, queryset = User.objects.all())
-    viewers = serializers.PrimaryKeyRelatedField(many = True, required = False, queryset = User.objects.all())
-
-    class Meta:
-        model = Manuscript
-        fields = '__all__'
-        read_only_fields = ['id', 'user']
