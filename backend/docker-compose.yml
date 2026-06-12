@@ -42,3 +42,7 @@ services:
       - redis
     networks:
       - search
+networks:
+  backend:
+  search:
+  selenium_net:
