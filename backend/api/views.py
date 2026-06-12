@@ -1,6 +1,6 @@
 from trafilatura import extract_metadata, fetch_url
 from django.core.paginator import Paginator
-from .models import User, AIGeneratedResearchSteps, Project, Scores, Doc
+from .models import User, AIGeneratedResearchSteps, Project, Scores, Manuscript
 from django.contrib.auth.decorators import login_required   
 import json
 import decimal
@@ -19,7 +19,7 @@ from django.middleware.csrf import get_token
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .serializers import UserSerializer, ProjectFrontendSerializer, ProjectBackendSerializer, DocBackendSerializer, DocFrontendSerializer
+from .serializers import UserSerializer, ProjectFrontendSerializer, ProjectBackendSerializer, ManuscriptBackendSerializer, ManuscriptFrontendSerializer
 from rest_framework import generics, permissions
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -188,6 +188,11 @@ class ProjectRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     
     def patch (self, request, *args, **kwargs):
         project = self.get_object()
+
+        # Only owner can edit people who the project is shared with
+        if request.user != project.user:
+            return Response(status = status.HTTP_403_FORBIDDEN)
+        
         currentEditors = [editor.id for editor in project.editors.all()]
         currentViewers = [viewer.id  for viewer in project.viewers.all()]
         addedUsers = request.data.get("addedUsers", [])

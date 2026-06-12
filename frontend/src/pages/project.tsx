@@ -26,14 +26,18 @@ function ProjectDetail(){
     const [ litSummaryLoading, setLitSummaryLoading] = useState(false);
     const { projectID } = useParams();
     const { getToken, userId } = useAuth();
-    const {project, loading} = useProject(projectID as string);
+
+    // Share page
     const [editors, setEditors] = useState <User[]>([]);
     const [viewers, setViewers] = useState <User[]>([]);
     const [removed, setRemoved] = useState <User[]>([]);
     const [addedUsers, setAddedUsers] = useState <string[]>([]);
+
     const [type, setType] = useState("editor");
     const [dependency, setDependency] = useState(true);
     const [url, setURL] = useState("");
+
+    const {project, loading} = useProject(projectID as string, dependency);
 
     // Navigation
     const navigate = useNavigate();
@@ -201,15 +205,19 @@ function ProjectDetail(){
             }
             <aside className = "w-60 -mt-[25px] -ml-[25px] border-r">
                 {sections.map((section, index)=>
+                <>
+                    {(index !== 3 || (index === 3 && ((userId === project.user.id )|| project.editors.some(editor => editor.id === (userId ?? ""))))) &&
                     <button onClick = {(event: any) => {setPage(parseInt(event.currentTarget.dataset.index)); }}key = {index} data-index = {index} className = "p-3 sidebar-portion flex flex-row justify-center items-center gap-1">
                         <p className = {page !== index ? "font-semibold" : "font-extrabold"}>{section}</p>
                     </button>
+                    }
+                </>
                 )}
             </aside>
             <main className = "flex flex-col flex-1 m-1">
                 <div className = "flex flex-row justify-between">
                     <h2 className = "text-4xl font-bold">{ project?.topic }</h2>
-                    <button className = "bg-[#53a2e7] text-[#f4f4f4] hover:bg-[#1f558f]" onClick = {() => {setIsOverlayOpen(true);}}>Share</button>
+                    {userId === project.user.id &&<button className = "bg-[#53a2e7] text-[#f4f4f4] hover:bg-[#1f558f]" onClick = {() => {setIsOverlayOpen(true);}}>Share</button>}
                 </div><br/>
                 {page === 0 && <ProjectOverview topic = {project?.topic} rq = {project?.research_question as string} description = {project?.description} summary = {project?.summary as string} increment = {increment}/>}
                 {page === 1 && <Sources sources = {project?.available_trusted_literatures as string[][]} increment = {increment} decrement = {decrement}/>}

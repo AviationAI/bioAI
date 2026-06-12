@@ -30,10 +30,10 @@ function ProjectCard({project}: {project: Project}){
         <div className = "container-fluid projectDiv">
             <div className = "text-description">
                 <div className = "topic">
-                    <h3>{project.topic}</h3>
+                    <h3 className = "text-base">{project.topic}</h3>
                 </div>
                 <div>
-                    <p>{project.description}</p>
+                    <p className = "text-sm">{project.description}</p>
                 </div>
             </div>
             <div className="deleteDiv">

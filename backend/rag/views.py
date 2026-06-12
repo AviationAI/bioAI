@@ -24,6 +24,8 @@ from .utils.apiconfig import VECTOR_STORAGES, SESSIONS
 from bioAI.settings import OLLAMA_BASE_URL, CHROME_DOCKER, SEARXNG_URL
 from langchain_community.utilities import SearxSearchWrapper
 from .pipeline import ResearchPipeline
+from .utils.backends import resolve_and_validate_url
+from django.core.exceptions import ValidationError
 
 
 
@@ -104,6 +106,13 @@ class EvaluateSource(APIView):
         print(data)
         print("HI")
         if url and not question:
+
+            # validating url
+            try:
+                resolve_and_validate_url(url)
+            except ValidationError:
+                return Response(status = status.HTTP_400_BAD_REQUEST)
+
             id = uuid.uuid4()
             current1 = datetime.datetime.now()
             data = request.data

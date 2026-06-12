@@ -83,7 +83,6 @@ class Project(models.Model):
     available_trusted_literatures = models.JSONField(blank = True, null = True)
     summary = models.CharField(blank = True)
     research_question = models.CharField(blank = True, null=True)
-    thesis = models.CharField(blank = True)
     literature_summarized = models.CharField(blank = True)
     editors = models.ManyToManyField(User, related_name="editable_projects", blank = True)
     viewers = models.ManyToManyField(User, related_name="viewable_projects", blank = True)
@@ -99,16 +98,15 @@ class Project(models.Model):
         except:
             isPydanticSteps = False
         return [editor not in self.viewers for editor in self.editors] and self.user not in self.editors and self.user not in self.viewers and id.length == 32 and self.user and isPydanticSteps
-    
 
-class Doc(models.Model):
+class Manuscript(models.Model):
     id = models.UUIDField(default = uuid.uuid4, primary_key = True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="documents")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="manuscripts")
     editors = models.ManyToManyField(User, related_name="editable_docs", blank = True)
-    viewers = models.ManyToManyField(User, related_query_name="viewable_docs", blank = True)
+    viewers = models.ManyToManyField(User, related_name="viewable_docs", blank = True)
     name = models.CharField()
     content = models.TextField()
-    project = models.ForeignKey(Project, blank = True, null = True, on_delete = models.CASCADE, related_name="documents")
+    project = models.ForeignKey(Project, on_delete = models.CASCADE, related_name="manuscripts")
     
     def __str__(self):
         return f"{self.name}: Made by {self.user}, Project: {self.project}"

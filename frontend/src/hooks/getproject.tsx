@@ -3,7 +3,7 @@ import { useAuth } from "@clerk/clerk-react";
 import AxiosInstance from "../components/AxiosInstance";
 import type { Project } from "../interfaces";
 
-function useProject(projectID: string) {
+function useProject(projectID: string, dependency?: any) {
 
     // Variables
     const {getToken} = useAuth();
@@ -25,7 +25,7 @@ function useProject(projectID: string) {
             setLoading(false);
         }
         getProject();
-    }, [projectID])
+    }, [projectID, dependency])
 
     return {
         project,

@@ -25,7 +25,8 @@ from langchain_community.utilities import SearxSearchWrapper
 from rest_framework.generics import GenericAPIView
 from langchain_community.utilities import SearxSearchWrapper
 from .utils.backends import ExpiringVectorStore
-from .utils.backends import get_classifier
+from .utils.backends import get_classifier, resolve_and_validate_url
+from django.core.exceptions import ValidationError
 import time
 
 
@@ -173,6 +174,16 @@ class ResearchPipeline():
         # Extracting urls from every source
         urls = [source[1] for source in sources]
 
+        validated_urls = []
+
+        # Validating every url
+        for url in urls:
+            try:
+                resolve_and_validate_url(url)
+                validated_urls.append(url)
+            except ValidationError:
+                pass
+
         # Initializing Vector Storage
         id = uuid.uuid4()
         ExpiringVectorStore(id = id, time = 300)
@@ -182,7 +193,7 @@ class ResearchPipeline():
         try:
             
             # loading urls
-            loader = CustomSeleniumURLLoader(urls = urls)
+            loader = CustomSeleniumURLLoader(urls = validated_urls)
             docs = loader.load()
 
             # Splitting the documents
