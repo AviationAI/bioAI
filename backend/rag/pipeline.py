@@ -168,6 +168,91 @@ class ResearchPipeline():
 
         return summary
     
+    # Summarizes a specific source
+    def summarize_source(self, topic: str, rq: str, url: str) -> str:
+
+        # validate url, raises ValidationError if unsafe
+        resolve_and_validate_url(url)
+        
+        try:
+            
+            # loading urls
+            loader = CustomSeleniumURLLoader(urls = [url])
+            docs = loader.load()
+
+            # Splitting the documents
+            split = self.text_splitter.split_documents(docs)
+
+
+            docs = "\n\n".join([doc.page_content for doc in split])
+
+            # Asking mistral to summarize the documents retrieved by the vector storage
+            prompt = f"""
+                        You are an academic research assistant.
+
+                        Your task is to write a high-quality literature review based ONLY on the provided text chunks from a single source.
+
+                        Research Topic: {topic}  
+                        Research Question: {rq}
+
+                        Source Chunks:
+                        <chunks>
+                        {docs}
+                        </chunks>
+
+                        ---
+
+                        STRICT INSTRUCTIONS:
+
+                        1. Use ONLY the information present in the chunks.
+                        - Do NOT add outside knowledge.
+                        - Do NOT infer facts not explicitly supported by the text.
+
+                        2. Synthesize the content into a coherent academic literature review.
+                        - Do NOT summarize chunk-by-chunk.
+                        - Merge overlapping ideas into unified arguments.
+
+                        3. Structure (implicit only, no headings):
+                        - Start with context/background if present in the text
+                        - Then main findings or arguments
+                        - Then mechanisms / explanations (if available)
+                        - Then applications or implications
+                        - Then limitations or gaps (if mentioned or implied in text)
+
+                        4. Length: 800–1200 words.
+
+                        ---
+
+                        STYLE REQUIREMENTS:
+
+                        - Formal academic tone (journal literature review style)
+                        - Continuous prose only (NO headings, NO bullet points, NO numbered lists)
+                        - No repetitive phrasing
+                        - No filler phrases like “this source discusses”
+                        - Prioritize synthesis over description
+
+                        ---
+
+                        GROUNDING RULES:
+
+                        - Every claim must be traceable to the provided chunks
+                        - If information is unclear or incomplete, reflect uncertainty instead of guessing
+                        - Use direct quotes sparingly and only when necessary for precision
+
+                        ---
+
+                        CRITICAL RULE:
+
+                        If multiple chunks express similar ideas, merge them into a single stronger synthesized statement instead of repeating them in different words.
+                    """
+            response = self.summary_model.invoke(prompt)
+        except:
+            raise Exception()
+        
+        return response.content
+        
+
+
     # Summarizes all the sources of a project
     def summarize_sources(self, topic: str, rq: str, description: str, sources: list[list[str]]):
 
@@ -183,6 +268,8 @@ class ResearchPipeline():
                 validated_urls.append(url)
             except ValidationError:
                 pass
+
+        print(validated_urls)
 
         # Initializing Vector Storage
         id = uuid.uuid4()

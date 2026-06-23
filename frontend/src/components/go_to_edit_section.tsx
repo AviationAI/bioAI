@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-function GoToEdit ({decrement}: {decrement: any}){
+function GoToEdit ({decrement, increment}: {decrement: any, increment: any}){
 
     // State variables
 
@@ -15,7 +15,10 @@ function GoToEdit ({decrement}: {decrement: any}){
                 <h4 className = "font-semibold text-xl">Click on button to go to edit page</h4>
                 <button className = "self-end text-[#f4f4f4]" onClick = {() => {navigate("edit")}}>Edit Project</button>
             </div>
-            <button className = "w-fit text-[#f4f4f4] text-lg py-0 px-3" type = "button" onClick = {decrement}>←</button>
+            <div className = "flex flex-row gap-1">
+                <button className = "w-fit text-[#f4f4f4] text-lg py-0 px-3" type = "button" onClick = {decrement}>←</button>
+                <button className = "w-fit text-[#f4f4f4] text-lg py-0 px-3" type = "button" onClick = {increment}>→</button>
+            </div>
         </div>
     );
 }

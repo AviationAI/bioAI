@@ -106,6 +106,7 @@ class Manuscript(models.Model):
     viewers = models.ManyToManyField(User, related_name="viewable_docs", blank = True)
     name = models.CharField()
     project = models.ForeignKey(Project, on_delete = models.CASCADE, related_name="manuscripts")
+    created_on = models.DateTimeField(auto_now_add = True)
     
     def __str__(self):
         return f"{self.name}: Made by {self.user}, Project: {self.project}"

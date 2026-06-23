@@ -16,4 +16,6 @@ urlpatterns = [
     path('generate/summarize_literature', views.GenerateSourceSummary.as_view(), name = "generate-source-summary"),
     path('generate/subtopics', views.GenerateSubtopics.as_view(), name = "generate-subtopics"),
     path('user', views.UserRetrieveUpdateDestroy.as_view(), name = "user-retrieve-update-destroy"),
+    path('manuscripts/<str:project_id>', views.ManuscriptListCreate.as_view(), name = "manuscript-list-create"),
+    path('manuscripts/sections/<str:project_id>', views.ManuscriptSectionListCreate.as_view(), name = "manuscriptsection-list-create")
 ]

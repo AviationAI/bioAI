@@ -8,6 +8,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Edit from "./pages/edit";
 import Source from "./pages/overview";
 import ChangeMode from "./pages/change_mode";
+import Manuscripts from "./pages/manuscripts";
+import Screen404 from "./components/404";
 
 function App() {
   return (
@@ -19,8 +21,11 @@ function App() {
         <Route path = "/projects/:projectID" element = {<ProjectDetail/>}></Route>
         <Route path = "/projects/:projectID/edit" element = {<Edit/>}></Route>
         <Route path = "/projects/:projectID/change" element = {<ChangeMode/>}></Route>
+        <Route path = "/projects/:projectID/manuscripts" element = {<Manuscripts/>}></Route>
         <Route path = "/create" element = {<SignedIn><Create/></SignedIn>}></Route>
         <Route path = "/source/:projectID" element = {<Source/>}> </Route>
+
+        <Route path="*" element={<Screen404/>} />
       </Routes>
     </div>
     </BrowserRouter>

@@ -4,7 +4,7 @@ import { SignedIn, SignedOut } from "@clerk/clerk-react";
 import AxiosInstance from "../components/AxiosInstance";
 import { useAuth } from "@clerk/clerk-react";
 import Loader from "../components/spinner";
-import type { Project } from "../interfaces";
+import type {  Project } from "../interfaces";
 import { useNavigate } from "react-router-dom";
 
 function Home(){

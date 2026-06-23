@@ -13,8 +13,9 @@ class UserSerializer(serializers.ModelSerializer):
 class ManuscriptSectionSerializer(serializers.ModelSerializer):
     
     class Meta:
+        model = ManuscriptSection
         fields = '__all__'
-        read_only_fields = ['']
+        read_only_fields = ['id']
 
 # Serializer for frontend with user objects
 
@@ -22,6 +23,9 @@ class ManuscriptFrontendSerializer(serializers.ModelSerializer):
     editors = UserSerializer(many = True, required = False)
     viewers = UserSerializer(many = True, required = False)
     sections = ManuscriptSectionSerializer(many = True, read_only = True)
+    editors = UserSerializer(many = True, required = False)
+    viewers = UserSerializer(many = True, required = False)
+    project = serializers.PrimaryKeyRelatedField(required = False, queryset = Project.objects.all())
 
     class Meta:
         model = Manuscript
@@ -31,7 +35,10 @@ class ManuscriptFrontendSerializer(serializers.ModelSerializer):
 # Serializer for backend with user primary keys
 
 class ManuscriptBackendSerializer(serializers.ModelSerializer):
-    sections = serializers.PrimaryKeyRelatedField(many = True, read_only = True)
+    sections = serializers.PrimaryKeyRelatedField(many = True, read_only = True, required = False)
+    editors = serializers.PrimaryKeyRelatedField(many = True, required = False, queryset = User.objects.all())
+    viewers = serializers.PrimaryKeyRelatedField(many = True, queryset = User.objects.all(), required = False)
+    project = serializers.PrimaryKeyRelatedField(required = False, queryset = Project.objects.all())
 
     class Meta:
         model = Manuscript
@@ -49,7 +56,7 @@ class ProjectFrontendSerializer(serializers.ModelSerializer):
     viewers = UserSerializer(many = True, required=False)
     user = UserSerializer()
     literature_summarized = serializers.CharField(allow_blank = True, required = False)
-    manuscripts = ManuscriptBackendSerializer(many = True, read_only = True)
+    manuscripts = serializers.PrimaryKeyRelatedField(many = True, read_only = True)
 
     class Meta:
         model = Project

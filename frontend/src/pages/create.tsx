@@ -2,7 +2,6 @@ import AxiosInstance from "../components/AxiosInstance";
 import { useRef, useState } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
-import Loader from "../components/spinner";
 import { useEffect } from "react";
 import type { TFN } from "../types";
 import ChooseMode from "../components/choose_mode_Section";

@@ -17,6 +17,7 @@ import ProjectOverview from "../components/project_overview_section";
 import Sources from "../components/sources_section";
 import LiteratureSummarized from "../components/literature_summarized_section";
 import GoToEdit from "../components/go_to_edit_section";
+import ManuscriptsControls from "../components/project_manuscripts";
 
 function ProjectDetail(){
 
@@ -39,20 +40,40 @@ function ProjectDetail(){
 
     const {project, loading} = useProject(projectID as string, dependency);
 
+    // Manuscript
+    const [name, setName] = useState("");
+
     // Navigation
     const navigate = useNavigate();
 
     // Sidebar
     const [page, setPage] = useState(0);
-    const sections = ["Overview", `Sources (${project?.available_trusted_literatures?.length})`, "Literature Summarized", "Edit"]
+    const sections = ["Overview", `Sources (${project?.available_trusted_literatures?.length})`, "Literature Summarized", "Edit", "Manuscripts"]
 
     // Functions to increment/decrement page
     const increment = () => {
-        if (page < 3) setPage(page => page + 1);
+        if (page < 4) setPage(page => page + 1);
     }
 
     const decrement = () => {
         if (page > 0) setPage(page => page -1);
+    }
+
+
+    // Function to create manuscript
+    async function create_manuscript() {
+        try {
+            const token = await getToken();
+            await AxiosInstance.post(`/api/manuscripts/${projectID}`, {
+                "name": name
+            }, {
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            })
+        } catch(err) {
+            console.log(err);
+        }
     }
 
     function handleChange(event: any){
@@ -206,7 +227,7 @@ function ProjectDetail(){
             <aside className = "w-60 -mt-[25px] -ml-[25px] border-r">
                 {sections.map((section, index)=>
                 <>
-                    {(index !== 3 || (index === 3 && ((userId === project.user.id )|| project.editors.some(editor => editor.id === (userId ?? ""))))) &&
+                    {((index !== 3 && index !== 4) || (index === 3 && ((userId === project.user.id )|| project.editors.some(editor => editor.id === (userId ?? "")))) || (index === 4 && userId === project.user.id)) &&
                     <button onClick = {(event: any) => {setPage(parseInt(event.currentTarget.dataset.index)); }}key = {index} data-index = {index} className = "p-3 sidebar-portion flex flex-row justify-center items-center gap-1">
                         <p className = {page !== index ? "font-semibold" : "font-extrabold"}>{section}</p>
                     </button>
@@ -222,7 +243,8 @@ function ProjectDetail(){
                 {page === 0 && <ProjectOverview topic = {project?.topic} rq = {project?.research_question as string} description = {project?.description} summary = {project?.summary as string} increment = {increment}/>}
                 {page === 1 && <Sources sources = {project?.available_trusted_literatures as string[][]} increment = {increment} decrement = {decrement}/>}
                 {page === 2 && <LiteratureSummarized summary = {project?.literature_summarized as string} increment = {increment} decrement = {decrement}/>}
-                {page === 3 && <GoToEdit decrement = {decrement}/>}
+                {page === 3 && <GoToEdit decrement = {decrement} increment = {increment}/>}
+                {page === 4 && <ManuscriptsControls decrement = {decrement} create = {create_manuscript} name = {name} setName = {setName}/>}
             </main>
         </div>
         )}

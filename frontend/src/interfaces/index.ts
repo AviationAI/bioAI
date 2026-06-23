@@ -5,9 +5,28 @@ import type { Plan } from "../types";
 
 // Project-related Interfaces
 
+// Main Project interface
 export interface Project {
     id: string;
     user: User;
+    topic: string;
+    description: string;
+    research_question: string | null;
+    subtopics: Subtopics | null;
+    available_trusted_literatures: string[][] | null;
+    summary: string | null;
+    literature_summarized: string | null;
+    thesis: string | null;
+    scan_mode: boolean;
+    editors: User[];
+    viewers: User[];
+    manuscripts: string[] | null;
+}
+
+// UserID Project Interface
+export interface ProjectWUserId {
+    id: string;
+    user: string;
     topic: string;
     description: string;
     research_question: string | null;
@@ -31,6 +50,28 @@ export interface Subtopic {
 }
 
 
+
+
+// Manuscript-related interfaces
+export interface Manuscript {
+    id: string;
+    user: User;
+    name: string;
+    sections: ManuscriptSection[] | null;
+    project: Project;
+    editors: User[];
+    viewers: User[];
+    created_on: string;
+}
+
+export interface ManuscriptSection {
+    id: string;
+    title: string;
+    content: string;
+    order: number;
+    manuscript: string;
+}
+
 // User-related interfaces
 
 export interface User {
@@ -39,7 +80,6 @@ export interface User {
     email: string;
     plan: Plan;
 }
-
 
 // Source-related interfaces
 

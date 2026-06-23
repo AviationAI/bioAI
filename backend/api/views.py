@@ -288,42 +288,39 @@ class ManuscriptListCreate(generics.ListCreateAPIView):
             return Manuscript.objects.filter(user = request.user)
         
         try:
-            project = Project.objects.get(pk = project_id, user = request.user)
+            project = Project.objects.get(pk = project_id)
         except:
-            raise NotFound("User does not own project or invalid project")
+            raise NotFound("Invalid project")
 
-        return Manuscript.objects.filter(project = project)
+        return Manuscript.objects.filter(project = project , user = request.user) |  Manuscript.objects.filter(project = project, editors__in = [request.user]) | Manuscript.objects.filter(project = project, viewers__in = [request.user])
 
-    def get_serializer(self):
+    def get_serializer_class(self):
         
         request = self.request
 
         # Returning serializer based on request method
         
         if request.method != "GET":
-            return ProjectBackendSerializer
-        return ProjectFrontendSerializer
+            return ManuscriptBackendSerializer
+        return ManuscriptFrontendSerializer
     
-    def perform_create(self):
+    def perform_create(self, serializer):
         
         data = self.request.data
 
         # fields
         user = self.request.user
         name = data.get("name")
-        project_id = data.get("project")
+        project_id = self.kwargs.get("project_id")
 
         # checking if project is related to user
         try:
             project = Project.objects.get(user = user, pk = project_id)
         except:
-            return Response(status = status.HTTP_400_BAD_REQUEST)
-        
-        serializer = self.get_serializer(project = project, name = name, user = user)
+            raise ValidationError("Lack of permissions or invalid project.")
 
-        if not serializer.is_valid():
-            return Response(status = status.HTTP_400_BAD_REQUEST)
-        serializer.save()
+        # Creating manuscript!
+        serializer.save(project = project, name = name, user = user)
         
 class ManuscriptSectionListCreate(generics.ListCreateAPIView):
 
@@ -346,10 +343,14 @@ class ManuscriptSectionListCreate(generics.ListCreateAPIView):
             raise NotFound("Manuscript id is not given")
         
         try:
-            manuscript = Manuscript.objects.get(user = user, pk = manuscript_id)
+            manuscript = Manuscript.objects.get(pk = manuscript_id)
+            
+            if user not in [manuscript.user] + list(manuscript.editors.all()) + list(manuscript.viewers.all()):
+                raise PermissionError("User lacks permissions")
+
             return ManuscriptSection.objects.filter(manuscript = manuscript)
         except:
-            raise NotFound("Invaid Manuscript ID or lack of permissions")
+            raise NotFound("Invaid Manuscript ID")
     
     def perform_create(self):
 
@@ -363,7 +364,10 @@ class ManuscriptSectionListCreate(generics.ListCreateAPIView):
 
         # Checking if user belongs to specific manuscript while querying it
         try:
-            manuscript = Manuscript.objects.get(user = user, pk = manuscript_id)
+            manuscript = Manuscript.objects.get(pk = manuscript_id)
+
+            if user not in [manuscript.user] + list(manuscript.editors.all()):
+                raise PermissionError("User lacks permissions")
         except:
             return Response(status = status.HTTP_400_BAD_REQUEST)
         
@@ -372,6 +376,10 @@ class ManuscriptSectionListCreate(generics.ListCreateAPIView):
         if not serializer.is_valid():
             return Response(status = status.HTTP_400_BAD_REQUEST)
         return Response(status = status.HTTP_400_BAD_REQUEST)
+
+
+class ManuscriptRetrieveUpdateDestroy(generics.RetrieveUpdateAPIView):
+    pass
 
 # View to generate summary
 class GenerateSummary(APIView):
@@ -421,6 +429,31 @@ class GenerateSources(APIView):
         # Generating sources and then returning them
         sources = pipeline.find_available_literature(topic, rq)
         return Response({"sources": sources}, status = status.HTTP_200_OK)
+    
+# View to summarize a specific source
+class SummarizeSource(APIView):
+
+    permission_classes = [IsAuthenticated]
+    throttle_scope = 'sensitive_address'
+
+    def post(self, request):
+
+        # Request data to summarize a source
+        data = self.request.data
+
+        # Topic & RQ & URL
+        topic = data.get("topic")
+        rq = data.get("research_question")
+        url = data.get("url")
+
+        try:
+            assert topic is not None and rq is not None and url is not None
+        except:
+            return Response(status = status.HTTP_400_BAD_REQUEST)
+
+        summary = pipeline.summarize_source(topic, rq, url)
+        return Response({"summary": summary}, status = status.HTTP_200_OK)
+
 
 
 # View to summarize literature
@@ -478,3 +511,4 @@ class GenerateSubtopics(generics.GenericAPIView):
         except json.decoder.JSONDecodeError:
             return Response(status = status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response({"subtopics": subtopics}, status = status.HTTP_200_OK)
+    

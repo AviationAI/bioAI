@@ -33,12 +33,16 @@ body {
     flex-direction: row;   
     border-width: 0.1px; 
     border-radius: 20px;
-    margin-bottom: 20px;
+    margin-bottom: 1.5rem;
     background-color: white;
     box-shadow: 0 0 6px 4px lightgray;
 }
 
 .projectDiv:hover {
+    background-color: #AAAAAA;
+}
+
+.hover-grey:hover {
     background-color: #AAAAAA;
 }
 
