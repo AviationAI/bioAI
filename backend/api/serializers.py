@@ -17,33 +17,6 @@ class ManuscriptSectionSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['id']
 
-# Serializer for frontend with user objects
-
-class ManuscriptFrontendSerializer(serializers.ModelSerializer):
-    editors = UserSerializer(many = True, required = False)
-    viewers = UserSerializer(many = True, required = False)
-    sections = ManuscriptSectionSerializer(many = True, read_only = True)
-    editors = UserSerializer(many = True, required = False)
-    viewers = UserSerializer(many = True, required = False)
-    project = serializers.PrimaryKeyRelatedField(required = False, queryset = Project.objects.all())
-
-    class Meta:
-        model = Manuscript
-        fields = '__all__'
-        read_only_fields = ['id', 'user']
-
-# Serializer for backend with user primary keys
-
-class ManuscriptBackendSerializer(serializers.ModelSerializer):
-    sections = serializers.PrimaryKeyRelatedField(many = True, read_only = True, required = False)
-    editors = serializers.PrimaryKeyRelatedField(many = True, required = False, queryset = User.objects.all())
-    viewers = serializers.PrimaryKeyRelatedField(many = True, queryset = User.objects.all(), required = False)
-    project = serializers.PrimaryKeyRelatedField(required = False, queryset = Project.objects.all())
-
-    class Meta:
-        model = Manuscript
-        fields = '__all__'
-        read_only_fields = ['id', 'user']
 
     
 # Project serializers
@@ -104,3 +77,31 @@ class ProjectBackendSerializer(serializers.ModelSerializer):
         if user.is_basic() and scan_mode:
             raise serializers.ValidationError("Basic User cannot go in scan mode.")
         return super().validate(attrs)
+
+# Serializer for frontend with user objects
+
+class ManuscriptFrontendSerializer(serializers.ModelSerializer):
+    editors = UserSerializer(many = True, required = False)
+    viewers = UserSerializer(many = True, required = False)
+    sections = ManuscriptSectionSerializer(many = True, read_only = True)
+    editors = UserSerializer(many = True, required = False)
+    viewers = UserSerializer(many = True, required = False)
+    project = ProjectBackendSerializer(required = False)
+
+    class Meta:
+        model = Manuscript
+        fields = '__all__'
+        read_only_fields = ['id', 'user']
+
+# Serializer for backend with user primary keys
+
+class ManuscriptBackendSerializer(serializers.ModelSerializer):
+    sections = serializers.PrimaryKeyRelatedField(many = True, read_only = True, required = False)
+    editors = serializers.PrimaryKeyRelatedField(many = True, required = False, queryset = User.objects.all())
+    viewers = serializers.PrimaryKeyRelatedField(many = True, queryset = User.objects.all(), required = False)
+    project = serializers.PrimaryKeyRelatedField(required = False, queryset = Project.objects.all())
+
+    class Meta:
+        model = Manuscript
+        fields = '__all__'
+        read_only_fields = ['id', 'user']

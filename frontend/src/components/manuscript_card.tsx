@@ -11,6 +11,7 @@ function ManuscriptCard({manuscript}: {manuscript: Manuscript}) {
                 </div>
                 <div className = "flex flex-col">
                     <p className = "text-lg">{manuscript.name}</p>
+                    <p className = "font-extralight">{manuscript.sections?.[0]?.content?.slice(0, 100) ?? "No text in manuscript"}...</p>
                 </div>
             </div>
         </Link>

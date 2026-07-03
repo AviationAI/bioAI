@@ -2,10 +2,10 @@ import Navbar from "./components/layout";
 import './styles.css';
 import Home from "./pages";
 import { SignedIn } from "@clerk/clerk-react";
-import Create from "./pages/create";
+import Create from "./pages/create_project";
 import ProjectDetail from "./pages/project";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Edit from "./pages/edit";
+import Edit from "./pages/edit_project";
 import Source from "./pages/overview";
 import ChangeMode from "./pages/change_mode";
 import Manuscripts from "./pages/manuscripts";
@@ -24,8 +24,8 @@ function App() {
         <Route path = "/projects/:projectID/manuscripts" element = {<Manuscripts/>}></Route>
         <Route path = "/create" element = {<SignedIn><Create/></SignedIn>}></Route>
         <Route path = "/source/:projectID" element = {<Source/>}> </Route>
-
-        <Route path="*" element={<Screen404/>} />
+        <Route path = "/manuscripts/:manuscriptID"></Route>
+        <Route path = "*" element={<Screen404/>} />
       </Routes>
     </div>
     </BrowserRouter>
