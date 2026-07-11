@@ -150,8 +150,7 @@ class ProjectRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
         return False
     
     def get_serializer_class(self):
-        request = self.request
-        if request.method == "GET":
+        if self.request.method == "GET":
             return ProjectFrontendSerializer
         return ProjectBackendSerializer
 
@@ -379,7 +378,29 @@ class ManuscriptSectionListCreate(generics.ListCreateAPIView):
 
 
 class ManuscriptRetrieveUpdateDestroy(generics.RetrieveUpdateAPIView):
-    pass
+    queryset = Manuscript.objects.all()
+    lookup_field = "pk"
+    throttle_scope = 'moderate_address'
+    
+    # custom serializer given request type
+    def get_serializer_class(self):
+        if self.request.method == "GET":
+            return ManuscriptFrontendSerializer
+        return ManuscriptFrontendSerializer
+
+    # custom perms given request type
+    def get_permissions(self):
+        request = self.request
+        if request.method == "GET":
+            return [IsViewer()]
+        elif request.method in ["PUT", "PATCH"]:
+            return [IsEditor()]
+        elif request.method == "DELETE":
+            return [IsOwner()]
+        return False
+    
+    def put(self):
+        pass
 
 # View to generate summary
 class GenerateSummary(APIView):
