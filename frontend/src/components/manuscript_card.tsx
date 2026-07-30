@@ -3,6 +3,9 @@ import type { Manuscript } from "../interfaces";
 
 function ManuscriptCard({manuscript}: {manuscript: Manuscript}) {
 
+    const date = new Date(manuscript.created_on).toLocaleString();
+
+
     return (
         <Link to = {`/manuscripts/${manuscript.id}`} className = "blackLink">
             <div className = "flex flex-row border rounded-xl mb-3 px-3 py-4 gap-3 hover:bg-[#AAAAAA]">
@@ -11,6 +14,7 @@ function ManuscriptCard({manuscript}: {manuscript: Manuscript}) {
                 </div>
                 <div className = "flex flex-col">
                     <p className = "text-lg">{manuscript.name}</p>
+                    <p>Created on {date.split(",")[0]} at {date.split(",")[1]}</p>
                     <p className = "font-extralight">{manuscript.sections?.[0]?.content?.slice(0, 100) ?? "No text in manuscript"}...</p>
                 </div>
             </div>

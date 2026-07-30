@@ -87,11 +87,12 @@ class ManuscriptFrontendSerializer(serializers.ModelSerializer):
     editors = UserSerializer(many = True, required = False)
     viewers = UserSerializer(many = True, required = False)
     project = ProjectBackendSerializer(required = False)
+    user = UserSerializer(required = False)
 
     class Meta:
         model = Manuscript
         fields = '__all__'
-        read_only_fields = ['id', 'user']
+        read_only_fields = ['id', 'user', 'created_on']
 
 # Serializer for backend with user primary keys
 
@@ -104,4 +105,4 @@ class ManuscriptBackendSerializer(serializers.ModelSerializer):
     class Meta:
         model = Manuscript
         fields = '__all__'
-        read_only_fields = ['id', 'user']
+        read_only_fields = ['id', 'user', 'created_on']

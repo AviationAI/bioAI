@@ -34,7 +34,7 @@ function ProjectDetail(){
     const [removed, setRemoved] = useState <User[]>([]);
     const [addedUsers, setAddedUsers] = useState <string[]>([]);
 
-    const [type, setType] = useState("editor");
+    const [type, setType] = useState("viewer");
     const [dependency, setDependency] = useState(true);
     const [url, setURL] = useState("");
 
@@ -71,8 +71,11 @@ function ProjectDetail(){
                     "Authorization": `Bearer ${token}`
                 }
             })
+            setName("");
         } catch(err) {
             console.log(err);
+        } finally {
+            navigate("manuscripts");
         }
     }
 
@@ -110,7 +113,7 @@ function ProjectDetail(){
             setIsLoading(true);
             try{
                 const token = await getToken();
-                const request = await AxiosInstance.patch(`/api/projects/${project?.id}`, {
+                await AxiosInstance.patch(`/api/projects/${project?.id}`, {
                     "removed": removed,
                     "editors": editors,
                     "viewers": viewers,
@@ -132,11 +135,6 @@ function ProjectDetail(){
         }else {
             setIsOverlayOpen(false);
         }
-    }
-
-    async function handleSourceInitializationSubmit(event: any){
-        event.preventDefault();
-        navigate(`/source/${projectID}?url=` + encodeURIComponent(url));
     }
 
     if(loading) return <Loader loading={true}/>;

@@ -69,7 +69,7 @@ function Finalize({finalize, topic, decrement, setPage, description, rq, sources
                         <button type = "button" onClick = {() => {setPage(4)}} className = "w-fit text-gray-100 bg-green-400 mt-auto">Edit</button>
                     </div>
                 </div>
-                <div className = "border-2 p-3 m-3 rounded-md flex flex-end">
+                <div className = "border-2 p-3 m-3 rounded-md flex flex-end flex-col">
                     <h4 className = "font-semibold text-xl">Ready to Finalize?</h4>
                     <p className = "text-sm font-extralight">Once you finalize, your project will be set in research mode. You can edit your project at any time.</p><br/>
                     <button type = "button" onClick={() => { finalize(); }} className = "text-white self-end">Finalize</button>

@@ -28,7 +28,7 @@ from rest_framework import status
 from bioAI.settings import OLLAMA_BASE_URL, SEARXNG_URL
 from langchain_community.utilities import SearxSearchWrapper
 from rag.pipeline import ResearchPipeline
-from rest_framework.exceptions import ValidationError, NotFound
+from rest_framework.exceptions import ValidationError, NotFound, PermissionDenied
 
 
 # Create your views here.
@@ -149,43 +149,16 @@ class ProjectRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
             return [IsOwner()]
         return False
     
-    def get_serializer_class(self):
+    def get_serializer_class(self, *args, **kwargs):
+        kwargs['partial'] = True
         if self.request.method == "GET":
             return ProjectFrontendSerializer
         return ProjectBackendSerializer
 
-    def put (self, request, *args, **kwargs):
-        data = request.data
-        project = self.get_object()
-
-        # If there is such field, set it to the field, otherwise set it to the current value in model object
-        topic = data.get("topic", project.topic)
-        description = data.get("description", project.description)
-        sources = data.get("sources", project.available_trusted_literatures)
-        summary = data.get("summary", project.summary)
-        rq = data.get("question", project.research_question)
-        literature_summarized = data.get("literature_summarized", project.literature_summarized)
-
-        # Creating update data and getting the serializer
-        updateData = {
-            "topic": topic,
-            "description": description,
-            "research_question": rq,
-            "available_trusted_literatures": sources,
-            "summary": summary,
-            "literature_summarized": literature_summarized
-        }
-        serializer = self.get_serializer(
-            project, data = updateData, partial = True
-        )
-
-        if not serializer.is_valid():
-            return Response({"error": "invalid data"}, status=status.HTTP_400_BAD_REQUEST)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
     
-    def patch (self, request, *args, **kwargs):
+    def perform_update (self, serializer):
         project = self.get_object()
+        request = self.request
 
         # Only owner can edit people who the project is shared with
         if request.user != project.user:
@@ -217,6 +190,8 @@ class ProjectRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
         for user in addedUsers:
             try:
                 userID = User.objects.get(username = user).id
+                if user == project.user:
+                    continue
                 if userID not in newEditors and userID not in newViewers:
                     if addedType == "editor":
                         newEditors.add(userID)
@@ -231,17 +206,13 @@ class ProjectRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
                 newEditors.discard(user)
             if user in newViewers: 
                 newViewers.discard(user)
-        updateData = {
-            "editors": list(newEditors),
-            "viewers": list(newViewers)
-        }
-        print(updateData)
-        serializer = self.get_serializer(project, data = updateData, partial = True)
-        if not serializer.is_valid():
-            return Response({"error": "invalid data"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Updating and saving serializer instance with custom modifications
+        serializer.instance.viewers.add(*newViewers)
+        serializer.instance.editors.add(*newEditors)
+
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    
+
 # View to change out of scan mode
 class ProjectChangeMode(generics.GenericAPIView):
 
@@ -386,7 +357,7 @@ class ManuscriptRetrieveUpdateDestroy(generics.RetrieveUpdateAPIView):
     def get_serializer_class(self):
         if self.request.method == "GET":
             return ManuscriptFrontendSerializer
-        return ManuscriptFrontendSerializer
+        return ManuscriptBackendSerializer
 
     # custom perms given request type
     def get_permissions(self):
@@ -399,12 +370,63 @@ class ManuscriptRetrieveUpdateDestroy(generics.RetrieveUpdateAPIView):
             return [IsOwner()]
         return False
     
-    def put(self):
-        pass
+    def perform_update (self, serializer):
+
+        manuscript = self.get_object()
+        request = self.request
+
+        # Only owner can edit people who the project is shared with
+        if request.user != manuscript.user:
+            raise PermissionDenied()
+        
+        currentEditors = [editor.id for editor in manuscript.editors.all()]
+        currentViewers = [viewer.id  for viewer in manuscript.viewers.all()]
+        addedUsers = request.data.get("addedUsers", [])
+        addedType = request.data.get("addedType", None)
+        editors = request.data.get("editors", [])   
+        viewers = request.data.get("viewers", [])
+        remove = request.data.get("removed", [])
+        newEditors = set(currentEditors) | set(editors)
+        newViewers = set(currentViewers) | set(viewers)
+        # Typecasting to set to find the intersection
+        intersection = newEditors & newViewers
+        # Checking if each user has multiple instances
+        for user in intersection:
+            # Removing user from the instance not provided from the front end
+            if user in editors:
+                newViewers.discard(user)
+            elif user in viewers:
+                newEditors.discard(user)
+            else:
+                if user in currentEditors:
+                    newViewers.discard(user)
+                elif user in currentViewers:
+                    newEditors.discard(user)
+        for user in addedUsers:
+            try:
+                if user in manuscript.user:
+                    continue
+                userID = User.objects.get(username = user).id
+                if userID not in newEditors and userID not in newViewers:
+                    if addedType == "editor":
+                        newEditors.add(userID)
+                    elif addedType == "viewer":
+                        newViewers.add(userID)
+            except:
+                continue
+        # Checking which users are in the remove list
+        for user in remove:
+            # Removing the user if from every other list
+            if user in newEditors:
+                newEditors.discard(user)
+            if user in newViewers: 
+                newViewers.discard(user)
+
+        serializer.save(editors = list(newEditors), viewers = list(newViewers))
 
 # View to generate summary
 class GenerateSummary(APIView):
-
+        
     permission_classes = [IsAuthenticated]
     throttle_scope = 'sensitive_address'
 

@@ -17,6 +17,7 @@ import datetime
 import certifi
 import ssl
 import re
+import logging
 import uuid
 from rest_framework.permissions import IsAuthenticated
 from .utils.backends import ExpiringVectorStore, get_session, CustomSeleniumURLLoader
@@ -267,9 +268,10 @@ class ResearchPipeline():
                 resolve_and_validate_url(url)
                 validated_urls.append(url)
             except ValidationError:
-                pass
+                logging.warning(f"Skipping unreachable source {url}")
+                continue
 
-        print(validated_urls)
+        print("VALIDATED: ", validated_urls)
 
         # Initializing Vector Storage
         id = uuid.uuid4()

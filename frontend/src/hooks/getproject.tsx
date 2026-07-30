@@ -14,15 +14,19 @@ function useProject(projectID: string, dependency?: any) {
 
     useEffect(() => {
         async function getProject() {
-            const token = await getToken();
-            const response = await AxiosInstance.get(`/api/projects/${projectID}`,{
-                headers: {
-                    "Authorization": `Bearer ${token}`
-                }
-            });
-            setProject(response.data);
-            console.log(response.data);
-            setLoading(false);
+            try {
+                const token = await getToken();
+                const response = await AxiosInstance.get(`/api/projects/${projectID}`,{
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+                setProject(response.data);
+            } catch (err){
+                console.log(err);
+            } finally {            
+                setLoading(false);
+            }
         }
         getProject();
     }, [projectID, dependency])

@@ -26,6 +26,7 @@ services:
       - search
   chrome:
     image: selenium/standalone-chrome:latest
+    platform: linux/amd64
     ports:
       - "4444:4444"
       - "7900:7900"

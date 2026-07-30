@@ -38,7 +38,7 @@ function ProjectCard({project}: {project: Project}){
         <div className = "container-fluid projectDiv">
             <div className = "text-description">
                 <div className = "topic">
-                    <h3 className = "text-base">{project.topic}</h3>
+                    <h3 className = "text-lg font-semibold">{project.topic}</h3>
                 </div>
                 <div>
                     <p className = "text-sm">{project.description}</p>

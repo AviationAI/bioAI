@@ -10,6 +10,7 @@ import Source from "./pages/overview";
 import ChangeMode from "./pages/change_mode";
 import Manuscripts from "./pages/manuscripts";
 import Screen404 from "./components/404";
+import ManuscriptDetail from "./pages/manuscript";
 
 function App() {
   return (
@@ -24,7 +25,7 @@ function App() {
         <Route path = "/projects/:projectID/manuscripts" element = {<Manuscripts/>}></Route>
         <Route path = "/create" element = {<SignedIn><Create/></SignedIn>}></Route>
         <Route path = "/source/:projectID" element = {<Source/>}> </Route>
-        <Route path = "/manuscripts/:manuscriptID"></Route>
+        <Route path = "/manuscripts/:manuscriptID" element = {<ManuscriptDetail/>}></Route>
         <Route path = "*" element={<Screen404/>} />
       </Routes>
     </div>

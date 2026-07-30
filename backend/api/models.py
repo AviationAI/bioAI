@@ -107,6 +107,7 @@ class Manuscript(models.Model):
     name = models.CharField()
     project = models.ForeignKey(Project, on_delete = models.CASCADE, related_name="manuscripts")
     created_on = models.DateTimeField(auto_now_add = True)
+    last_saved = models.DateTimeField(auto_now_add = True)
     
     def __str__(self):
         return f"{self.name}: Made by {self.user}, Project: {self.project}"
