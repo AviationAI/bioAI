@@ -113,6 +113,7 @@ function ProjectDetail(){
             setIsLoading(true);
             try{
                 const token = await getToken();
+                console.log(removed)
                 await AxiosInstance.patch(`/api/projects/${project?.id}`, {
                     "removed": removed,
                     "editors": editors,
@@ -131,6 +132,11 @@ function ProjectDetail(){
                 setIsOverlayOpen(false);
                 setAddedUsers([]);
                 setDependency(!dependency);
+                setRemoved([]);
+                setEditors([]);
+                setViewers([]);
+                setAddedUsers([]);
+                setType("editor");
             }
         }else {
             setIsOverlayOpen(false);

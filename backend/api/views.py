@@ -162,7 +162,7 @@ class ProjectRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
 
         # Only owner can edit people who the project is shared with
         if request.user != project.user:
-            return Response(status = status.HTTP_403_FORBIDDEN)
+            raise PermissionDenied()
         
         currentEditors = [editor.id for editor in project.editors.all()]
         currentViewers = [viewer.id  for viewer in project.viewers.all()]
@@ -189,29 +189,26 @@ class ProjectRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
                     newEditors.discard(user)
         for user in addedUsers:
             try:
-                userID = User.objects.get(username = user).id
                 if user == project.user:
                     continue
+                userID = User.objects.get(username = user).id
                 if userID not in newEditors and userID not in newViewers:
                     if addedType == "editor":
                         newEditors.add(userID)
                     elif addedType == "viewer":
                         newViewers.add(userID)
             except:
-                pass
+                continue
         # Checking which users are in the remove list
         for user in remove:
+
             # Removing the user if from every other list
             if user in newEditors:
                 newEditors.discard(user)
             if user in newViewers: 
                 newViewers.discard(user)
 
-        # Updating and saving serializer instance with custom modifications
-        serializer.instance.viewers.add(*newViewers)
-        serializer.instance.editors.add(*newEditors)
-
-        serializer.save()
+        serializer.save(editors = list(newEditors), viewers = list(newViewers))
 
 # View to change out of scan mode
 class ProjectChangeMode(generics.GenericAPIView):
@@ -404,7 +401,7 @@ class ManuscriptRetrieveUpdateDestroy(generics.RetrieveUpdateAPIView):
                     newEditors.discard(user)
         for user in addedUsers:
             try:
-                if user in manuscript.user:
+                if user == manuscript.user:
                     continue
                 userID = User.objects.get(username = user).id
                 if userID not in newEditors and userID not in newViewers:
@@ -414,6 +411,8 @@ class ManuscriptRetrieveUpdateDestroy(generics.RetrieveUpdateAPIView):
                         newViewers.add(userID)
             except:
                 continue
+
+        print(remove)
         # Checking which users are in the remove list
         for user in remove:
             # Removing the user if from every other list

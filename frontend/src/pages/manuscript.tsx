@@ -97,6 +97,11 @@ function ManuscriptDetail() {
                 setIsOverlayOpen(false);
                 setAddedUsers([]);
                 setDependency(!dependency);
+                setRemoved([]);
+                setEditors([]);
+                setViewers([]);
+                setAddedUsers([]);
+                setType("editor");
             }
         }else {
             setIsOverlayOpen(false);
