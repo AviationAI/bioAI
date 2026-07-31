@@ -1,3 +1,3 @@
-function ManuscriptSection() {
+function ManuscriptSection({content, setContent, title, setTitle}) {
     
 }

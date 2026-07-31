@@ -1,6 +1,7 @@
+import type { SetStateAction } from "react";
 import type { Manuscript } from "../interfaces";
 
-function ManuscriptOverview ({manuscript, increment, decrement}:{manuscript: Manuscript, increment: any, decrement: any}) {
+function ManuscriptOverview ({manuscript, increment, create, creating, title, setTitle}:{manuscript: Manuscript, increment: any, create: any, creating: boolean, title: string, setTitle: React.Dispatch<SetStateAction<string>>}) {
     
     // State variables
 
@@ -54,6 +55,21 @@ function ManuscriptOverview ({manuscript, increment, decrement}:{manuscript: Man
                 </div>
             </div>
             }
+            {manuscript?.sections?.length === 0 ? (
+                <div className = "flex flex-col m-3 p-3 border rounded-md">
+                    <h4 className = "font-semibold text-2xl">Create a section</h4>
+                    <p className = "text-sm font-extralight mb-3">Create a manuscript section to get started.</p>
+                    <form className = "w-full flex flex-col" onSubmit = {create}>
+                        <div className = "mb-3">
+                            <p>Title of Section</p>
+                            <input value = {title} onChange = {(event) => {setTitle(event.currentTarget.value);}}className = "px-3 py-2 text-base w-full border rounded-md"placeholder = "Example title" type = "text"/>
+                        </div>
+                        <button type = "submit" disabled = {creating } className = "w-fit h-fit text-white self-end">Create</button>
+                    </form>
+                </div>
+            ):(
+                <button  className = "w-fit text-[#f4f4f4] text-lg py-0 px-3" type = "button" onClick = {increment}>→</button>
+            )}
         </div>
     );
 }

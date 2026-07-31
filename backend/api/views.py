@@ -291,7 +291,7 @@ class ManuscriptListCreate(generics.ListCreateAPIView):
         
 class ManuscriptSectionListCreate(generics.ListCreateAPIView):
 
-    serializer_class = ManuscriptSection
+    serializer_class = ManuscriptSectionSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
@@ -319,30 +319,25 @@ class ManuscriptSectionListCreate(generics.ListCreateAPIView):
         except:
             raise NotFound("Invaid Manuscript ID")
     
-    def perform_create(self):
+    def perform_create(self, serializer):
 
         user = self.request.user
         data = self.request.data
         
         # fields
-        name = data.get("name")
         order = data.get("order")
-        manuscript_id = data.get("manuscript")
+        manuscript_id = self.kwargs.get("manuscript_id")
 
         # Checking if user belongs to specific manuscript while querying it
         try:
             manuscript = Manuscript.objects.get(pk = manuscript_id)
 
             if user not in [manuscript.user] + list(manuscript.editors.all()):
-                raise PermissionError("User lacks permissions")
+                raise PermissionError("User lacks permissions.")
         except:
-            return Response(status = status.HTTP_400_BAD_REQUEST)
+            raise NotFound("Manuscript not found.")
         
-        serializer = self.get_serializer(name = name, order = order, manuscript = manuscript, user = user)
-
-        if not serializer.is_valid():
-            return Response(status = status.HTTP_400_BAD_REQUEST)
-        return Response(status = status.HTTP_400_BAD_REQUEST)
+        serializer.save(order = order, manuscript = manuscript)
 
 
 class ManuscriptRetrieveUpdateDestroy(generics.RetrieveUpdateAPIView):

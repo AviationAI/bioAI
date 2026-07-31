@@ -28,8 +28,11 @@ function ManuscriptDetail() {
     const [isOverlayOpen, setIsOverlayOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [type, setType] = useState("editor");
-    console.log(manuscript);
 
+    // Overview
+    const [creatingSection, setCreatingSection] = useState(false);
+    const [title, setTitle] = useState("");
+ 
     // Sidebar
     const [page, setPage] = useState(0);
     
@@ -41,6 +44,31 @@ function ManuscriptDetail() {
     const decrement = () => {
         if (page > 0) setPage(page => page -1);
     }
+
+    // Function to create a manuscript section
+    async function create_section (event: any)  {
+        event.preventDefault();
+        if (title.trim().length > 0) {
+            try {
+                setCreatingSection(true);
+                const token = await getToken();
+                await AxiosInstance.post(`/api/manuscripts/sections/${manuscript?.id}`, {
+                    "order": manuscript?.sections?.length,
+                    "title": title
+                }, {
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+                setDependency(!dependency);
+                setTitle("");
+            } catch(err) {
+                console.log(err);
+            } finally {
+                setCreatingSection(false);
+        }
+        }
+    } 
 
     // Handles change in sharing overlay
     function handleChange(event: any){
@@ -187,7 +215,7 @@ function ManuscriptDetail() {
                     </button> 
                     {manuscript?.sections?.map((section, index) => 
                         <button key = {index + 1} data-index = {index + 1}  onClick = {(event: any) => {setPage(parseInt(event.currentTarget.dataset.index)); }} className = "p-3 sidebar-portion flex flex-row justify-center items-center gap-1">
-                            { section?.title }
+                            <p className = {page !== index + 1 ? "font-semibold" : "font-extrabold"}>{index + 1}. {section.title}</p>
                         </button>
                     )}
                 </aside>
@@ -197,7 +225,7 @@ function ManuscriptDetail() {
                         {userId === manuscript.user.id && <button className = "bg-[#53a2e7] text-[#f4f4f4] hover:bg-[#1f558f]" onClick = {() => {setIsOverlayOpen(true)}}>Share</button>}
                      </div><br/>
                     {page === 0 && 
-                        <ManuscriptOverview manuscript = {manuscript as Manuscript} increment = {increment} decrement = {decrement}/>
+                        <ManuscriptOverview manuscript = {manuscript as Manuscript} increment = {increment} create = {create_section} creating = {creatingSection} title = {title} setTitle = {setTitle}/>
                     }
                     {page !== 0 &&
                         <></>

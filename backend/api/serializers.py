@@ -2,6 +2,7 @@ from .models import User, Project, Manuscript, ManuscriptSection
 from rest_framework import routers, serializers, viewsets
 
 class UserSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = User
         fields = '__all__'
@@ -11,17 +12,21 @@ class UserSerializer(serializers.ModelSerializer):
 # Manuscript & ManuscriptSection serializers
 
 class ManuscriptSectionSerializer(serializers.ModelSerializer):
+
+    order = serializers.IntegerField(min_value = 0)
+    content = serializers.CharField(required = False)
     
     class Meta:
         model = ManuscriptSection
         fields = '__all__'
-        read_only_fields = ['id']
+        read_only_fields = ['id', 'manuscript']
 
 
     
 # Project serializers
 
 class ProjectFrontendSerializer(serializers.ModelSerializer):
+
     summary = serializers.CharField(required=False, allow_blank=True)
     available_trusted_literatures = serializers.JSONField(required=False)
     research_question = serializers.CharField(allow_blank=True, required = False)
@@ -51,6 +56,7 @@ class ProjectFrontendSerializer(serializers.ModelSerializer):
         return super().validate(attrs)
 
 class ProjectBackendSerializer(serializers.ModelSerializer):
+
     summary = serializers.CharField(required=False, allow_blank=True)
     available_trusted_literatures = serializers.JSONField(required=False)
     research_question = serializers.CharField(allow_blank=True, required = False)
@@ -81,6 +87,7 @@ class ProjectBackendSerializer(serializers.ModelSerializer):
 # Serializer for frontend with user objects
 
 class ManuscriptFrontendSerializer(serializers.ModelSerializer):
+
     editors = UserSerializer(many = True, required = False)
     viewers = UserSerializer(many = True, required = False)
     sections = ManuscriptSectionSerializer(many = True, read_only = True)
@@ -97,6 +104,7 @@ class ManuscriptFrontendSerializer(serializers.ModelSerializer):
 # Serializer for backend with user primary keys
 
 class ManuscriptBackendSerializer(serializers.ModelSerializer):
+
     sections = serializers.PrimaryKeyRelatedField(many = True, read_only = True, required = False)
     editors = serializers.PrimaryKeyRelatedField(many = True, required = False, queryset = User.objects.all())
     viewers = serializers.PrimaryKeyRelatedField(many = True, queryset = User.objects.all(), required = False)
