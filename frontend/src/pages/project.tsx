@@ -143,6 +143,35 @@ function ProjectDetail(){
         }
     }
 
+    async function summarizeSource(event: any, url: string, index: number) {
+        event.preventDefault();
+        try {
+            const token = await getToken();
+            const response = await AxiosInstance.post("/api/generate/summarize_source", {
+                url,
+                "topic": project?.topic,
+                "research_question": project?.research_question
+            }, {
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+
+            // Updating project
+            await AxiosInstance.patch(`/api/projects/${projectID}`, {
+                "available_trusted_literatures": project?.available_trusted_literatures?.map((item, i) => index === i ? [item[0], item[1], response.data.summary] : item)
+            }, {
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+
+            setDependency(!dependency);
+        } catch (err) {
+            console.log(err)
+        } 
+    }
+
     if(loading) return <Loader loading={true}/>;
     return (
         <>
@@ -245,7 +274,7 @@ function ProjectDetail(){
                     {userId === project.user.id &&<button className = "bg-[#53a2e7] text-[#f4f4f4] hover:bg-[#1f558f]" onClick = {() => {setIsOverlayOpen(true);}}>Share</button>}
                 </div><br/>
                 {page === 0 && <ProjectOverview topic = {project?.topic} rq = {project?.research_question as string} description = {project?.description} summary = {project?.summary as string} increment = {increment}/>}
-                {page === 1 && <Sources sources = {project?.available_trusted_literatures as string[][]} increment = {increment} decrement = {decrement}/>}
+                {page === 1 && <Sources sources = {project?.available_trusted_literatures as string[][]} increment = {increment} decrement = {decrement} summarize = {summarizeSource} />}
                 {page === 2 && <LiteratureSummarized summary = {project?.literature_summarized as string} increment = {increment} decrement = {decrement}/>}
                 {page === 3 && <GoToEdit decrement = {decrement} increment = {increment}/>}
                 {page === 4 && <ManuscriptsControls decrement = {decrement} create = {create_manuscript} name = {name} setName = {setName}/>}

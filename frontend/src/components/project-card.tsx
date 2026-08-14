@@ -19,7 +19,7 @@ function ProjectCard({project}: {project: Project}){
         if (confirmed){
             try {
                 const token = await getToken();
-                const deleteProject = await AxiosInstance.delete(`/api/projects/${project.id}`, {
+                await AxiosInstance.delete(`/api/projects/${project.id}`, {
                     headers: {
                         "Authorization": `Bearer ${token}`
                     }

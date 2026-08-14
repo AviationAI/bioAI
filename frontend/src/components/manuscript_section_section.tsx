@@ -41,6 +41,13 @@ function ManuscriptSectionSection({section, createSection, isLast, increment, de
             CharacterCount
         ],
         content: content,
+        editorProps: {
+            attributes: {
+            spellcheck: "true",
+            autocorrect: "on",
+            autocapitalize: "sentences",
+        },
+        },
         onUpdate: ({editor}) => {
             setContent((editor.storage as any).markdown.getMarkdown());
         } 
