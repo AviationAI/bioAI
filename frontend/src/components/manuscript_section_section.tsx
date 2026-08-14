@@ -12,6 +12,7 @@ import { EditorContext, EditorContent } from "@tiptap/react";
 import { useAuth } from "@clerk/clerk-react";
 import AxiosInstance from "./AxiosInstance";
 import { type TFNE } from "../types";
+import Loader from "./spinner";
 
 
 function ManuscriptSectionSection({section, createSection, isLast, increment, decrement}: {section: ManuscriptSection, createSection: any, isLast: boolean, increment: any, decrement: any}) {
@@ -48,6 +49,8 @@ function ManuscriptSectionSection({section, createSection, isLast, increment, de
     // Hook for debounced autosave
     useEffect(() => {
 
+        setAutosaved(null);
+
         // delaying sending request to API to save
         const timer = setTimeout(async () => {
             try {
@@ -78,6 +81,12 @@ function ManuscriptSectionSection({section, createSection, isLast, increment, de
 
     return (
         <div className = "flex flex-col">
+            <div className = "flex flex-row items-center">
+                {autosaved === true && <p className = "text-sm">Saved.</p>}
+                {autosaved === "err" && <p className = "text-sm">Failed to save.</p>}
+                {autosaved === false && <p className = "text-sm">Saving...</p>}
+                <Loader loading = {autosaved === false} size = {7}/>
+            </div>
             <div className = "mb-3">
                 <input value = {title}  className = "px-4 py-4 text-3xl font-bold w-full border rounded-md " onChange = {(event) => {setTitle(event.currentTarget.value)}}/>
             </div>
@@ -87,8 +96,6 @@ function ManuscriptSectionSection({section, createSection, isLast, increment, de
                     <EditorContent editor={editor} className = "border-2 rounded-b-md p-2"/>
                 </EditorContext.Provider>
             </div>
-
-
         </div>
     );
 }

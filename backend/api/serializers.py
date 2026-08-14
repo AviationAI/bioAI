@@ -14,7 +14,7 @@ class UserSerializer(serializers.ModelSerializer):
 class ManuscriptSectionSerializer(serializers.ModelSerializer):
 
     order = serializers.IntegerField(min_value = 0)
-    content = serializers.CharField(required = False)
+    content = serializers.CharField(required = False, allow_blank = True)
     
     class Meta:
         model = ManuscriptSection

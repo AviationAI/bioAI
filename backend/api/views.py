@@ -29,6 +29,7 @@ from bioAI.settings import OLLAMA_BASE_URL, SEARXNG_URL
 from langchain_community.utilities import SearxSearchWrapper
 from rag.pipeline import ResearchPipeline
 from rest_framework.exceptions import ValidationError, NotFound, PermissionDenied
+from .throttles import SpamThrottling, ModerateThrottling
 
 
 # Create your views here.
@@ -421,7 +422,6 @@ class ManuscriptRetrieveUpdateDestroy(generics.RetrieveUpdateAPIView):
 class ManuscriptSectionRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     queryset = ManuscriptSection.objects.all()
     lookup_field = "pk"
-    throttle_scope = 'moderate_address'
     serializer_class = ManuscriptSectionSerializer
 
     def get_permissions(self):
@@ -436,6 +436,13 @@ class ManuscriptSectionRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIVi
         elif request.method in ["PUT", "PATCH"]:
             return [IsEditorSection()]
         return [IsOwnerSection()]
+
+    def get_throttles(self):
+        request = self.request
+        
+        if request.method in ["PUT", "PATCH"]:
+            return [SpamThrottling()]
+        return [ModerateThrottling()]
 
 
 # View to generate summary

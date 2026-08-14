@@ -1,10 +1,10 @@
 import { ClipLoader } from "react-spinners";
 
-function Loader({ loading }: {loading: boolean}){
+function Loader({ loading, size }: {loading: boolean, size?: number}){
 
     return (
         <>
-        {loading && <ClipLoader loading={loading} color="#737373ff"/>}  
+        {loading && <ClipLoader loading={loading} color="#737373ff" size = {size}/>}  
         </>  
     );
 }
