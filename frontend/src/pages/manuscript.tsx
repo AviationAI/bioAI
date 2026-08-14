@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Manuscript, User } from "../interfaces";
+import type { Manuscript, ManuscriptSection, User } from "../interfaces";
 import { useParams } from "react-router-dom";
 import useManuscript from "../hooks/getmanuscript";
 import Loader from "../components/spinner";
@@ -9,6 +9,7 @@ import { useAuth } from "@clerk/clerk-react";
 import Overlay from "../components/overlay";
 import InputTags from "../components/inputTags";
 import AxiosInstance from "../components/AxiosInstance";
+import ManuscriptSectionSection from "../components/manuscript_section_section";
 
 function ManuscriptDetail() {
     
@@ -208,8 +209,8 @@ function ManuscriptDetail() {
             </form>
             </Overlay>
             }
-            <div className = "min-h-screen flex flex-row justify-start gap-7 bg-[#f4f4f4]">
-                <aside className = "w-60 -mt-[25px] -ml-[25px] border-r">
+            <div className = "min-h-screen flex flex-row justify-start gap-7 -m-[25px] bg-[#f4f4f4]">
+                <aside className = "w-60 border-r">
                     <button data-index = {0} onClick = {(event: any) => {setPage(parseInt(event.currentTarget.dataset.index)); }} className = "p-3 sidebar-portion flex flex-row justify-center items-center gap-1">
                         <p className = {page !== 0 ? "font-semibold" : "font-extrabold"}>Overview</p>
                     </button> 
@@ -219,17 +220,17 @@ function ManuscriptDetail() {
                         </button>
                     )}
                 </aside>
-                <main className = "flex flex-col flex-1 m-1">
+                <main className = "flex flex-col flex-1 m-1 py-[25px] pr-[25px]">
                     <div className = "flex flex-row justify-between">
                         <h3 className = "font-bold text-4xl">{ manuscript.name }</h3><br/>
-                        {userId === manuscript.user.id && <button className = "bg-[#53a2e7] text-[#f4f4f4] hover:bg-[#1f558f]" onClick = {() => {setIsOverlayOpen(true)}}>Share</button>}
+                        {userId === manuscript.user.id && <button className = "bg-[#53a2e7] text-[#f4f4f4] hover:bg-[#1f558f] h-fit w-fit py-3" onClick = {() => {setIsOverlayOpen(true)}}>Share</button>}
                      </div><br/>
                     {page === 0 && 
                         <ManuscriptOverview manuscript = {manuscript as Manuscript} increment = {increment} create = {create_section} creating = {creatingSection} title = {title} setTitle = {setTitle}/>
                     }
-                    {page !== 0 &&
-                        <></>
-                    }
+                    {page > 0 &&
+                        <ManuscriptSectionSection section = {manuscript?.sections?.[page - 1] as ManuscriptSection} createSection = {create_section} increment = {increment} decrement = {decrement} isLast = {page === manuscript?.sections?.length}/>
+                    } 
                 </main>
             </div>
             </>

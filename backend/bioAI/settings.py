@@ -189,7 +189,8 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         'sensitive_address': '5/minute',
         'moderate_address': '60/minute',
-        'user': '15000/day'
+        'spam_address': '120/minute',
+        'user': '50000/day'
     }
 }
 

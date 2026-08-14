@@ -18,6 +18,24 @@ class IsViewer(permissions.BasePermission):
         if super().has_object_permission(request, view, obj):
             return obj.user == request.user or request.user in obj.viewers.all() or request.user in obj.editors.all()
         return False
+
+class IsOwnerSection(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if  super().has_object_permission(request, view, obj):
+            return obj.manuscript.user == request.user
+        return False
+    
+class IsEditorSection(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if super().has_object_permission(request, view, obj):
+            return obj.manuscript.user == request.user or request.user in obj.manuscript.editors.all()
+        return False
+    
+class IsViewerSection(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if super().has_object_permission(request, view, obj):
+            return obj.manuscript.user == request.user or request.user in obj.manuscript.viewers.all() or request.user in obj.manuscript.editors.all()
+        return False
     
 class IsBasic(permissions.BasePermission):
     def has_permission(self, request, view):

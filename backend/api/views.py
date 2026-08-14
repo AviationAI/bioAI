@@ -23,7 +23,7 @@ from .serializers import UserSerializer, ProjectFrontendSerializer, ProjectBacke
 from rest_framework import generics, permissions
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
-from .permissions import IsOwner, IsEditor, IsViewer, Can_Create_Project, IsBasic, IsPremium, IsPremium_Deluxe, IsPro
+from .permissions import IsOwner, IsEditor, IsViewer, Can_Create_Project, IsBasic, IsPremium, IsPremium_Deluxe, IsPro, IsEditorSection, IsViewerSection, IsOwnerSection
 from rest_framework import status
 from bioAI.settings import OLLAMA_BASE_URL, SEARXNG_URL
 from langchain_community.utilities import SearxSearchWrapper
@@ -162,53 +162,53 @@ class ProjectRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
 
         # Only owner can edit people who the project is shared with
         if request.user != project.user:
-            raise PermissionDenied()
         
-        currentEditors = [editor.id for editor in project.editors.all()]
-        currentViewers = [viewer.id  for viewer in project.viewers.all()]
-        addedUsers = request.data.get("addedUsers", [])
-        addedType = request.data.get("addedType", None)
-        editors = request.data.get("editors", [])   
-        viewers = request.data.get("viewers", [])
-        remove = request.data.get("removed", [])
-        newEditors = set(currentEditors) | set(editors)
-        newViewers = set(currentViewers) | set(viewers)
-        # Typecasting to set to find the intersection
-        intersection = newEditors & newViewers
-        # Checking if each user has multiple instances
-        for user in intersection:
-            # Removing user from the instance not provided from the front end
-            if user in editors:
-                newViewers.discard(user)
-            elif user in viewers:
-                newEditors.discard(user)
-            else:
-                if user in currentEditors:
+            currentEditors = [editor.id for editor in project.editors.all()]
+            currentViewers = [viewer.id  for viewer in project.viewers.all()]
+            addedUsers = request.data.get("addedUsers", [])
+            addedType = request.data.get("addedType", None)
+            editors = request.data.get("editors", [])   
+            viewers = request.data.get("viewers", [])
+            remove = request.data.get("removed", [])
+            newEditors = set(currentEditors) | set(editors)
+            newViewers = set(currentViewers) | set(viewers)
+            # Typecasting to set to find the intersection
+            intersection = newEditors & newViewers
+            # Checking if each user has multiple instances
+            for user in intersection:
+                # Removing user from the instance not provided from the front end
+                if user in editors:
                     newViewers.discard(user)
-                elif user in currentViewers:
+                elif user in viewers:
                     newEditors.discard(user)
-        for user in addedUsers:
-            try:
-                if user == project.user:
+                else:
+                    if user in currentEditors:
+                        newViewers.discard(user)
+                    elif user in currentViewers:
+                        newEditors.discard(user)
+            for user in addedUsers:
+                try:
+                    if user == project.user:
+                        continue
+                    userID = User.objects.get(username = user).id
+                    if userID not in newEditors and userID not in newViewers:
+                        if addedType == "editor":
+                            newEditors.add(userID)
+                        elif addedType == "viewer":
+                            newViewers.add(userID)
+                except:
                     continue
-                userID = User.objects.get(username = user).id
-                if userID not in newEditors and userID not in newViewers:
-                    if addedType == "editor":
-                        newEditors.add(userID)
-                    elif addedType == "viewer":
-                        newViewers.add(userID)
-            except:
-                continue
-        # Checking which users are in the remove list
-        for user in remove:
+            # Checking which users are in the remove list
+            for user in remove:
 
-            # Removing the user if from every other list
-            if user in newEditors:
-                newEditors.discard(user)
-            if user in newViewers: 
-                newViewers.discard(user)
+                # Removing the user if from every other list
+                if user in newEditors:
+                    newEditors.discard(user)
+                if user in newViewers: 
+                    newViewers.discard(user)
 
-        serializer.save(editors = list(newEditors), viewers = list(newViewers))
+            serializer.save(editors = list(newEditors), viewers = list(newViewers))
+        serializer.save()
 
 # View to change out of scan mode
 class ProjectChangeMode(generics.GenericAPIView):
@@ -369,54 +369,74 @@ class ManuscriptRetrieveUpdateDestroy(generics.RetrieveUpdateAPIView):
 
         # Only owner can edit people who the project is shared with
         if request.user != manuscript.user:
-            raise PermissionDenied()
         
-        currentEditors = [editor.id for editor in manuscript.editors.all()]
-        currentViewers = [viewer.id  for viewer in manuscript.viewers.all()]
-        addedUsers = request.data.get("addedUsers", [])
-        addedType = request.data.get("addedType", None)
-        editors = request.data.get("editors", [])   
-        viewers = request.data.get("viewers", [])
-        remove = request.data.get("removed", [])
-        newEditors = set(currentEditors) | set(editors)
-        newViewers = set(currentViewers) | set(viewers)
-        # Typecasting to set to find the intersection
-        intersection = newEditors & newViewers
-        # Checking if each user has multiple instances
-        for user in intersection:
-            # Removing user from the instance not provided from the front end
-            if user in editors:
-                newViewers.discard(user)
-            elif user in viewers:
-                newEditors.discard(user)
-            else:
-                if user in currentEditors:
+            currentEditors = [editor.id for editor in manuscript.editors.all()]
+            currentViewers = [viewer.id  for viewer in manuscript.viewers.all()]
+            addedUsers = request.data.get("addedUsers", [])
+            addedType = request.data.get("addedType", None)
+            editors = request.data.get("editors", [])   
+            viewers = request.data.get("viewers", [])
+            remove = request.data.get("removed", [])
+            newEditors = set(currentEditors) | set(editors)
+            newViewers = set(currentViewers) | set(viewers)
+            # Typecasting to set to find the intersection
+            intersection = newEditors & newViewers
+            # Checking if each user has multiple instances
+            for user in intersection:
+                # Removing user from the instance not provided from the front end
+                if user in editors:
                     newViewers.discard(user)
-                elif user in currentViewers:
+                elif user in viewers:
                     newEditors.discard(user)
-        for user in addedUsers:
-            try:
-                if user == manuscript.user:
+                else:
+                    if user in currentEditors:
+                        newViewers.discard(user)
+                    elif user in currentViewers:
+                        newEditors.discard(user)
+            for user in addedUsers:
+                try:
+                    if user == manuscript.user:
+                        continue
+                    userID = User.objects.get(username = user).id
+                    if userID not in newEditors and userID not in newViewers:
+                        if addedType == "editor":
+                            newEditors.add(userID)
+                        elif addedType == "viewer":
+                            newViewers.add(userID)
+                except:
                     continue
-                userID = User.objects.get(username = user).id
-                if userID not in newEditors and userID not in newViewers:
-                    if addedType == "editor":
-                        newEditors.add(userID)
-                    elif addedType == "viewer":
-                        newViewers.add(userID)
-            except:
-                continue
 
-        print(remove)
-        # Checking which users are in the remove list
-        for user in remove:
-            # Removing the user if from every other list
-            if user in newEditors:
-                newEditors.discard(user)
-            if user in newViewers: 
-                newViewers.discard(user)
+            print(remove)
+            # Checking which users are in the remove list
+            for user in remove:
+                # Removing the user if from every other list
+                if user in newEditors:
+                    newEditors.discard(user)
+                if user in newViewers: 
+                    newViewers.discard(user)
 
-        serializer.save(editors = list(newEditors), viewers = list(newViewers))
+            serializer.save(editors = list(newEditors), viewers = list(newViewers))
+        serializer.save()
+
+class ManuscriptSectionRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
+    queryset = ManuscriptSection.objects.all()
+    lookup_field = "pk"
+    throttle_scope = 'moderate_address'
+    serializer_class = ManuscriptSectionSerializer
+
+    def get_permissions(self):
+
+        # Using fk manuscript as a basis for perms
+        
+
+        request = self.request
+
+        if request.method == "GET":
+            return [IsViewerSection()]
+        elif request.method in ["PUT", "PATCH"]:
+            return [IsEditorSection()]
+        return [IsOwnerSection()]
+
 
 # View to generate summary
 class GenerateSummary(APIView):
