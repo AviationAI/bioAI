@@ -229,7 +229,7 @@ function ManuscriptDetail() {
                         <ManuscriptOverview manuscript = {manuscript as Manuscript} increment = {increment} create = {create_section} creating = {creatingSection} title = {title} setTitle = {setTitle}/>
                     }
                     {page > 0 &&
-                        <ManuscriptSectionSection section = {manuscript?.sections?.[page - 1] as ManuscriptSection} createSection = {create_section} increment = {increment} decrement = {decrement} isLast = {page === manuscript?.sections?.length}/>
+                        <ManuscriptSectionSection section = {manuscript?.sections?.[page - 1] as ManuscriptSection} createSection = {create_section} increment = {increment} decrement = {decrement} isLast = {page === manuscript?.sections?.length} creating = {creatingSection} newTitle = {title} setNewTitle = {setTitle} manuscriptDependency = {dependency} setManuscriptDependency = {setDependency}/>
                     } 
                 </main>
             </div>
