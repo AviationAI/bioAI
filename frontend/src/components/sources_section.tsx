@@ -1,6 +1,14 @@
 import { Link } from "react-router-dom";
+import Markdown from "react-markdown";
+import { useState } from "react";
 
 function Sources({sources, increment, decrement, summarize}:{sources: string[][], increment: any, decrement: any, summarize: any}){
+
+    // State Variables
+
+    const [expanded, setExpanded] = useState<Set<number | null>>(new Set());
+
+
     return (
         <div className = "flex flex-col">
             <h3 className = "text-3xl font-bold">Sources</h3>
@@ -13,8 +21,25 @@ function Sources({sources, increment, decrement, summarize}:{sources: string[][]
                             <p className = "text-sm">{source[0]}</p>
                             <p className = "text-sm font-extralight">{source[1]}</p>
                             {source.length > 2 &&
-                                <div>
-                                    <p className = "text-sm font-extralight">{source[2]}</p>
+                                <div  className = "text-sm font-extralight">
+                                    {expanded.has(index) ? (
+                                        <>
+                                            <Markdown>{source[2]}</Markdown>
+                                            <div className = "hover:bg-gray-400 w-fit h-fit p-2 rounded-xl flex flex-row items-center gap-1" onClick = {(event) => {event.preventDefault(); setExpanded(prev => new Set(prev.add(index)))}}>
+                                                <p>Show Less</p>
+                                                <svg xmlns="http://www.w3.org/2000/svg" height="22px" viewBox="0 -960 960 960" width="22px" fill="#555"><path d="m357-384 123-123 123 123 57-56-180-180-180 180 57 56ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg>
+                                            </div>
+                                        </>
+                                    
+                                    ):(
+                                        <>
+                                            <Markdown>{source[2].slice(0, 250)}</Markdown>
+                                            <div className = "hover:bg-gray-400 w-fit h-fit p-2 rounded-xl flex flex-row items-center gap-1" onClick = {(event) => {event?.preventDefault; setExpanded((prev) => {const New = new Set(prev); New.delete(index);  return New})}}>
+                                                <p>Show More</p>
+                                                <svg xmlns="http://www.w3.org/2000/svg" height="22px" viewBox="0 -960 960 960" width="22px" fill="#555"><path d="m480-340 180-180-57-56-123 123-123-123-57 56 180 180Zm0 260q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg>
+                                            </div>
+                                        </>
+                                    )}       
                                 </div>
                             }
                         </div>

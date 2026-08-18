@@ -167,17 +167,14 @@ def resolve_and_validate_url(url: str)-> str:
     # visited to prevent redirect loops
     visited = set()
 
-    for _ in range(max_redirects):
+    session = requests.Session()
 
-        if current_url in visited:
-            raise ValidationError("Redirect Loop detected")
+    for _ in range(max_redirects):
 
         validate_url(current_url)
 
-        visited.add(current_url)
-
         try:
-            response = requests.get(
+            response = session.get(
                 current_url,
                 allow_redirects = False,
                 stream = True,
@@ -191,7 +188,18 @@ def resolve_and_validate_url(url: str)-> str:
         except requests.exceptions.ConnectTimeout:
             raise ValidationError("Connection timed out")
 
+        # Detecting redirect loop
+        
+        cookies = response.request.headers.get("Cookie")
+
+        if (current_url, cookies) in visited:
+            raise ValidationError("Redirect Loop Detected")
+
+        visited.add((current_url, cookies))
+
+
         # Checking if another redirect
+
         if response.status_code not in {301, 302, 303,  307, 308}:
             return current_url
         
