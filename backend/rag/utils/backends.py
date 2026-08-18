@@ -15,7 +15,8 @@ from django.core.exceptions import ValidationError
 from encodings.idna import nameprep
 import ipaddress
 import socket
-import requests
+from metapub import PubMedFetcher
+
 
 # With an id & time, this class deletes a vector store after a custom time limit ends
 class ExpiringVectorStore:
@@ -213,3 +214,45 @@ def resolve_and_validate_url(url: str)-> str:
         current_url = urljoin(current_url, location)
     
     raise ValidationError("Too many redirects")
+
+
+def is_pubmed(url: str) -> tuple[bool, bool]:
+
+    # Output is tuple[bool, bool] where first bool is if it is pubmed, and second for if it is legacy
+
+
+    try: 
+        parsed = urlparse(url)
+        hostname = parsed.hostname
+        path = parsed.path
+
+        # legacy
+        if hostname in ["ncbi.nlm.nih.gov", "www.ncbi.nlm.nih.gov"] and path.startswith("/pubmed"):
+            return (True, False)
+
+        # modern
+        if hostname == "pubmed.ncbi.nlm.nih.gov":
+            return (True, True)
+
+        raise Exception
+    
+    except:
+        return False
+
+def scrape_pubmed(url: str, modern: bool):
+
+    # Outputs scraped pubmed article via api
+
+
+    path = urlparse(url).path
+    fetch = PubMedFetcher()
+
+    if modern:
+        pmid = path.split("/")[0]
+    else:
+        pmid = path.split("/")[1]
+
+    return fetch.article_by_pmid(pmid)
+
+
+

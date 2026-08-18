@@ -43,3 +43,5 @@ psycopg2-binary
 
 # classification
 scikit-learn
+
+metapub
