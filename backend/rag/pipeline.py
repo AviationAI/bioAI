@@ -26,7 +26,7 @@ from langchain_community.utilities import SearxSearchWrapper
 from rest_framework.generics import GenericAPIView
 from langchain_community.utilities import SearxSearchWrapper
 from .utils.backends import ExpiringVectorStore
-from .utils.backends import get_classifier, resolve_and_validate_url
+from .utils.backends import get_classifier, resolve_and_validate_url, scrape_pubmed, is_pubmed
 from django.core.exceptions import ValidationError
 import time
 
@@ -176,16 +176,22 @@ class ResearchPipeline():
         resolve_and_validate_url(url)
         
         try:
+            pubmed_details = is_pubmed(url)
             
-            # loading urls
-            loader = CustomSeleniumURLLoader(urls = [url])
-            docs = loader.load()
+            # recall output of is_pubmed
+            if pubmed_details[0]:
+                docs = scrape_pubmed(url, pubmed_details[1])
 
-            # Splitting the documents
-            split = self.text_splitter.split_documents(docs)
+            else:
+                # loading urls
+                loader = CustomSeleniumURLLoader(urls = [url])
+                docs = loader.load()
+
+                # Splitting the documents
+                split = self.text_splitter.split_documents(docs)
 
 
-            docs = "\n\n".join([doc.page_content for doc in split])
+                docs = "\n\n".join([doc.page_content for doc in split])
 
             # Asking mistral to summarize the documents retrieved by the vector storage
             prompt = f"""
@@ -220,7 +226,7 @@ class ResearchPipeline():
                         - Then applications or implications
                         - Then limitations or gaps (if mentioned or implied in text)
 
-                        4. Length: 800–1200 words.
+                        4. Length: 250-500 words MAX.
 
                         ---
 
@@ -231,6 +237,7 @@ class ResearchPipeline():
                         - No repetitive phrasing
                         - No filler phrases like “this source discusses”
                         - Prioritize synthesis over description
+                        - Make it easy to read
 
                         ---
 

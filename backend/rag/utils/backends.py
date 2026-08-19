@@ -15,6 +15,7 @@ from django.core.exceptions import ValidationError
 from encodings.idna import nameprep
 import ipaddress
 import socket
+import requests
 from metapub import PubMedFetcher
 
 
@@ -237,20 +238,20 @@ def is_pubmed(url: str) -> tuple[bool, bool]:
         raise Exception
     
     except:
-        return False
+        return (False, False)
 
 def scrape_pubmed(url: str, modern: bool):
 
-    # Outputs scraped pubmed article via api
+    # Outputs scraped pubmed article via metapub api
 
 
     path = urlparse(url).path
     fetch = PubMedFetcher()
 
     if modern:
-        pmid = path.split("/")[0]
-    else:
         pmid = path.split("/")[1]
+    else:
+        pmid = path.split("/")[2]
 
     return fetch.article_by_pmid(pmid)
 
