@@ -1,16 +1,16 @@
 import { useAuth } from "@clerk/clerk-react";
 import { useParams } from "react-router-dom";
-import Loader from "../components/spinner";
+import Loader from "../components/shared/spinner";
 import { useState } from "react";
 import { useEffect } from "react";
-import Screen404 from "../components/404";
-import AxiosInstance from "../components/AxiosInstance";
+import Screen404 from "../components/shared/404";
+import AxiosInstance from "../services/AxiosInstance";
 import { useNavigate } from "react-router-dom";
 import { EditorContent, useEditor, EditorContext } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Markdown } from "tiptap-markdown";
 import { useRef } from "react";
-import ToolbarTool from "../components/toolbar";
+import ToolbarTool from "../components/shared/toolbar";
 import Underline from '@tiptap/extension-underline';
 import useProject from "../hooks/getproject";
 

@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@clerk/clerk-react';
-import AxiosInstance from './AxiosInstance';
-import type { Project } from '../interfaces';
+import AxiosInstance from '../../../services/AxiosInstance';
+import type { Project } from '../../../interfaces';
 
 function ProjectCard({project}: {project: Project}){
 

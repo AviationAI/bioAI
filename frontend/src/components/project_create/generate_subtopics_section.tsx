@@ -1,6 +1,6 @@
-import type { Subtopics } from "../interfaces";
+import type { Subtopics } from "../../interfaces";
 import { useAuth } from "@clerk/clerk-react";
-import AxiosInstance from "./AxiosInstance";
+import AxiosInstance from "../../services/AxiosInstance";
 import { useState } from "react";
 
 function GenerateSubtopics ({topic, description, increment, decrement, subtopics, setSubtopics, generated, setGenerated}:{topic: string, description: string, increment: any, decrement: any, subtopics: Subtopics, setSubtopics: React.Dispatch<React.SetStateAction<Subtopics>>, generated: boolean, setGenerated: React.Dispatch<React.SetStateAction<boolean>>}){

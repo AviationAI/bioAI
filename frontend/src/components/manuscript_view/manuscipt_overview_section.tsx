@@ -1,5 +1,5 @@
 import type { SetStateAction } from "react";
-import type { Manuscript } from "../interfaces";
+import type { Manuscript } from "../../interfaces";
 
 function ManuscriptOverview ({manuscript, increment, create, creating, title, setTitle}:{manuscript: Manuscript, increment: any, create: any, creating: boolean, title: string, setTitle: React.Dispatch<SetStateAction<string>>}) {
     

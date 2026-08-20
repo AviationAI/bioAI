@@ -1,4 +1,4 @@
-import Navbar from "./components/layout";
+import Navbar from "./components/core/layout";
 import './styles.css';
 import Home from "./pages";
 import { SignedIn } from "@clerk/clerk-react";
@@ -9,7 +9,7 @@ import Edit from "./pages/edit_project";
 import Source from "./pages/overview";
 import ChangeMode from "./pages/change_mode";
 import Manuscripts from "./pages/manuscripts";
-import Screen404 from "./components/404";
+import Screen404 from "./components/shared/404";
 import ManuscriptDetail from "./pages/manuscript";
 
 function App() {

@@ -1,4 +1,4 @@
-import type { Subtopic } from "../interfaces";
+import type { Subtopic } from "../../../interfaces";
 
 function SubtopicsList({subtopics}: {subtopics: Subtopic[]}) {
     return (

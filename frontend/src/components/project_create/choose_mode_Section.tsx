@@ -1,5 +1,5 @@
 import type React from "react";
-import type { TFN } from "../types";
+import type { TFN } from "../../types";
 function ChooseMode ({setScan, plan, increment}:{setScan: React.Dispatch<React.SetStateAction<TFN>>, plan: string, increment: any}){
     return (
         <div className = "flex flex-col">

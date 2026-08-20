@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/clerk-react";
-import AxiosInstance from "./AxiosInstance";
+import AxiosInstance from "../../services/AxiosInstance";
 import { Markdown } from "tiptap-markdown";
-import ToolbarTool from "../components/toolbar";
+import ToolbarTool from "../shared/toolbar";
 import Underline from '@tiptap/extension-underline';
 import { useEditor, useEditorState } from "@tiptap/react";
 import StarterKit from '@tiptap/starter-kit';

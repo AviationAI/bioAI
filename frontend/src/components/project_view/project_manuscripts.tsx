@@ -1,10 +1,14 @@
-import type { Project } from "../interfaces";
+import type { Project } from "../../interfaces";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 function ManuscriptsControls({decrement, name, setName, create}: { decrement: any, name: string, setName: React.Dispatch<React.SetStateAction<string>>, create: any}) {
 
     const navigate = useNavigate();
+
+    // State variables
+    
+    
 
     return (
         <div className = "flex flex-col">

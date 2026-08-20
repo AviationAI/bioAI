@@ -1,18 +1,18 @@
 import React, { type SetStateAction } from "react";
 import { useState, useRef } from "react";
-import { type ManuscriptSection } from "../interfaces";
+import { type ManuscriptSection } from "../../interfaces";
 import { useEffect } from "react";
 import { Markdown } from "tiptap-markdown";
-import ToolbarTool from "../components/toolbar";
+import ToolbarTool from "../shared/toolbar";
 import Underline from '@tiptap/extension-underline';
 import { useEditor, useEditorState } from "@tiptap/react";
 import StarterKit from '@tiptap/starter-kit';
 import CharacterCount from '@tiptap/extension-character-count';
 import { EditorContext, EditorContent } from "@tiptap/react";
 import { useAuth } from "@clerk/clerk-react";
-import AxiosInstance from "./AxiosInstance";
-import { type TFNE } from "../types";
-import Loader from "./spinner";
+import AxiosInstance from "../../services/AxiosInstance";
+import { type TFNE } from "../../types";
+import Loader from "../shared/spinner";
 
 
 function ManuscriptSectionSection({section, createSection, isLast, increment, decrement, newTitle, setNewTitle, creating, manuscriptDependency, setManuscriptDependency}: {section: ManuscriptSection, createSection: any, isLast: boolean, increment: any, decrement: any, newTitle: string, setNewTitle: React.Dispatch<SetStateAction<string>>, creating: boolean, manuscriptDependency: boolean, setManuscriptDependency: React.Dispatch<SetStateAction<boolean>>}) {

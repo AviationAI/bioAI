@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import ProjectCard from "../components/project-card";
+import ProjectCard from "../components/project_view/subelements/project-card";
 import { SignedIn, SignedOut } from "@clerk/clerk-react";
-import AxiosInstance from "../components/AxiosInstance";
+import AxiosInstance from "../services/AxiosInstance";
 import { useAuth } from "@clerk/clerk-react";
-import Loader from "../components/spinner";
+import Loader from "../components/shared/spinner";
 import type {  Project } from "../interfaces";
 import { useNavigate } from "react-router-dom";
 

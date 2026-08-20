@@ -1,5 +1,5 @@
 import { Markdown } from "tiptap-markdown";
-import ToolbarTool from "../components/toolbar";
+import ToolbarTool from "../shared/toolbar";
 import Underline from '@tiptap/extension-underline';
 import { useEditor } from "@tiptap/react";
 import StarterKit from '@tiptap/starter-kit';

@@ -1,23 +1,23 @@
 import { useEffect, useState } from "react";
 import { useParams} from "react-router-dom";
 import { useAuth } from "@clerk/clerk-react";
-import AxiosInstance from "../components/AxiosInstance";
-import Loader from "../components/spinner";
-import Screen404 from "../components/404";
+import AxiosInstance from "../services/AxiosInstance";
+import Loader from "../components/shared/spinner";
+import Screen404 from "../components/shared/404";
 import ReactMarkdown from 'react-markdown';
-import Overlay from "../components/overlay";
-import InputTags from "../components/inputTags";
+import Overlay from "../components/shared/overlay";
+import InputTags from "../components/shared/inputTags";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import type { Project, User } from "../interfaces";
-import SubtopicsList from "../components/subtopics";
+import SubtopicsList from "../components/project_view/subelements/subtopics";
 import type { Subtopic } from "../interfaces";
 import useProject from "../hooks/getproject";
-import ProjectOverview from "../components/project_overview_section";
-import Sources from "../components/sources_section";
-import LiteratureSummarized from "../components/literature_summarized_section";
-import GoToEdit from "../components/go_to_edit_section";
-import ManuscriptsControls from "../components/project_manuscripts";
+import ProjectOverview from "../components/project_view/project_overview_section";
+import Sources from "../components/project_view/sources_section";
+import LiteratureSummarized from "../components/project_view/literature_summarized_section";
+import GoToEdit from "../components/project_view/go_to_edit_section";
+import ManuscriptsControls from "../components/project_view/project_manuscripts";
 
 function ProjectDetail(){
 
@@ -41,6 +41,11 @@ function ProjectDetail(){
 
     const {project, loading} = useProject(projectID as string, dependency);
 
+    // fields
+    const [topic, setTopic] = useState(project?.topic);
+    const [rq, setRQ] = useState(project?.research_question);
+    const [description, setDescription] = useState(project?.description);
+
     // Manuscript
     const [name, setName] = useState("");
 
@@ -50,6 +55,12 @@ function ProjectDetail(){
     // Sidebar
     const [page, setPage] = useState(0);
     const sections = ["Overview", `Sources (${project?.available_trusted_literatures?.length})`, "Literature Summarized", "Edit", "Manuscripts"]
+
+    useEffect(() => {
+        setTopic(project?.topic);
+        setRQ(project?.research_question);
+        setDescription(project?.description);
+    }, [loading]);
 
     // Functions to increment/decrement page
     const increment = () => {
@@ -277,7 +288,7 @@ function ProjectDetail(){
                     <h2 className = "text-4xl font-bold">{ project?.topic }</h2>
                     {userId === project.user.id &&<button className = "bg-[#53a2e7] text-[#f4f4f4] hover:bg-[#1f558f]" onClick = {() => {setIsOverlayOpen(true);}}>Share</button>}
                 </div><br/>
-                {page === 0 && <ProjectOverview topic = {project?.topic} rq = {project?.research_question as string} description = {project?.description} summary = {project?.summary as string} increment = {increment}/>}
+                {page === 0 && <ProjectOverview setTopic = {setTopic as any} topic = {topic as string} rq = {rq as string} setRQ = {setRQ as any} description = {description as string} setDescription = {setDescription as any} summary = {project?.summary as string} increment = {increment}/>}
                 {page === 1 && <Sources summarizing = {summarizingSource}sources = {project?.available_trusted_literatures as string[][]} increment = {increment} decrement = {decrement} summarize = {summarizeSource} />}
                 {page === 2 && <LiteratureSummarized summary = {project?.literature_summarized as string} increment = {increment} decrement = {decrement}/>}
                 {page === 3 && <GoToEdit decrement = {decrement} increment = {increment}/>}

@@ -2,8 +2,8 @@ import { useAuth } from "@clerk/clerk-react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import type { Manuscript } from "../interfaces";
-import AxiosInstance from "../components/AxiosInstance";
-import ManuscriptCard from "../components/manuscript_card";
+import AxiosInstance from "../services/AxiosInstance";
+import ManuscriptCard from "../components/manuscript_view/subelements/manuscript_card";
 
 function Manuscripts(){
 

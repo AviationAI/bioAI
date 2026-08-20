@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import type { Manuscript } from "../interfaces";
+import type { Manuscript } from "../../../interfaces";
 
 function ManuscriptCard({manuscript}: {manuscript: Manuscript}) {
 

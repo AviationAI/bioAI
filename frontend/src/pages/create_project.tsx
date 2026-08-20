@@ -1,19 +1,19 @@
-import AxiosInstance from "../components/AxiosInstance";
+import AxiosInstance from "../services/AxiosInstance";
 import { useRef, useState } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import type { TFN } from "../types";
-import ChooseMode from "../components/choose_mode_Section";
+import ChooseMode from "../components/project_create/choose_mode_Section";
 import useUserProfile from "../hooks/getuserprofile";
-import Choose from "../components/edit_details";
-import Summary from "../components/generate_summary_and_edit_section";
-import SummarizeSources from "../components/generate_source_summary_section";
-import Finalize from "../components/finalize_section";
+import Choose from "../components/project_create/edit_details";
+import Summary from "../components/project_create/generate_summary_and_edit_section";
+import SummarizeSources from "../components/project_create/generate_source_summary_section";
+import Finalize from "../components/project_create/finalize_section";
 import type { Subtopics } from "../interfaces";
-import GenerateSubtopics from "../components/generate_subtopics_section";
-import FinalizeScan from "../components/finalize_scan_section";
-import GenerateSources from "../components/generate_sources_and_edit_section";
+import GenerateSubtopics from "../components/project_create/generate_subtopics_section";
+import FinalizeScan from "../components/project_create/finalize_scan_section";
+import GenerateSources from "../components/project_create/generate_sources_and_edit_section";
 
 function Create(){
 

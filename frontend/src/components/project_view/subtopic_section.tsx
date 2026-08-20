@@ -1,5 +1,5 @@
-import type { Project } from "../interfaces";
-import SubtopicsList from "./subtopics";
+import type { Project } from "../../interfaces";
+import SubtopicsList from "./subelements/subtopics";
 
 function SubtopicsSection ({project, increment}: {project: Project, increment: any}) {
     return (

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@clerk/clerk-react";
-import AxiosInstance from "../components/AxiosInstance";
+import AxiosInstance from "../services/AxiosInstance";
 import type { Project } from "../interfaces";
 
 function useProject(projectID: string, dependency?: any) {

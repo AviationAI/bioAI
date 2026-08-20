@@ -1,17 +1,17 @@
 import { useNavigate, useParams } from "react-router-dom";
-import AxiosInstance from "../components/AxiosInstance";
-import Loader from "../components/spinner";
+import AxiosInstance from "../services/AxiosInstance";
+import Loader from "../components/shared/spinner";
 import { useState } from "react";
 import { useEffect } from "react";
 import { useAuth } from "@clerk/clerk-react";
-import Choose from "../components/edit_details";
-import Summary from "../components/generate_summary_and_edit_section";
+import Choose from "../components/project_create/edit_details";
+import Summary from "../components/project_create/generate_summary_and_edit_section";
 import { useRef } from "react";
 import useProject from "../hooks/getproject";
-import Finalize from "../components/finalize_section";
-import SummarizeSources from "../components/generate_source_summary_section";
-import SubtopicsSection from "../components/subtopic_section";
-import GenerateSources from "../components/generate_sources_and_edit_section";
+import Finalize from "../components/project_create/finalize_section";
+import SummarizeSources from "../components/project_create/generate_source_summary_section";
+import SubtopicsSection from "../components/project_view/subtopic_section";
+import GenerateSources from "../components/project_create/generate_sources_and_edit_section";
 
 function ChangeMode() {
     

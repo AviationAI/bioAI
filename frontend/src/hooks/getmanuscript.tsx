@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import AxiosInstance from "../components/AxiosInstance";
+import AxiosInstance from "../services/AxiosInstance";
 import type { Manuscript } from "../interfaces";
 import { useAuth } from "@clerk/clerk-react";
 

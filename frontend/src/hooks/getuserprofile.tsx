@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import type { User } from "../interfaces";
 import { useState } from "react";
-import AxiosInstance from "../components/AxiosInstance";
+import AxiosInstance from "../services/AxiosInstance";
 
 function useUserProfile(getToken: any) {
 

@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import Markdown from "react-markdown";
 import { useState } from "react";
-import Loader from "./spinner";
+import Loader from "../shared/spinner";
 
 function Sources({sources, increment, decrement, summarize , summarizing}:{sources: string[][], increment: any, decrement: any, summarize: any, summarizing: boolean}){
 

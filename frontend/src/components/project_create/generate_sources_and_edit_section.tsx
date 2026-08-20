@@ -1,4 +1,4 @@
-import AxiosInstance from "./AxiosInstance";
+import AxiosInstance from "../../services/AxiosInstance";
 import { useAuth } from "@clerk/clerk-react";
 import { useState } from "react";
 import React from "react";

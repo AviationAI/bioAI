@@ -2,14 +2,14 @@ import { useState } from "react";
 import type { Manuscript, ManuscriptSection, User } from "../interfaces";
 import { useParams } from "react-router-dom";
 import useManuscript from "../hooks/getmanuscript";
-import Loader from "../components/spinner";
-import Screen404 from "../components/404";
-import ManuscriptOverview from "../components/manuscipt_overview_section";
+import Loader from "../components/shared/spinner";
+import Screen404 from "../components/shared/404";
+import ManuscriptOverview from "../components/manuscript_view/manuscipt_overview_section";
 import { useAuth } from "@clerk/clerk-react";
-import Overlay from "../components/overlay";
-import InputTags from "../components/inputTags";
-import AxiosInstance from "../components/AxiosInstance";
-import ManuscriptSectionSection from "../components/manuscript_section_section";
+import Overlay from "../components/shared/overlay";
+import InputTags from "../components/shared/inputTags";
+import AxiosInstance from "../services/AxiosInstance";
+import ManuscriptSectionSection from "../components/manuscript_view/manuscript_section_section";
 
 function ManuscriptDetail() {
     

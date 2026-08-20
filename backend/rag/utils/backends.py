@@ -170,6 +170,12 @@ def resolve_and_validate_url(url: str)-> str:
     visited = set()
 
     session = requests.Session()
+    session.headers.update({
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+                    "(KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+    })
 
     for _ in range(max_redirects):
 
@@ -189,6 +195,7 @@ def resolve_and_validate_url(url: str)-> str:
         
         except requests.exceptions.ConnectTimeout:
             raise ValidationError("Connection timed out")
+        
 
         # Detecting redirect loop
         

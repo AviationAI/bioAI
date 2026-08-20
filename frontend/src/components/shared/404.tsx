@@ -1,4 +1,4 @@
-import image_404 from '../images/Image404.jpg';
+import image_404 from "../../images/Image404.jpg"
 
 function Screen404(){
     return (

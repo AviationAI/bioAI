@@ -1,6 +1,6 @@
 import { useNavigate, useSearchParams, useParams } from "react-router-dom";
-import AxiosInstance from "../components/AxiosInstance";
-import Loader from "../components/spinner";
+import AxiosInstance from "../services/AxiosInstance";
+import Loader from "../components/shared/spinner";
 import { useState } from "react";
 import { useEffect } from "react";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";

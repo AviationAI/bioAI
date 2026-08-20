@@ -1,4 +1,4 @@
-import type { Subtopics } from "../interfaces";
+import type { Subtopics } from "../../interfaces";
 
 function FinalizeScan ({finalize, topic, decrement, setPage, description, subtopics, subtopicsGen}: { finalize: any, topic: string, decrement: any, setPage: React.Dispatch<React.SetStateAction<number>>, description: any, subtopics: Subtopics, subtopicsGen: boolean}) {
     return (
