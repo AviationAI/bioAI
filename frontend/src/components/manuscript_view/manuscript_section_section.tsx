@@ -97,6 +97,39 @@ function ManuscriptSectionSection({section, createSection, isLast, increment, de
         setFirstRender(false);
     }, [content, title]);
 
+    // Hook for debounced autosave
+    useEffect(() => {
+        if (!firstRender){
+        setAutosaved(null);
+
+        // delaying sending request to API to save
+        const timer = setTimeout(async () => {
+            try {
+                setAutosaved(false);
+                const token = await getToken();
+                await AxiosInstance.patch(`/api/manuscripts/section/${section?.id}`, {
+                    "summary": content
+                }, {
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+                console.log("saved");
+                setAutosaved(true);
+            } catch(err) {
+                setAutosaved("err");
+                console.log(err);
+            }
+            setManuscriptDependency(!manuscriptDependency);
+        }, 500);
+        // cleaning up previous timer
+        return () => {
+            clearTimeout(timer);
+        }
+        }
+        setFirstRender(false);
+    }, [content, title]);
+
     return (
         <div className = "flex flex-col">
             <div className = "flex flex-row items-center ml-3">

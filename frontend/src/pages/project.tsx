@@ -45,6 +45,7 @@ function ProjectDetail(){
     const [topic, setTopic] = useState(project?.topic);
     const [rq, setRQ] = useState(project?.research_question);
     const [description, setDescription] = useState(project?.description);
+    const [summary, setSummary] = useState(project?.summary);
 
     // Manuscript
     const [name, setName] = useState("");
@@ -60,6 +61,7 @@ function ProjectDetail(){
         setTopic(project?.topic);
         setRQ(project?.research_question);
         setDescription(project?.description);
+        setSummary(project?.summary);
     }, [loading]);
 
     // Functions to increment/decrement page
@@ -288,7 +290,7 @@ function ProjectDetail(){
                     <h2 className = "text-4xl font-bold">{ project?.topic }</h2>
                     {userId === project.user.id &&<button className = "bg-[#53a2e7] text-[#f4f4f4] hover:bg-[#1f558f]" onClick = {() => {setIsOverlayOpen(true);}}>Share</button>}
                 </div><br/>
-                {page === 0 && <ProjectOverview setTopic = {setTopic as any} topic = {topic as string} rq = {rq as string} setRQ = {setRQ as any} description = {description as string} setDescription = {setDescription as any} summary = {project?.summary as string} increment = {increment}/>}
+                {page === 0 && <ProjectOverview loading = {loading} setTopic = {setTopic as any} topic = {topic as string} rq = {rq as string} setRQ = {setRQ as any} description = {description as string} setDescription = {setDescription as any} summary = {summary as string} setSummary = {setSummary as any} increment = {increment} setDependency = {setDependency} dependency = {dependency} projectID = {projectID as string}/>}
                 {page === 1 && <Sources summarizing = {summarizingSource}sources = {project?.available_trusted_literatures as string[][]} increment = {increment} decrement = {decrement} summarize = {summarizeSource} />}
                 {page === 2 && <LiteratureSummarized summary = {project?.literature_summarized as string} increment = {increment} decrement = {decrement}/>}
                 {page === 3 && <GoToEdit decrement = {decrement} increment = {increment}/>}

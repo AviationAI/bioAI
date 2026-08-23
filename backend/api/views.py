@@ -138,7 +138,6 @@ class UserRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
 class ProjectRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     queryset = Project.objects.all()
     lookup_field = "pk"
-    throttle_scope = 'moderate_address'
 
     def get_permissions(self):
         request = self.request
@@ -155,6 +154,13 @@ class ProjectRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
         if self.request.method == "GET":
             return ProjectFrontendSerializer
         return ProjectBackendSerializer
+
+    def get_throttles(self):
+        request = self.request
+        
+        if request.method in ["PUT", "PATCH"]:
+            return [SpamThrottling()]
+        return [ModerateThrottling()]
 
     
     def perform_update (self, serializer):
