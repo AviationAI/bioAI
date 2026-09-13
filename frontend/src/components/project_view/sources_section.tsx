@@ -8,10 +8,15 @@ import { type SetStateAction } from "react";
 import SmallEditIcon from "../shared/small_edit";
 import EditableTextArea from "../shared/editable_text_area";
 import TextEditor from "../shared/text_editor";
+import useAutosave from "../../hooks/autosave";
+import { type TFNE } from "../../types";
 
-function Sources({sources, setSources, increment, decrement, summarize , summarizing}:{sources: string[][], setSources: React.Dispatch<SetStateAction<string[][]>>, increment: any, decrement: any, summarize: any, summarizing: boolean}){
+function Sources({projectID, sources, setSources, increment, decrement, summarize , summarizing, setDependency}:{projectID: string, sources: string[][], setSources: React.Dispatch<SetStateAction<string[][]>>, increment: any, decrement: any, summarize: any, summarizing: boolean, setDependency: React.Dispatch<SetStateAction<boolean>>}){
 
     // State Variables
+
+    // Autosave
+    const [autosaved, setAutosaved] = useState<TFNE>(null);
 
     // Summaries
     const [expanded, setExpanded] = useState<Set<number | null>>(new Set());
@@ -85,7 +90,7 @@ function Sources({sources, setSources, increment, decrement, summarize , summari
         }
     }
 
-
+    useAutosave(`/api/projects/${projectID}`, "available_trusted_literatures", sources, setDependency, setAutosaved);
     return (
         <div className = "flex flex-col">
             <h3 className = "text-3xl font-bold">Sources</h3>
@@ -96,6 +101,12 @@ function Sources({sources, setSources, increment, decrement, summarize , summari
                     <button className = "text-black flex-1 flex flex-row gap-3 m-3 p-3 border rounded-md bg-[#f4f4f4] hover:bg-gray-300 text-left">
                         <p>{index + 1}.</p>
                         <div className = "flex flex-col">
+                            <div className = "flex flex-row items-center ml-3">
+                                {autosaved === true && <p className = "text-sm">Saved.</p>}
+                                {autosaved === "err" && <p className = "text-sm">Failed to save.</p>}
+                                {autosaved === false && <p className = "text-sm">Saving...</p>}
+                                <Loader loading = {autosaved === false} size = {7}/>
+                            </div>
                             <div className = "flex flex-row">
                                 {titleEditing.has(index) ? (
                                         <EditableField value = {sources[index][0]} setValue = {(newValue) => {setSource(newValue as string, index, 0)}} sizeClass = "text-sm"/>
