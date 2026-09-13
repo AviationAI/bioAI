@@ -32,10 +32,12 @@ function TextEditor({content, setContent, dependency}:{content: string, setConte
     }, [dependency]);
 
     return (
-        <EditorContext.Provider value={{ editor: editor }}>
-            <ToolbarTool editor = {editor}/>
-            <EditorContent editor = {editor} className = "border-2 rounded-b-md p-2"/>
-        </EditorContext.Provider>
+        <div onClick = {() => {event?.preventDefault(); event?.stopPropagation();}}>
+            <EditorContext.Provider value={{ editor: editor }}>
+                <ToolbarTool editor = {editor}/>
+                <EditorContent editor = {editor} className = "border-2 rounded-b-md p-2"/>
+            </EditorContext.Provider>
+        </div>
     );
 }   
 

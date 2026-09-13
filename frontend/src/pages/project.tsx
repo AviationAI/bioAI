@@ -46,6 +46,7 @@ function ProjectDetail(){
     const [rq, setRQ] = useState(project?.research_question);
     const [description, setDescription] = useState(project?.description);
     const [summary, setSummary] = useState(project?.summary);
+    const [sources, setSources] = useState(project?.available_trusted_literatures);
 
     // Manuscript
     const [name, setName] = useState("");
@@ -62,6 +63,7 @@ function ProjectDetail(){
         setRQ(project?.research_question);
         setDescription(project?.description);
         setSummary(project?.summary);
+        setSources(project?.available_trusted_literatures);
     }, [loading]);
 
     // Functions to increment/decrement page
@@ -291,7 +293,7 @@ function ProjectDetail(){
                     {userId === project.user.id &&<button className = "bg-[#53a2e7] text-[#f4f4f4] hover:bg-[#1f558f]" onClick = {() => {setIsOverlayOpen(true);}}>Share</button>}
                 </div><br/>
                 {page === 0 && <ProjectOverview loading = {loading} setTopic = {setTopic as any} topic = {topic as string} rq = {rq as string} setRQ = {setRQ as any} description = {description as string} setDescription = {setDescription as any} summary = {summary as string} setSummary = {setSummary as any} increment = {increment} setDependency = {setDependency} dependency = {dependency} projectID = {projectID as string}/>}
-                {page === 1 && <Sources summarizing = {summarizingSource}sources = {project?.available_trusted_literatures as string[][]} increment = {increment} decrement = {decrement} summarize = {summarizeSource} />}
+                {page === 1 && <Sources summarizing = {summarizingSource}sources = {sources as string[][]} setSources = {setSources as any}increment = {increment} decrement = {decrement} summarize = {summarizeSource} />}
                 {page === 2 && <LiteratureSummarized summary = {project?.literature_summarized as string} increment = {increment} decrement = {decrement}/>}
                 {page === 3 && <GoToEdit decrement = {decrement} increment = {increment}/>}
                 {page === 4 && <ManuscriptsControls decrement = {decrement} create = {create_manuscript} name = {name} setName = {setName}/>}

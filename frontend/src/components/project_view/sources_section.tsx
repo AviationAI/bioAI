@@ -2,12 +2,88 @@ import { Link } from "react-router-dom";
 import Markdown from "react-markdown";
 import { useState } from "react";
 import Loader from "../shared/spinner";
+import EditableField from "../shared/editable_field";
+import React from "react";
+import { type SetStateAction } from "react";
+import SmallEditIcon from "../shared/small_edit";
+import EditableTextArea from "../shared/editable_text_area";
+import TextEditor from "../shared/text_editor";
 
-function Sources({sources, increment, decrement, summarize , summarizing}:{sources: string[][], increment: any, decrement: any, summarize: any, summarizing: boolean}){
+function Sources({sources, setSources, increment, decrement, summarize , summarizing}:{sources: string[][], setSources: React.Dispatch<SetStateAction<string[][]>>, increment: any, decrement: any, summarize: any, summarizing: boolean}){
 
     // State Variables
 
+    // Summaries
     const [expanded, setExpanded] = useState<Set<number | null>>(new Set());
+    const [summaryEditing, setSummaryEditing] = useState<Set<number | null>>(new Set());
+
+    // Title & url editing
+    const [titleEditing, setTitleEditing] = useState<Set<number | null>>(new Set());
+    const [urlEditing, setURLEditing] = useState<Set<number | null>>(new Set());
+
+    // Source edits
+    const setSource = (newValue: string, index: number, pos : number) => {
+        setSources(prev => prev.map((source, i) => {
+            if (index !== i) return source;
+            const s = [...source];
+            s[pos] = newValue;
+            return s;
+        }));
+    }
+
+    // Edit title
+    const toggleTitleEditing = (index: number) => {
+
+        if (titleEditing.has(index)) {
+            setTitleEditing((prev) => {
+                const New = new Set(prev); 
+                New.delete(index);  
+                return New
+            });
+        } else {
+            setTitleEditing((prev) => {
+                const New = new Set(prev);
+                New.add(index);
+                return New;
+            });
+        }
+    }
+
+    // Edit URL
+    const toggleURLEditing = (index: number) => {
+
+        if (urlEditing.has(index)) {
+            setURLEditing((prev) => {
+                const New = new Set(prev); 
+                New.delete(index);  
+                return New
+            });
+        } else {
+            setURLEditing((prev) => {
+                const New = new Set(prev);
+                New.add(index);
+                return New;
+            });
+        }
+    }
+
+    // Edit Summary
+    const toggleSummaryEditing = (index: number) => {
+
+        if (summaryEditing.has(index)) {
+            setSummaryEditing((prev) => {
+                const New = new Set(prev); 
+                New.delete(index);  
+                return New
+            });
+        } else {
+            setSummaryEditing((prev) => {
+                const New = new Set(prev);
+                New.add(index);
+                return New;
+            });
+        }
+    }
 
 
     return (
@@ -20,19 +96,37 @@ function Sources({sources, increment, decrement, summarize , summarizing}:{sourc
                     <button className = "text-black flex-1 flex flex-row gap-3 m-3 p-3 border rounded-md bg-[#f4f4f4] hover:bg-gray-300 text-left">
                         <p>{index + 1}.</p>
                         <div className = "flex flex-col">
-                            <p className = "text-sm">{source[0]}</p>
-                            <p className = "text-sm font-extralight">{source[1]}</p>
+                            <div className = "flex flex-row">
+                                {titleEditing.has(index) ? (
+                                        <EditableField value = {sources[index][0]} setValue = {(newValue) => {setSource(newValue as string, index, 0)}} sizeClass = "text-sm"/>
+                                    ):(
+                                        <p className = "text-sm">{source[0]}</p>
+                                )}
+                                <SmallEditIcon click = {() => {toggleTitleEditing(index)}}/>   
+                            </div>
+                            <div className = "flex flex-row">
+                                {urlEditing.has(index) ? (
+                                        <EditableField value = {sources[index][1]} setValue = {(newValue) => {setSource(newValue as string, index, 1)}} sizeClass = "text-sm" fontClass = {source.length > 2 ?"font-light" : "font-extralight"}/>
+                                    ):(
+                                        <p className = {source.length > 2 ?"text-sm font-light" : "text-sm font-extralight"}>{source[1]}</p>
+                                )}
+                                <SmallEditIcon click = {() => {toggleURLEditing(index)}}/>   
+                            </div>
                             {source.length > 2 &&
                                 <div  className = "text-sm font-extralight">
                                     {expanded.has(index) ? (
-                                        <>
-                                            <Markdown>{source[2]}</Markdown>
+                                        <div className = "flex flex-col">
+                                            {summaryEditing.has(index) ? (
+                                                <TextEditor content = {sources[index][2]} setContent = {(newValue) => {setSource(newValue as string, index, 2)}}/>
+                                            ):(
+                                                    <Markdown>{source[2]}</Markdown>
+                                            )}
+                                            <SmallEditIcon click = {() => {toggleSummaryEditing(index)}}/>
                                             <div className = "hover:bg-gray-400 w-fit h-fit p-2 rounded-xl flex flex-row items-center gap-1" onClick = {(event) => {event.preventDefault(); setExpanded((prev) => {const New = new Set(prev); New.delete(index);  return New})}}>
                                                 <p>Show Less</p>
                                                 <svg xmlns="http://www.w3.org/2000/svg" height="22px" viewBox="0 -960 960 960" width="22px" fill="#555"><path d="m357-384 123-123 123 123 57-56-180-180-180 180 57 56ZM480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg>
-                                            </div>
-                                        </>
-                                    
+                                            </div>   
+                                        </div>    
                                     ):(
                                         <>
                                             <Markdown>{source[2].slice(0, 250)}</Markdown>

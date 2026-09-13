@@ -13,6 +13,7 @@ import { useAuth } from "@clerk/clerk-react";
 import AxiosInstance from "../../services/AxiosInstance";
 import { type TFNE } from "../../types";
 import Loader from "../shared/spinner";
+import useAutosave from "../../hooks/autosave";
 
 
 function ManuscriptSectionSection({section, createSection, isLast, increment, decrement, newTitle, setNewTitle, creating, manuscriptDependency, setManuscriptDependency}: {section: ManuscriptSection, createSection: any, isLast: boolean, increment: any, decrement: any, newTitle: string, setNewTitle: React.Dispatch<SetStateAction<string>>, creating: boolean, manuscriptDependency: boolean, setManuscriptDependency: React.Dispatch<SetStateAction<boolean>>}) {
@@ -62,73 +63,10 @@ function ManuscriptSectionSection({section, createSection, isLast, increment, de
         setFirstRender(true);
         setDependency(!dependency);
     }, [section?.id]); 
-    
-    // Hook for debounced autosave
-    useEffect(() => {
-        if (!firstRender){
-        setAutosaved(null);
 
-        // delaying sending request to API to save
-        const timer = setTimeout(async () => {
-            try {
-                setAutosaved(false);
-                const token = await getToken();
-                await AxiosInstance.patch(`/api/manuscripts/section/${section?.id}`, {
-                    title,
-                    content
-                }, {
-                    headers: {
-                        "Authorization": `Bearer ${token}`
-                    }
-                });
-                console.log("saved");
-                setAutosaved(true);
-            } catch(err) {
-                setAutosaved("err");
-                console.log(err);
-            }
-            setManuscriptDependency(!manuscriptDependency);
-        }, 500);
-        // cleaning up previous timer
-        return () => {
-            clearTimeout(timer);
-        }
-        }
-        setFirstRender(false);
-    }, [content, title]);
+    useAutosave(`/api/manuscripts/section/${section?.id}`, "title", title, setManuscriptDependency, setAutosaved);
+    useAutosave(`/api/manuscripts/section/${section?.id}`, "content", content, setManuscriptDependency, setAutosaved);
 
-    // Hook for debounced autosave
-    useEffect(() => {
-        if (!firstRender){
-        setAutosaved(null);
-
-        // delaying sending request to API to save
-        const timer = setTimeout(async () => {
-            try {
-                setAutosaved(false);
-                const token = await getToken();
-                await AxiosInstance.patch(`/api/manuscripts/section/${section?.id}`, {
-                    "summary": content
-                }, {
-                    headers: {
-                        "Authorization": `Bearer ${token}`
-                    }
-                });
-                console.log("saved");
-                setAutosaved(true);
-            } catch(err) {
-                setAutosaved("err");
-                console.log(err);
-            }
-            setManuscriptDependency(!manuscriptDependency);
-        }, 500);
-        // cleaning up previous timer
-        return () => {
-            clearTimeout(timer);
-        }
-        }
-        setFirstRender(false);
-    }, [content, title]);
 
     return (
         <div className = "flex flex-col">
