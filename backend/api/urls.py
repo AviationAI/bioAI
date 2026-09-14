@@ -9,6 +9,7 @@ urlpatterns = [
     path('projects', views.ProjectListCreate.as_view(), name = "project-list-create"),
     path('token/', TokenObtainPairView.as_view(), name = 'token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name = 'token_refresh'),
+    path('tasks/<str:id>', views.get_task_status, name = "get-task-status"),
     path('projects/<str:pk>', views.ProjectRetrieveUpdateDestroy.as_view(), name = "project-retrieve-update-destroy"),
     path('projects/<str:pk>/change', views.ProjectChangeMode.as_view(), name = "project-change-mode"),
     path('generate/sources', views.GenerateSources.as_view(), name = "generate-sources"),

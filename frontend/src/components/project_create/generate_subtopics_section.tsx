@@ -1,7 +1,8 @@
 import type { Subtopics } from "../../interfaces";
 import { useAuth } from "@clerk/clerk-react";
 import AxiosInstance from "../../services/AxiosInstance";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import useTask from "../../hooks/getTask";
 
 function GenerateSubtopics ({topic, description, increment, decrement, subtopics, setSubtopics, generated, setGenerated}:{topic: string, description: string, increment: any, decrement: any, subtopics: Subtopics, setSubtopics: React.Dispatch<React.SetStateAction<Subtopics>>, generated: boolean, setGenerated: React.Dispatch<React.SetStateAction<boolean>>}){
     
@@ -9,10 +10,20 @@ function GenerateSubtopics ({topic, description, increment, decrement, subtopics
 
     // loading var
     const [generating, setGenerating] = useState(false);
+    const [taskID, setTaskID] = useState(null);
+    const [taskDependency, setTaskDependency] = useState(true);
 
     // Clerk Auth
     const {getToken} = useAuth();
-    
+
+    // Continuously check any availabletask for completion
+    const [status, result] = useTask(taskID, setGenerating);
+
+    // updating subtopics based on result
+    useEffect(() => {
+        
+    }, [result]);
+
     // Function that deletes a subtopic
     const deleteSubtopic = (event: any) => {
         const index = parseInt(event.currentTarget.dataset.index as string); 
@@ -55,18 +66,11 @@ function GenerateSubtopics ({topic, description, increment, decrement, subtopics
                     "Authorization": `Bearer ${token}`
                 }
             });
-            setSubtopics(prev => ({
-                subtopics: [
-                    ...prev.subtopics,
-                    ...response.data.subtopics.subtopics
-                ]
-            }));
+            setTaskID(response.data.task_id)
             setGenerated(true);
         } catch (err) {
             console.log(err);
-        } finally {
-            setGenerating(false);
-        }
+        } 
     }
 
     return (

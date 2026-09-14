@@ -11,7 +11,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_ollama import OllamaEmbeddings
 from django.middleware.csrf import get_token
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from .serializers import UserSerializer, ProjectFrontendSerializer, ProjectBackendSerializer, ManuscriptBackendSerializer, ManuscriptFrontendSerializer, ManuscriptSectionSerializer
 from rest_framework import generics, permissions
@@ -27,9 +27,20 @@ from rag.pipeline import ResearchPipeline
 from rest_framework.exceptions import ValidationError, NotFound, PermissionDenied
 from .throttles import SpamThrottling, ModerateThrottling
 from rag.utils.pipeline_instance import pipeline
+from .tasks import *
+from celery.result import AsyncResult
 
 
 # Create your views here.
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_task_status(request, id):
+
+    res = AsyncResult(task_id = id)
+
+    return Response({"status": res.state, "result": res.result if res.ready() else None}, status = status.HTTP_200_OK)
+
 
 class ProjectListCreate(generics.ListCreateAPIView):
     serializer_class = ProjectBackendSerializer
@@ -545,9 +556,6 @@ class GenerateSubtopics(generics.GenericAPIView):
             return Response(status = status.HTTP_400_BAD_REQUEST)
         
         # Generating subtopics
-        try: 
-            subtopics = pipeline.scan_topic(topic, description)
-        except json.decoder.JSONDecodeError:
-            return Response(status = status.HTTP_500_INTERNAL_SERVER_ERROR)
-        return Response({"subtopics": subtopics}, status = status.HTTP_200_OK)
+        task = scan_topic_task(topic, description)
+        return Response({"task_id": task.id}, status = status.HTTP_200_OK)
     

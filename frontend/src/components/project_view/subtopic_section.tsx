@@ -2,6 +2,9 @@ import type { Project } from "../../interfaces";
 import SubtopicsList from "./subelements/subtopics";
 
 function SubtopicsSection ({project, increment}: {project: Project, increment: any}) {
+
+    
+
     return (
         <div className = "flex flex-col justify-self-center">
             <h2 className = "font-bold text-3xl">Subtopics Generated</h2>
