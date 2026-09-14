@@ -6,7 +6,7 @@ services:
     networks:
       - backend
     volumes:
-      - db-data
+      - db-data:/var/lib/postgresql/data
   web:
     build: .
     volumes:
