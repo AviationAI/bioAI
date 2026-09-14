@@ -35,7 +35,9 @@ class CustomSeleniumURLLoader(SeleniumURLLoader):
     def _get_driver(self):
 
         options = Options()
-        options.add_argument("--headless")
+        options.add_argument("--headless=new")
+
+        options.add_argument("user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36")
 
         # Optionally add eager mode if takes too many resources (options.set_capability("pageLoadStrategy", "eager"))
 
