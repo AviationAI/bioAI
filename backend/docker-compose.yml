@@ -5,6 +5,8 @@ services:
       POSTGRES_HOST_AUTH_METHOD: trust
     networks:
       - backend
+    volumes:
+      - db-data
   web:
     build: .
     volumes:
@@ -24,6 +26,10 @@ services:
     command: valkey-server --save 30 1 --loglevel warning
     networks:
       - search
+    volumes:
+      - redis-data:/data
+    ports:
+    - "6379:6379"
   chrome:
     image: selenium/standalone-chrome:latest
     platform: linux/amd64
@@ -47,3 +53,7 @@ networks:
   backend:
   search:
   selenium_net:
+
+volumes:
+  redis-data:
+  db-data:

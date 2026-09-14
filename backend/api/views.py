@@ -33,6 +33,7 @@ from .throttles import SpamThrottling, ModerateThrottling
 
 
 # Create your views here.
+
 markdowner = Markdown()
 chat = ChatOllama(
     model = "llama3.2:3b",

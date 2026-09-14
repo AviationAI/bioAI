@@ -45,3 +45,7 @@ psycopg2-binary
 scikit-learn
 
 metapub
+
+# redis & task queue
+redis
+celery
