@@ -452,9 +452,10 @@ class GenerateSummary(APIView):
         except:
             return Response(status = status.HTTP_400_BAD_REQUEST)
 
-        # Generating summary then returning
-        summary = pipeline.summarize_topic(topic, description, rq)
-        return Response({"summary": summary}, status = status.HTTP_200_OK)
+        # Starting task to summarize
+        task = summarize_topic_task.delay(topic, description, rq)
+
+        return Response({"task_id": task.id}, status = status.HTTP_202_ACCEPTED)
 
 # View to generate sources
 class GenerateSources(APIView):

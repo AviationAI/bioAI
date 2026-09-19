@@ -19,3 +19,8 @@ def find_available_literature_task(topic: str, rq: str):
 @shared_task()
 def summarize_sources_task(topic: str, rq: str, description: str, sources):
     return pipeline.summarize_sources(topic, rq, description, sources)
+
+# task to summarize a topic
+@shared_task()
+def summarize_topic_task(topic: str, rq: str, description: str):
+    return pipeline.summarize_topic(topic, description, rq)
