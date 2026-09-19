@@ -8,6 +8,7 @@ import { useEditor, useEditorState } from "@tiptap/react";
 import StarterKit from '@tiptap/starter-kit';
 import CharacterCount from '@tiptap/extension-character-count';
 import { EditorContext, EditorContent } from "@tiptap/react";
+import useTask from "../../hooks/getTask";
 
 function Summary({setCount, topic, rq, increment, decrement, summary, description, generated, setGenerated}: {setCount: any, topic: any, rq: any, increment: any, decrement: any, summary: any, description: any, generated: any, setGenerated: any}) {
 
@@ -17,6 +18,23 @@ function Summary({setCount, topic, rq, increment, decrement, summary, descriptio
     const {getToken} = useAuth();
 
     const [generating, setGenerating] = useState(false);
+
+    // task
+    const [taskID, setTaskID] = useState(null);
+
+    // Continuously check any available task for completion
+    const [status, result] = useTask(taskID, setGenerating);
+
+    // updating subtopics based on result
+    useEffect(() => {
+        if ((status ?? null) === "SUCCESS") {
+            editor?.commands.setContent(result);
+            summary.current = result;
+        }
+        if (["SUCCESS", "FAILURE", "REVOKED"].includes(status ?? null)) {
+            setGenerating(false);
+        }
+    }, [result]);
 
     // Text Editor
     const editor = useEditor({
@@ -65,8 +83,7 @@ function Summary({setCount, topic, rq, increment, decrement, summary, descriptio
                     }
                 });
                 setGenerated(true);
-                editor?.commands.setContent(response.data.summary);
-                summary.current = response.data.summary;
+                setTaskID(response.data.task_id);
             } catch (err){
                 console.log(err);
             } finally {

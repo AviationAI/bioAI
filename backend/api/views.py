@@ -7,17 +7,11 @@ import decimal
 from django.db.models import Count
 import ollama
 from langchain_ollama import ChatOllama
-from langchain_core.messages import HumanMessage
-import uuid
-from datetime import datetime
-from markdown2 import Markdown
-from langchain_community.document_loaders import WebBaseLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_ollama import OllamaEmbeddings
-from langchain_core.vectorstores import InMemoryVectorStore
 from django.middleware.csrf import get_token
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from .serializers import UserSerializer, ProjectFrontendSerializer, ProjectBackendSerializer, ManuscriptBackendSerializer, ManuscriptFrontendSerializer, ManuscriptSectionSerializer
 from rest_framework import generics, permissions
@@ -25,42 +19,28 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from .permissions import IsOwner, IsEditor, IsViewer, Can_Create_Project, IsBasic, IsPremium, IsPremium_Deluxe, IsPro, IsEditorSection, IsViewerSection, IsOwnerSection
 from rest_framework import status
+#
 from bioAI.settings import OLLAMA_BASE_URL, SEARXNG_URL
+
 from langchain_community.utilities import SearxSearchWrapper
 from rag.pipeline import ResearchPipeline
 from rest_framework.exceptions import ValidationError, NotFound, PermissionDenied
 from .throttles import SpamThrottling, ModerateThrottling
+from rag.utils.pipeline_instance import pipeline
+from .tasks import *
+from celery.result import AsyncResult
 
 
 # Create your views here.
-markdowner = Markdown()
-chat = ChatOllama(
-    model = "llama3.2:3b",
-    temperature = 0.3,
-    top_p = 0.4,
-    base_url=OLLAMA_BASE_URL
-)
 
-model = ChatOllama(
-    model = "mistral:latest",
-    temperature = 0.4,
-    top_p = 0.9,
-    base_url = OLLAMA_BASE_URL
-)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_task_status(request, id):
 
-search = SearxSearchWrapper(searx_host = SEARXNG_URL)
+    res = AsyncResult(id)
 
-embeddings = OllamaEmbeddings(
-    model="nomic-embed-text",
-    base_url = OLLAMA_BASE_URL
-)
+    return Response({"status": res.state, "result": res.result if res.ready() else None}, status = status.HTTP_200_OK)
 
-# Setting up text splitter for faster response times
-text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
-    chunk_size=1000 , chunk_overlap=100
-)
-
-pipeline = ResearchPipeline(model, chat, search, text_splitter, embeddings)
 
 class ProjectListCreate(generics.ListCreateAPIView):
     serializer_class = ProjectBackendSerializer
@@ -472,9 +452,10 @@ class GenerateSummary(APIView):
         except:
             return Response(status = status.HTTP_400_BAD_REQUEST)
 
-        # Generating summary then returning
-        summary = pipeline.summarize_topic(topic, description, rq)
-        return Response({"summary": summary}, status = status.HTTP_200_OK)
+        # Starting task to summarize
+        task = summarize_topic_task.delay(topic, description, rq)
+
+        return Response({"task_id": task.id}, status = status.HTTP_202_ACCEPTED)
 
 # View to generate sources
 class GenerateSources(APIView):
@@ -497,8 +478,8 @@ class GenerateSources(APIView):
             return Response(status = status.HTTP_400_BAD_REQUEST)
 
         # Generating sources and then returning them
-        sources = pipeline.find_available_literature(topic, rq)
-        return Response({"sources": sources}, status = status.HTTP_200_OK)
+        task = find_available_literature_task.delay(topic, rq)
+        return Response({"task_id": task.id}, status = status.HTTP_200_OK)
     
 # View to summarize a specific source
 class SummarizeSource(APIView):
@@ -522,7 +503,7 @@ class SummarizeSource(APIView):
             return Response(status = status.HTTP_400_BAD_REQUEST)
 
         summary = pipeline.summarize_source(topic, rq, url)
-        return Response({"summary": summary}, status = status.HTTP_200_OK)
+        return Response({"summary": summary}, status = status.HTTP_202_ACCEPTED)
 
 
 
@@ -549,9 +530,9 @@ class GenerateSourceSummary(generics.GenericAPIView):
             return Response(status = status.HTTP_400_BAD_REQUEST)
 
         # Summarizing sources
-        summary = pipeline.summarize_sources(topic, rq, description, sources)
+        task = summarize_sources_task.delay(topic, rq, description, sources)
 
-        return Response({"summary": summary}, status = status.HTTP_200_OK)
+        return Response({"task_id": task.id}, status = status.HTTP_202_ACCEPTED)
 
 # View to generate subtopics
 class GenerateSubtopics(generics.GenericAPIView):
@@ -576,9 +557,6 @@ class GenerateSubtopics(generics.GenericAPIView):
             return Response(status = status.HTTP_400_BAD_REQUEST)
         
         # Generating subtopics
-        try: 
-            subtopics = pipeline.scan_topic(topic, description)
-        except json.decoder.JSONDecodeError:
-            return Response(status = status.HTTP_500_INTERNAL_SERVER_ERROR)
-        return Response({"subtopics": subtopics}, status = status.HTTP_200_OK)
+        task = scan_topic_task.delay(topic, description)
+        return Response({"task_id": task.id}, status = status.HTTP_202_ACCEPTED)
     
