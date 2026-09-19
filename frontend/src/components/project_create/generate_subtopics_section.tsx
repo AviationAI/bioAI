@@ -11,7 +11,6 @@ function GenerateSubtopics ({topic, description, increment, decrement, subtopics
     // loading var
     const [generating, setGenerating] = useState(false);
     const [taskID, setTaskID] = useState(null);
-    const [taskDependency, setTaskDependency] = useState(true);
 
     // Clerk Auth
     const {getToken} = useAuth();

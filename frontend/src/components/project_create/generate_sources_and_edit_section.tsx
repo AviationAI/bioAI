@@ -2,6 +2,8 @@ import AxiosInstance from "../../services/AxiosInstance";
 import { useAuth } from "@clerk/clerk-react";
 import { useState } from "react";
 import React from "react";
+import useTask from "../../hooks/getTask";
+import { useEffect } from "react";
 
 function GenerateSources({topic, rq, decrement, increment, sources, setSources, generated, setGenerated}: {topic: string, rq: string, decrement: any, increment: any, sources: string[][], setSources: React.Dispatch<React.SetStateAction<string[][]>>, generated: boolean, setGenerated: any}){
 
@@ -10,6 +12,19 @@ function GenerateSources({topic, rq, decrement, increment, sources, setSources, 
     const {getToken} = useAuth();
 
     const [generating, setGenerating] = useState(false);
+
+    // task
+    const [taskID, setTaskID] = useState(null);
+
+    // Continuously check any availabletask for completion
+    const [status, result] = useTask(taskID, setGenerating);
+
+    // updating subtopics based on result
+        useEffect(() => {
+             if ((status ?? null) === "SUCCESS") {
+                setSources(prev => [...prev, ...result]);
+             }
+        }, [result]);
 
     async function generate() {
         try {
@@ -23,8 +38,7 @@ function GenerateSources({topic, rq, decrement, increment, sources, setSources, 
                     "Authorization": `Bearer ${token}`
                 }
             });
-            const sources = response.data.sources;
-            setSources(prev => [...prev, ...sources]);
+            setTaskID(response.data.task_id);
             setGenerated(true);
         }
         catch (err) {

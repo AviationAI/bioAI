@@ -477,8 +477,8 @@ class GenerateSources(APIView):
             return Response(status = status.HTTP_400_BAD_REQUEST)
 
         # Generating sources and then returning them
-        sources = pipeline.find_available_literature(topic, rq)
-        return Response({"sources": sources}, status = status.HTTP_200_OK)
+        task = find_available_literature_task.delay(topic, rq)
+        return Response({"task_id": task.id}, status = status.HTTP_200_OK)
     
 # View to summarize a specific source
 class SummarizeSource(APIView):
@@ -502,7 +502,7 @@ class SummarizeSource(APIView):
             return Response(status = status.HTTP_400_BAD_REQUEST)
 
         summary = pipeline.summarize_source(topic, rq, url)
-        return Response({"summary": summary}, status = status.HTTP_200_OK)
+        return Response({"summary": summary}, status = status.HTTP_202_ACCEPTED)
 
 
 
@@ -557,5 +557,5 @@ class GenerateSubtopics(generics.GenericAPIView):
         
         # Generating subtopics
         task = scan_topic_task.delay(topic, description)
-        return Response({"task_id": task.id}, status = status.HTTP_200_OK)
+        return Response({"task_id": task.id}, status = status.HTTP_202_ACCEPTED)
     

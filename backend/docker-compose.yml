@@ -42,6 +42,7 @@ services:
     - "host.docker.internal:host-gateway"
     networks:
       - tasks
+      - search
     depends_on:
       - redis
       - db
