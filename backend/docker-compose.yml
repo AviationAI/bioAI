@@ -37,12 +37,13 @@ services:
       dockerfile: Dockerfile
     command: celery -A bioAI worker --loglevel=info
     volumes:
-      - .:/app
+      - .:/usr/src/bioAI/backend
     extra_hosts:
     - "host.docker.internal:host-gateway"
     networks:
       - tasks
       - search
+      - selenium_net
     depends_on:
       - redis
       - db

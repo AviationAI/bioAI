@@ -529,9 +529,9 @@ class GenerateSourceSummary(generics.GenericAPIView):
             return Response(status = status.HTTP_400_BAD_REQUEST)
 
         # Summarizing sources
-        summary = pipeline.summarize_sources(topic, rq, description, sources)
+        task = summarize_sources_task.delay(topic, rq, description, sources)
 
-        return Response({"summary": summary}, status = status.HTTP_200_OK)
+        return Response({"task_id": task.id}, status = status.HTTP_202_ACCEPTED)
 
 # View to generate subtopics
 class GenerateSubtopics(generics.GenericAPIView):

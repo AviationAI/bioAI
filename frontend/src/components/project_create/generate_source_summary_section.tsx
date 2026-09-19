@@ -9,6 +9,7 @@ import StarterKit from '@tiptap/starter-kit';
 import CharacterCount from '@tiptap/extension-character-count';
 import { EditorContext, EditorContent } from "@tiptap/react";
 import { useEffect } from "react";
+import useTask from "../../hooks/getTask";
 
 function SummarizeSources({setCount, topic, rq, increment, decrement, summary, description, generated, setGenerated, sources}: {setCount: React.Dispatch<React.SetStateAction<any>>, topic: string, rq: string, increment: any, decrement: any, summary: any, description: any, generated: boolean, setGenerated: React.Dispatch<React.SetStateAction<boolean>>, sources: string[][]}) {
 
@@ -17,7 +18,24 @@ function SummarizeSources({setCount, topic, rq, increment, decrement, summary, d
     // Clerk auth
     const {getToken} = useAuth();
 
+    // task
+    const [taskID, setTaskID] = useState(null);
+
     const [generating, setGenerating] = useState(false);
+
+    // Continuously check any availabletask for completion
+    const [status, result] = useTask(taskID, setGenerating);
+
+    // updating subtopics based on result
+    useEffect(() => {
+            if ((status ?? null) === "SUCCESS") {
+                editor?.commands.setContent(result);
+                summary.current = result;
+            }
+            if (["SUCCESS", "FAILURE", "REVOKED"].includes(status ?? null)) {
+                setGenerating(false);
+            }
+    }, [result]);
 
     // Text Editor
     const editor = useEditor({
@@ -66,9 +84,10 @@ function SummarizeSources({setCount, topic, rq, increment, decrement, summary, d
                         "Authorization": `Bearer ${token}`
                     }
                 });
+
+                setTaskID(response.data.task_id);
+
                 setGenerated(true);
-                editor?.commands.setContent(response.data.summary);
-                summary.current = response.data.summary;
             } catch (err){
                 console.log(err);
             } finally {

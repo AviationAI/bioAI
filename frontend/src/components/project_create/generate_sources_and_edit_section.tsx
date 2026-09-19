@@ -20,11 +20,14 @@ function GenerateSources({topic, rq, decrement, increment, sources, setSources, 
     const [status, result] = useTask(taskID, setGenerating);
 
     // updating subtopics based on result
-        useEffect(() => {
-             if ((status ?? null) === "SUCCESS") {
-                setSources(prev => [...prev, ...result]);
-             }
-        }, [result]);
+    useEffect(() => {
+            if ((status ?? null) === "SUCCESS") {
+            setSources(prev => [...prev, ...result]);
+            }
+            if (["SUCCESS", "FAILURE", "REVOKED"].includes(status ?? null)) {
+            setGenerating(false);
+            }
+    }, [result]);
 
     async function generate() {
         try {
