@@ -26,10 +26,25 @@ services:
     command: valkey-server --save 30 1 --loglevel warning
     networks:
       - search
+      - tasks
     volumes:
       - redis-data:/data
     ports:
     - "6379:6379"
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A bioAI worker --loglevel=info
+    volumes:
+      - .:/app
+    extra_hosts:
+    - "host.docker.internal:host-gateway"
+    networks:
+      - tasks
+    depends_on:
+      - redis
+      - db
   chrome:
     image: selenium/standalone-chrome:latest
     platform: linux/amd64
@@ -53,6 +68,7 @@ networks:
   backend:
   search:
   selenium_net:
+  tasks:
 
 volumes:
   redis-data:

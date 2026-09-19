@@ -21,7 +21,14 @@ function GenerateSubtopics ({topic, description, increment, decrement, subtopics
 
     // updating subtopics based on result
     useEffect(() => {
-        
+         if ((status ?? null) === "SUCCESS") {
+            setSubtopics(prev => ({
+                subtopics: [
+                    ...prev.subtopics,
+                    ...(result?.subtopics)
+                ]
+            }));
+         }
     }, [result]);
 
     // Function that deletes a subtopic

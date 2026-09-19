@@ -2,6 +2,7 @@ import { useEffect, type SetStateAction } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import AxiosInstance from "../services/AxiosInstance";
 import { useState } from "react";
+import React from "react";
 
 function useTask (id: string | null, setGenerating: React.Dispatch<SetStateAction<boolean>>){
 
@@ -12,7 +13,7 @@ function useTask (id: string | null, setGenerating: React.Dispatch<SetStateActio
 
     // responses
     const [status, setStatus] = useState("");
-    const [result, setResult] = useState(null);
+    const [result, setResult] = useState<any>(null);
 
 
     useEffect(() => {
@@ -23,16 +24,17 @@ function useTask (id: string | null, setGenerating: React.Dispatch<SetStateActio
 
             try {
                 const token = await getToken();
-                const response = await AxiosInstance.get(`/tasks/${id}`, {
+                const response = await AxiosInstance.get(`/api/tasks/${id}`, {
                     headers: {
                         "Authorization": `Bearer ${token}`
                     }
                 });
 
                 setStatus(response.data.status);
+                console.log(response.data);
 
                 // ending requests if result is given
-                if (response.data.result !== null) {
+                if (["SUCCESS", "FAILURE", "REVOKED"].includes(response.data.status)) {
                     setGenerating(false);
                     setResult(response.data.result);
                     clearInterval(interval);

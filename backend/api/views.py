@@ -37,7 +37,7 @@ from celery.result import AsyncResult
 @permission_classes([IsAuthenticated])
 def get_task_status(request, id):
 
-    res = AsyncResult(task_id = id)
+    res = AsyncResult(id)
 
     return Response({"status": res.state, "result": res.result if res.ready() else None}, status = status.HTTP_200_OK)
 
@@ -556,6 +556,6 @@ class GenerateSubtopics(generics.GenericAPIView):
             return Response(status = status.HTTP_400_BAD_REQUEST)
         
         # Generating subtopics
-        task = scan_topic_task(topic, description)
+        task = scan_topic_task.delay(topic, description)
         return Response({"task_id": task.id}, status = status.HTTP_200_OK)
     
