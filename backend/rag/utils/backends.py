@@ -29,6 +29,8 @@ class ExpiringVectorStore:
     def expire(self):
         if self.id in VECTOR_STORAGES:
             del VECTOR_STORAGES[self.id]
+        if self.id in SESSIONS:
+            del SESSIONS[self.id]
 
 # Custom SeleniumURLLoader with driver customized
 class CustomSeleniumURLLoader(SeleniumURLLoader):

@@ -54,12 +54,6 @@ class Rating_Source(BaseModel):
 
 
 
-# Info pulled from source
-class Other_Source_Information(BaseModel):
-    red_flags: list[str]
-    claims: list[str]
-    corporations: list[str]
-
 
 # Subtopic is one if the paths regarding the topic given by the AI
 class Subtopic (BaseModel):

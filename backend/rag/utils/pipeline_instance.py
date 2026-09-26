@@ -4,6 +4,9 @@ from rag.pipeline import ResearchPipeline
 from langchain_ollama import ChatOllama
 from langchain_ollama import OllamaEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from .backends import get_session
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.runnables.history import RunnableWithMessageHistory
 
 
 chat = ChatOllama(
@@ -32,4 +35,30 @@ text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
     chunk_size=1000 , chunk_overlap=100
 )
 
-pipeline = ResearchPipeline(model, chat, search, text_splitter, embeddings)
+prompt = ChatPromptTemplate.from_messages(
+    [
+        ("system", "You are an assistant who is good at {ability}"),
+        (MessagesPlaceholder(variable_name="history")),
+        ("human", """
+                Context related to user's question:
+                <context>
+                    {content}
+                </context> 
+                Question that user is asking:
+                <question>
+                    {question}
+                </question>
+        """)
+    ]
+)
+
+chain = prompt | model
+
+chain_with_history = RunnableWithMessageHistory(
+    chain,
+    get_session,
+    input_messages_key="question",
+    history_messages_key="history"
+)
+
+pipeline = ResearchPipeline(model, chat, search, text_splitter, embeddings, chain_with_history)
