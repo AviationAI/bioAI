@@ -24,3 +24,8 @@ def summarize_sources_task(topic: str, rq: str, description: str, sources):
 @shared_task()
 def summarize_topic_task(topic: str, rq: str, description: str):
     return pipeline.summarize_topic(topic, description, rq)
+
+# task to initialize vector store
+@shared_task()
+def initialize_source_playground_task(url: str):
+    return pipeline.initialize_source_playground(url)

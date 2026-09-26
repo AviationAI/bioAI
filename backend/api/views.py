@@ -559,4 +559,30 @@ class GenerateSubtopics(generics.GenericAPIView):
         # Generating subtopics
         task = scan_topic_task.delay(topic, description)
         return Response({"task_id": task.id}, status = status.HTTP_202_ACCEPTED)
+
+
+
+# Source Playground Views
+
+# initializing playground
+class InitializePlayground(generics.GenericAPIView):
+
+    permission_classes = [IsAuthenticated]
+    throttle_scope = 'sensitive_address'
+
+    def post (self, *args, **kwargs):
+
+        data = self.request.data
+
+        url = data.get("url")
+
+        try:
+            assert url is not None
+        except:
+            return Response(status = status.HTTP_400_BAD_REQUEST)
+
+        # Starting task
+        task = initialize_source_playground_task({"task_id": task.id}, status = status.HTTP_202_ACCEPTED)
+        return Response({"task_id": task.id}, status = status.HTTP_202_ACCEPTED)
+
     

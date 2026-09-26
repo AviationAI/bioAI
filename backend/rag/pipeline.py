@@ -388,10 +388,7 @@ class ResearchPipeline():
     def initialize_source_playground(self, url: str):
         
         # validating url
-        try:
-            resolve_and_validate_url(url)
-        except ValidationError:
-            return Response(status = status.HTTP_400_BAD_REQUEST)
+        resolve_and_validate_url(url)
 
         id = uuid.uuid4()
 
