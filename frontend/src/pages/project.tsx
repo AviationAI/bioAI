@@ -173,13 +173,13 @@ function ProjectDetail(){
                     "Authorization": `Bearer ${token}`
                 }
             });
-
+            const token_2 = await getToken();
             // Updating project
             await AxiosInstance.patch(`/api/projects/${projectID}`, {
                 "available_trusted_literatures": project?.available_trusted_literatures?.map((item, i) => index === i ? [item[0], item[1], response.data.summary] : item)
             }, {
                 headers: {
-                    "Authorization": `Bearer ${token}`
+                    "Authorization": `Bearer ${token_2}`
                 }
             });
 

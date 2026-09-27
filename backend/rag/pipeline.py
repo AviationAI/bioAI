@@ -20,7 +20,7 @@ import re
 import logging
 import uuid
 from rest_framework.permissions import IsAuthenticated
-from .utils.backends import ExpiringVectorStore, get_session, CustomSeleniumURLLoader
+from .utils.backends import ExpiringVectorStore, get_session, CustomSeleniumURLLoader, get_content
 from .utils.apiconfig import VECTOR_STORAGES, SESSIONS
 from langchain_community.utilities import SearxSearchWrapper
 from rest_framework.generics import GenericAPIView
@@ -32,11 +32,12 @@ from rest_framework.exceptions import NotFound
 import time
 import json
 from .models import Rating_Source, EvidenceSubs, CredibilitySubs, RelevanceSubs, ObjectivitySubs
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 
 class ResearchPipeline():
 
-    def __init__(self, model: ChatOllama, summary_model: ChatOllama, search: SearxSearchWrapper, text_splitter: RecursiveCharacterTextSplitter, embeddings: OllamaEmbeddings, chain_with_history, classifier = get_classifier()):
+    def __init__(self, model: ChatGoogleGenerativeAI, summary_model: ChatGoogleGenerativeAI, search: SearxSearchWrapper, text_splitter: RecursiveCharacterTextSplitter, embeddings: OllamaEmbeddings, chain_with_history, classifier = get_classifier()):
         self.model = model
         self.summary_model = summary_model
         self.classifier = classifier
@@ -93,7 +94,7 @@ class ResearchPipeline():
 
         try:
             response = self.model.invoke(prompt)
-            content = response.content
+            content = get_content(response)
             print(content)
             obj = Subtopic_List.model_validate_json(content)
         except:
@@ -169,7 +170,7 @@ class ResearchPipeline():
         """
 
         response = self.summary_model.invoke(prompt)
-        summary = response.content
+        summary = getC
 
         return summary
     
@@ -261,7 +262,7 @@ class ResearchPipeline():
         except:
             raise Exception()
         
-        return response.content
+        return get_content(response)
 
 
     # Summarizes all the sources of a project
@@ -379,7 +380,7 @@ class ResearchPipeline():
         except:
             raise Exception()
         
-        return response.content 
+        return get_content(response)
 
 
     # SOURCE PLAYGROUND FUNCTIONS
@@ -479,7 +480,7 @@ class ResearchPipeline():
 
         response = self.model.invoke(prompt)
 
-        claims = list(response.content)
+        claims = list(get_content(response))
 
         return claims
 
@@ -562,7 +563,7 @@ class ResearchPipeline():
 
         response = self.model.invoke(prompt)
         
-        red_flags = list(response.content)
+        red_flags = list(get_content(response))
 
         return red_flags
 
@@ -618,7 +619,7 @@ class ResearchPipeline():
 
         response = self.model.invoke(prompt)
 
-        corps = list(response.content)
+        corps = list(get_content(response))
 
         return corps
 
@@ -639,7 +640,7 @@ class ResearchPipeline():
             About page, contact information, organizational affiliation.
         """)
 
-        docs = "\n\n".join([doc for doc in res])
+        docs = "\n\n".join([doc.page_content for doc in res])
 
         # Creating example format
         example_rating = Rating_Source( 
@@ -780,7 +781,7 @@ class ResearchPipeline():
             config = {"configurable": {"session_id": id}}
         )
 
-        return response.content
+        return get_content(response)
 
     # function to delete vector store and/or session
     def delete_vector_store(self, id):

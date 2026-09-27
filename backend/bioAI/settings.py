@@ -200,6 +200,8 @@ CHROME_DOCKER = os.getenv("CHROME_URL")
 
 SEARXNG_URL = os.getenv("SEARX_URL")
 
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
 
 CELERY_BROKER_URL = os.getenv("REDIS_URL", "redis://redis:6379") + "/0"
 CELERY_RESULT_BACKEND = os.getenv("REDIS_URL", "redis://redis:6379") +"/1"

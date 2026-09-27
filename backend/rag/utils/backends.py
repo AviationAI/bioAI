@@ -267,4 +267,8 @@ def scrape_pubmed(url: str, modern: bool):
     return fetch.article_by_pmid(pmid)
 
 
+def get_content(response):
 
+    if isinstance(response.content, str):
+        return response.content
+    return response.content[0].get("text")
