@@ -627,3 +627,21 @@ class FindClaimsSource(generics.GenericAPIView):
         return Response({"task_id": task.id}, status = status.HTTP_202_ACCEPTED)
 
 
+class FindRedFlagsSource(generics.GenericAPIView):
+
+    permission_classes = [IsAuthenticated]
+    throttle_scope = 'sensitive_address'
+
+    def post(self, *args, **kwargs):
+
+        vector_id = self.kwargs.get("vector_id")
+        
+        try:
+            assert  vector_id is not None
+        except:
+            return Response(status = status.HTTP_400_BAD_REQUEST)
+
+        # Starting task
+        task = find_red_flags_in_source_task(vector_id)
+        return Response({"task_id": task.id}, status = status.HTTP_202_ACCEPTED)
+        
