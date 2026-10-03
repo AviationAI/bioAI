@@ -414,7 +414,7 @@ class ResearchPipeline():
         return id
 
     # function to finda all relevant claims in a text
-    def find_claims(self, id: uuid):
+    def find_claims(self, id: uuid.UUID):
 
         # getting vector_storage
         vector_store = VECTOR_STORAGES[id]
@@ -485,7 +485,7 @@ class ResearchPipeline():
         return claims
 
     # function to find red flags
-    def find_red_flags(self, id: uuid):
+    def find_red_flags(self, id: uuid.UUID):
         
         # getting vector_storage
         vector_store = VECTOR_STORAGES[id]
@@ -568,7 +568,7 @@ class ResearchPipeline():
         return red_flags
 
     # function to return all corporations involved in a text
-    def find_corporations(self, id: uuid):
+    def find_corporations(self, id: uuid.UUID):
 
         # getting vector_storage
         vector_store = VECTOR_STORAGES[id]
@@ -624,7 +624,7 @@ class ResearchPipeline():
         return corps
 
     # function to rate source
-    def rate_source(self, id: uuid, url):
+    def rate_source(self, id: uuid.UUID, url: str):
         
         # getting vector_storage
         vector_store = VECTOR_STORAGES[id]
@@ -766,7 +766,7 @@ class ResearchPipeline():
         return final_scores 
 
     # function to ask question abt source
-    def ask_question(self, id, question):
+    def ask_question(self, id: uuid.UUID, question: str):
 
         vector_store = VECTOR_STORAGES[id]
 

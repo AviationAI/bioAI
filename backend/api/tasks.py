@@ -1,5 +1,6 @@
 from celery import shared_task
 from rag.utils.pipeline_instance import pipeline
+import uuid
 
 
 # Check rag/pipeline.py for more details abt most of these
@@ -25,7 +26,30 @@ def summarize_sources_task(topic: str, rq: str, description: str, sources):
 def summarize_topic_task(topic: str, rq: str, description: str):
     return pipeline.summarize_topic(topic, description, rq)
 
-# task to initialize vector store
+
+
+# source playground tasks
+
 @shared_task()
 def initialize_source_playground_task(url: str):
     return pipeline.initialize_source_playground(url)
+
+@shared_task
+def find_claims_in_source_task(id: uuid.UUID):
+    return pipeline.find_claims(id)
+
+@shared_task
+def find_red_flags_in_source_task(id: uuid.UUID):
+    return pipeline.find_red_flags(id)
+
+@shared_task
+def find_corporations_in_source_task(id: uuid.UUID):
+    return pipeline.find_corporations(id)
+
+@shared_task
+def rate_source_task(id: uuid.UUID, url: str):
+    return pipeline.rate_source(id, url)
+
+@shared_task
+def ask_question_about_source_task(id: uuid.UUID, question: str):
+    return pipeline.ask_question(id, question)
