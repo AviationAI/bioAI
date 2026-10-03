@@ -21,5 +21,11 @@ urlpatterns = [
     path('manuscripts/<str:project_id>', views.ManuscriptListCreate.as_view(), name = "manuscript-list-create"),
     path('manuscripts/sections/<str:manuscript_id>', views.ManuscriptSectionListCreate.as_view(), name = "manuscriptsection-list-create"),
     path('manuscript/<str:pk>', views.ManuscriptRetrieveUpdateDestroy.as_view(), name = "manuscript-retrieve-update-destroy"),
-    path('manuscripts/section/<str:pk>', views.ManuscriptSectionRetrieveUpdateDestroy.as_view(), name = "manuscriptsection-retrieve-update-destroy")
+    path('manuscripts/section/<str:pk>', views.ManuscriptSectionRetrieveUpdateDestroy.as_view(), name = "manuscriptsection-retrieve-update-destroy"),
+    path('playground/initialize', views.InitializePlayground.as_view(), name = "playground-initialize"),
+    path('playground/rate/<str:vector_id>', views.RateSource.as_view(), name = "playground-rate"),
+    path('playground/find/claims/<str:vector_id>', views.FindClaimsSource.as_view(), name = "playground-find-claims"),
+    path('playground/find/red_flags/<str:vector_id>', views.FindRedFlagsSource.as_view(), name = "playground-find-red-flags"),
+    path('playground/find/corporations/<str:vector_id>', views.FindCorporationsSource.as_view(), name = "playground-find-coporations"),
+    path('playground/ask/question', views.AskQuestionSource.as_view(), name = "playground-ask-question")
 ]

@@ -606,7 +606,7 @@ class RateSource(generics.GenericAPIView):
             return Response(status = status.HTTP_400_BAD_REQUEST)
 
         # Starting task
-        task = rate_source_task(vector_id, url)
+        task = rate_source_task(uuid.UUID(vector_id), url)
         return Response({"task_id": task.id}, status = status.HTTP_202_ACCEPTED)
 
 
@@ -625,7 +625,7 @@ class FindClaimsSource(generics.GenericAPIView):
             return Response(status = status.HTTP_400_BAD_REQUEST)
 
         # Starting task
-        task = find_claims_in_source_task(vector_id)
+        task = find_claims_in_source_task(uuid.UUID(vector_id))
         return Response({"task_id": task.id}, status = status.HTTP_202_ACCEPTED)
 
 
@@ -644,11 +644,11 @@ class FindRedFlagsSource(generics.GenericAPIView):
             return Response(status = status.HTTP_400_BAD_REQUEST)
 
         # Starting task
-        task = find_red_flags_in_source_task(vector_id)
+        task = find_red_flags_in_source_task(uuid.UUID(vector_id))
         return Response({"task_id": task.id}, status = status.HTTP_202_ACCEPTED)
 
 
-class FindCoroporationsSource(generics.GenericAPIView):
+class FindCorporationsSource(generics.GenericAPIView):
 
     permission_classes = [IsAuthenticated]
     throttle_scope = 'sensitive_address'
@@ -663,7 +663,7 @@ class FindCoroporationsSource(generics.GenericAPIView):
             return Response(status = status.HTTP_400_BAD_REQUEST)
 
         # Starting task
-        task = find_corporations_in_source_task(vector_id)
+        task = find_corporations_in_source_task(uuid.UUID(vector_id))
         return Response({"task_id": task.id}, status = status.HTTP_202_ACCEPTED)
 
 
@@ -685,5 +685,5 @@ class AskQuestionSource(generics.GenericAPIView):
             return Response(status = status.HTTP_400_BAD_REQUEST)
 
         # Starting task
-        task = ask_question_about_source_task(vector_id, question)
+        task = ask_question_about_source_task(uuid.UUID(vector_id), question)
         return Response({"task_id": task.id}, status = status.HTTP_202_ACCEPTED)
