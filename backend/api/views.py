@@ -665,3 +665,25 @@ class FindCoroporationsSource(generics.GenericAPIView):
         # Starting task
         task = find_corporations_in_source_task(vector_id)
         return Response({"task_id": task.id}, status = status.HTTP_202_ACCEPTED)
+
+
+class AskQuestionSource(generics.GenericAPIView):
+
+    permission_classes = [IsAuthenticated]
+    throttle_scope = 'sensitive_address'
+
+    def post(self, *args, **kwargs):
+
+        data = self.request.data
+
+        question = data.get("question")
+        vector_id = self.kwargs.get("vector_id")
+        
+        try:
+            assert  question is not None and vector_id is not None
+        except:
+            return Response(status = status.HTTP_400_BAD_REQUEST)
+
+        # Starting task
+        task = ask_question_about_source_task(vector_id, question)
+        return Response({"task_id": task.id}, status = status.HTTP_202_ACCEPTED)
