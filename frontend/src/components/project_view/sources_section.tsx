@@ -11,7 +11,7 @@ import TextEditor from "../shared/text_editor";
 import useAutosave from "../../hooks/autosave";
 import { type TFNE } from "../../types";
 
-function Sources({projectID, sources, setSources, increment, decrement, summarize , summarizing, setDependency}:{projectID: string, sources: string[][], setSources: React.Dispatch<SetStateAction<string[][]>>, increment: any, decrement: any, summarize: any, summarizing: boolean, setDependency: React.Dispatch<SetStateAction<boolean>>}){
+function Sources({setPage, setPlaygroundSource, start, stop, projectID, sources, setSources, increment, decrement, summarize , summarizing, setDependency}:{setPage: any, setPlaygroundSource: any, start: any, stop: any, projectID: string, sources: string[][], setSources: React.Dispatch<SetStateAction<string[][]>>, increment: any, decrement: any, summarize: any, summarizing: boolean, setDependency: React.Dispatch<SetStateAction<boolean>>}){
 
     // State Variables
 
@@ -97,7 +97,7 @@ function Sources({projectID, sources, setSources, increment, decrement, summariz
             <p className = "font-light text-sm">Below are the sources relevant to the research. Click on any source to go the website.</p><br/>
             <Loader loading = {summarizing} size = {14}/>
             {sources.map((source, index) => 
-                <Link to = {source[1]} className = "flex flex-col" target="_blank">
+                <Link to = "#" className = "flex flex-col" onClick = {() => {start(source)}}>
                     <button className = "text-black flex-1 flex flex-row gap-3 m-3 p-3 border rounded-md bg-[#f4f4f4] hover:bg-gray-300 text-left">
                         <p>{index + 1}.</p>
                         <div className = "flex flex-col">

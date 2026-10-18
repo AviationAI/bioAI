@@ -18,6 +18,7 @@ import Sources from "../components/project_view/sources_section";
 import LiteratureSummarized from "../components/project_view/literature_summarized_section";
 import GoToEdit from "../components/project_view/go_to_edit_section";
 import ManuscriptsControls from "../components/project_view/project_manuscripts";
+import Playground from "../components/source_playground/playground";
 
 function ProjectDetail(){
 
@@ -48,6 +49,11 @@ function ProjectDetail(){
     const [summary, setSummary] = useState(project?.summary);
     const [sources, setSources] = useState(project?.available_trusted_literatures);
 
+    // source playground
+    const [sourceAnalysis, setSourceAnalysis] = useState<string[] | null>(null);
+    const [playgroundExists, setPlaygroundExists] = useState(false);
+
+
     // Manuscript
     const [name, setName] = useState("");
 
@@ -73,6 +79,19 @@ function ProjectDetail(){
 
     const decrement = () => {
         if (page > 0) setPage(page => page -1);
+    }
+
+    // function for source playground 
+    const startPlayground = (source: string[]) => {
+        setSourceAnalysis(source);
+        setPlaygroundExists(true);
+        setPage(5);
+    }
+
+    const stopPlayground = () => {
+        setSourceAnalysis(null);
+        setPlaygroundExists(false);
+        setPage(prev => prev === 5 ? 1: prev);
     }
 
 
@@ -293,10 +312,11 @@ function ProjectDetail(){
                     {userId === project.user.id &&<button className = "bg-[#53a2e7] text-[#f4f4f4] hover:bg-[#1f558f]" onClick = {() => {setIsOverlayOpen(true);}}>Share</button>}
                 </div><br/>
                 {page === 0 && <ProjectOverview loading = {loading} setTopic = {setTopic as any} topic = {topic as string} rq = {rq as string} setRQ = {setRQ as any} description = {description as string} setDescription = {setDescription as any} summary = {summary as string} setSummary = {setSummary as any} increment = {increment} setDependency = {setDependency} dependency = {dependency} projectID = {projectID as string}/>}
-                {page === 1 && <Sources projectID = {projectID as string} setDependency = {setDependency} summarizing = {summarizingSource}sources = {sources as string[][]} setSources = {setSources as any}increment = {increment} decrement = {decrement} summarize = {summarizeSource} />}
+                {page === 1 && <Sources setPage = {setPage} setPlaygroundSource = {setSourceAnalysis} start = {startPlayground} stop = {stopPlayground} projectID = {projectID as string} setDependency = {setDependency} summarizing = {summarizingSource}sources = {sources as string[][]} setSources = {setSources as any}increment = {increment} decrement = {decrement} summarize = {summarizeSource} />}
                 {page === 2 && <LiteratureSummarized summary = {project?.literature_summarized as string} increment = {increment} decrement = {decrement}/>}
                 {page === 3 && <GoToEdit decrement = {decrement} increment = {increment}/>}
                 {page === 4 && <ManuscriptsControls decrement = {decrement} create = {create_manuscript} name = {name} setName = {setName}/>}
+                {page === 5 && <Playground source = {sourceAnalysis as any}/>}
             </main>
         </div>
         )}
