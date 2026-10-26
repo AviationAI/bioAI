@@ -18,10 +18,10 @@ function Navbar() {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 no-underline">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-emerald-400 font-bold text-black">
-              B
+              F
             </div>
             <div className="leading-tight">
-              <p className="m-0 text-sm font-semibold text-white">Modern Bio</p>
+              <p className="m-0 text-sm font-semibold text-white">Facilitium</p>
               <p className="m-0 text-[11px] text-gray-400">AI Research Platform</p>
             </div>
           </Link>

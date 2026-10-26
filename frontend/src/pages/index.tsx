@@ -71,7 +71,7 @@ function Home(){
         </SignedIn>
         <SignedOut>
             <div className = "homePage">
-                <h1 className = "white-text centeredText large-text">Bio AI</h1>
+                <h1 className = "white-text centeredText large-text">Facilitium</h1>
             </div>
         </SignedOut>
         </>

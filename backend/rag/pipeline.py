@@ -287,9 +287,8 @@ class ResearchPipeline():
         # Initializing Vector Storage
         id = uuid.uuid4()
         ExpiringVectorStore(id = id, time = 300)
-        VECTOR_STORAGES[id] = InMemoryVectorStore(embedding = self.embeddings)
-        vector_store = VECTOR_STORAGES[id]
-
+        vector_store = InMemoryVectorStore(embedding = self.embeddings)
+        
         try:
             
             # loading urls
