@@ -31,7 +31,7 @@ from django.core.exceptions import ValidationError
 from rest_framework.exceptions import NotFound
 import time
 import json
-from .models import Rating_Source, EvidenceSubs, CredibilitySubs, RelevanceSubs, ObjectivitySubs
+from .models import Rating_Source, EvidenceSubs, CredibilitySubs, RelevanceSubs, ObjectivitySubs, ItemsList
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 
@@ -458,30 +458,14 @@ class ResearchPipeline():
                 Bad example: "X treatment and symptoms" (fragment — not a claim)
                 Bad example: "Loop-mediated isothermal amplification (LAMP)" (title — not a claim)
 
-            Output format:
-                {[
-                    "exact phrase from source",
-                    "another exact phrase from source"
-                ]}
-
-            You MUST follow the format above
-            
-            Your response should be ENTIRELY contained withing ONE LIST OBJECT
-            Do NOT include XML tags in your response
-            Your lists must include STRINGS
-            Do NOT include anything OUTSIDE of the list object
-            Do NOT include any part of the INSTRUCTIONS in your RESPONSE
-
-            **Important**
-            Before outputting your response, check over it again, making edits as necessary, to make sure it satisfies the guidelines above
-
         """
 
-        response = self.model.invoke(prompt)
+        llm = self.model.with_structured_output(ItemsList)
 
-        claims = list(get_content(response))
+        claims = llm.invoke(prompt)
+        print(claims)
 
-        return claims
+        return claims.items
 
     # function to find red flags
     def find_red_flags(self, id: uuid.UUID):
@@ -539,32 +523,15 @@ class ResearchPipeline():
             8. Suspicious Claims
                 Add all claims that seem suspicious, which means either there is no evidence backing it, or the evidence seems exaggerated/wrong
             Do NOT use any text with quotation marks in the source (ie ""Hello!" John said.")
-
-            Output format:
-                
-                [
-                    "exact phrase from source",
-                    "another exact phrase from source"
-                ]
-
-            You MUST follow the format above
-            
-            Your response should be ENTIRELY contained withing ONE LIST OBJECT
-            Do NOT include XML tags in your response
-            Your lists must include STRINGS
-            Do NOT include anything OUTSIDE of the list object
-            Do NOT include any part of the INSTRUCTIONS in your RESPONSE
-
-            **Important**
-            Before outputting your response, check over it again, making edits as necessary, to make sure it satisfies the guidelines above
                 
         """
 
-        response = self.model.invoke(prompt)
-        
-        red_flags = list(get_content(response))
+        llm = self.model.with_structured_output(ItemsList)
 
-        return red_flags
+        response = llm.invoke(prompt)
+        
+
+        return response.items
 
     # function to return all corporations involved in a text
     def find_corporations(self, id: uuid.UUID):
@@ -593,34 +560,15 @@ class ResearchPipeline():
             Your job is to find all corporations involved in the source from ONLY the text between SOURCE CONTENT START and SOURCE CONTENT END. 
             Do NOT include anything from these instructions in your output.
 
-            For corporations, advertisers, or any third-party figure/organization in the text, add them to a list of corporations
-            
-                Output format:
-                    
-                    [
-                        "corporation involved with source",
-                        "another corporation involved with source"
-                    ]
-
-            You MUST follow the format above
-                        
-            Your response should be ENTIRELY contained withing ONE LIST OBJECT
-            Do NOT include XML tags in your response
-            Your lists must include STRINGS
-            Do NOT include anything OUTSIDE of the list object
-            Do NOT include any part of the INSTRUCTIONS in your RESPONSE
-
-            **Important**
-            Before outputting your response, check over it again, making edits as necessary, to make sure it satisfies the guidelines above
-                            
+            For corporations, advertisers, or any third-party figure/organization in the text, add them to a list of corporations        
                     
         """ 
 
-        response = self.model.invoke(prompt)
+        llm = self.model.with_structured_output(ItemsList)
+        
+        response = llm.invoke(prompt)
 
-        corps = list(get_content(response))
-
-        return corps
+        return response.items
 
     # function to rate source
     def rate_source(self, id: uuid.UUID, url: str):

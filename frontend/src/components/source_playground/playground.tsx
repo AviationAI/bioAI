@@ -23,12 +23,16 @@ function Playground ({source}: {source: string[]}) {
     const [nexists, setNexists] = useState(true);
     const [nmLoading, setNMLoading] = useState(false);
     const [scoreLoading, setScoreLoading] = useState(false);
+    const [claimLoading, setClaimLoading] = useState(false);
     const [scored, setScored] = useState(false);
+    const [claimed, setClaimed] = useState(false);
+    const [flagged, setFlagged] = useState(false);
 
     // task ids
     const [initID, setInitID] = useState(null);
     const [askID, setAskID] = useState(null);
     const [rateID, setRateID] = useState(null);
+    const [claimID, setClaimID] = useState(null);
 
     // subpage
     const [subpage, setSubpage] = useState(0);
@@ -63,6 +67,8 @@ function Playground ({source}: {source: string[]}) {
     const [initStatus, vectorID] = useTask(initID, setNexists);
     const [messageStatus, message] = useTask(askID, setNMLoading);
     const [rateStatus, rating] = useTask(rateID, setScoreLoading);
+    const [claimStatus, claims] = useTask(claimID, setClaimLoading);
+
 
     useEffect(() => {
         console.log(scoreLoading);
@@ -84,6 +90,9 @@ function Playground ({source}: {source: string[]}) {
     const handle = (i: number) => {
         if (i === 1 && !scored) {
             score();
+        }
+        if (i === 2 && !claimed) {
+            claim();
         }
     }
 
@@ -124,6 +133,24 @@ function Playground ({source}: {source: string[]}) {
             setScored(true);
         } catch(err) {
             console.log(err);
+        }
+    }
+
+    // find source claims
+    async function claim() {
+        try {
+            const token = await getToken();
+            const response = await AxiosInstance.post(`/api/playground/find/claims/${vectorID}`, {}, {
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+
+            setClaimed(true);
+            setClaimID(response.data.task_id);
+        
+        } catch (err) {
+
         }
     }
 
@@ -393,8 +420,24 @@ function Playground ({source}: {source: string[]}) {
                 )
             }
             {subpage === 2 && 
-                <>
-                </>
+            <>
+                {claimed && !claimLoading ? (
+                    <div>
+                        <h4 className = "text-xl font-semibold">Claims Made</h4>
+                        <ul>
+                            {(claims ?? []).length > 0 ? (
+                                (claims as []).map((item, index) => (
+                                <li key={index}>"{item}"</li>
+                                ))
+                            ) : (
+                                <p>No claims</p>
+                            )}
+                        </ul>
+                    </div>
+                ):(
+                    <Loader loading = {claimLoading}/>
+                )}
+            </>
             }
         </div>
     );

@@ -11,14 +11,14 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 
 
 summary = ChatGoogleGenerativeAI(
-    model = "gemini-3.5-flash",
+    model = "gemini-3.5-flash-lite",
     temperature = 0.3,
     top_p = 0.5,
     api_key = GEMINI_API_KEY
 )
 
 model = ChatGoogleGenerativeAI(
-    model = "gemini-3.5-flash",
+    model = "gemini-3.5-flash-lite",
     temperature = 0.4,
     top_p = 0.9,
     api_key = GEMINI_API_KEY
