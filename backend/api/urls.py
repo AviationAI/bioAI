@@ -27,5 +27,5 @@ urlpatterns = [
     path('playground/find/claims/<str:vector_id>', views.FindClaimsSource.as_view(), name = "playground-find-claims"),
     path('playground/find/red_flags/<str:vector_id>', views.FindRedFlagsSource.as_view(), name = "playground-find-red-flags"),
     path('playground/find/corporations/<str:vector_id>', views.FindCorporationsSource.as_view(), name = "playground-find-coporations"),
-    path('playground/ask/question', views.AskQuestionSource.as_view(), name = "playground-ask-question")
+    path('playground/ask/question/<str:vector_id>', views.AskQuestionSource.as_view(), name = "playground-ask-question")
 ]

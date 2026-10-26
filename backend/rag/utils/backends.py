@@ -17,6 +17,8 @@ import ipaddress
 import socket
 import requests
 from metapub import PubMedFetcher
+from langchain_core.vectorstores import InMemoryVectorStore
+import json
 
 
 # With an id & time, this class deletes a vector store after a custom time limit ends
@@ -27,10 +29,8 @@ class ExpiringVectorStore:
         self.timer = threading.Timer(self.time, self.expire)
         self.timer.start()
     def expire(self):
-        if self.id in VECTOR_STORAGES:
-            del VECTOR_STORAGES[self.id]
-        if self.id in SESSIONS:
-            del SESSIONS[self.id]
+        VECTOR_STORAGES.delete(self.id)
+        SESSIONS.delete(self.id)
 
 # Custom SeleniumURLLoader with driver customized
 class CustomSeleniumURLLoader(SeleniumURLLoader):
@@ -272,3 +272,21 @@ def get_content(response):
     if isinstance(response.content, str):
         return response.content
     return response.content[0].get("text")
+
+
+def vector_add(id, vector_store):
+    VECTOR_STORAGES.set(id, vector_store)
+
+
+def load_vector_store(id, embeddings):
+
+    id = str(id)
+    raw = VECTOR_STORAGES.get(id)
+
+    if raw is None:
+        return None
+    
+    store = InMemoryVectorStore(embedding=embeddings)
+    store.store = json.loads(raw)
+
+    return store

@@ -26,7 +26,7 @@ from langchain_community.utilities import SearxSearchWrapper
 from rest_framework.generics import GenericAPIView
 from langchain_community.utilities import SearxSearchWrapper
 from .utils.backends import ExpiringVectorStore
-from .utils.backends import get_classifier, resolve_and_validate_url, scrape_pubmed, is_pubmed
+from .utils.backends import get_classifier, resolve_and_validate_url, scrape_pubmed, is_pubmed, load_vector_store
 from django.core.exceptions import ValidationError
 from rest_framework.exceptions import NotFound
 import time
@@ -170,7 +170,7 @@ class ResearchPipeline():
         """
 
         response = self.summary_model.invoke(prompt)
-        summary = getC
+        summary = get_content(response)
 
         return summary
     
@@ -391,10 +391,10 @@ class ResearchPipeline():
         # validating url
         resolve_and_validate_url(url)
 
-        id = uuid.uuid4()
+        id = str(uuid.uuid4())
 
-        VECTOR_STORAGES[id] = InMemoryVectorStore(embedding=self.embeddings)
-        vector_store = VECTOR_STORAGES[id]
+        VECTOR_STORAGES.set(id, InMemoryVectorStore(embedding=self.embeddings))
+        vector_store = load_vector_store(id, self.embeddings)
 
         ExpiringVectorStore(id, 3600)
 
@@ -417,7 +417,7 @@ class ResearchPipeline():
     def find_claims(self, id: uuid.UUID):
 
         # getting vector_storage
-        vector_store = VECTOR_STORAGES[id]
+        vector_store = load_vector_store(id, self.embeddings)
         retriever = vector_store.as_retriever(search_kwargs = {"k": 10})
 
         res = retriever.invoke("""
@@ -488,7 +488,7 @@ class ResearchPipeline():
     def find_red_flags(self, id: uuid.UUID):
         
         # getting vector_storage
-        vector_store = VECTOR_STORAGES[id]
+        vector_store = load_vector_store(id, self.embeddings)
 
         retriever = vector_store.as_retriever(search_kwargs = {"k": 10})
         
@@ -571,7 +571,7 @@ class ResearchPipeline():
     def find_corporations(self, id: uuid.UUID):
 
         # getting vector_storage
-        vector_store = VECTOR_STORAGES[id]
+        vector_store = load_vector_store(id, self.embeddings)
 
         retriever = vector_store.as_retriever(search_kwargs = {"k": 10})
         
@@ -627,7 +627,7 @@ class ResearchPipeline():
     def rate_source(self, id: uuid.UUID, url: str):
         
         # getting vector_storage
-        vector_store = VECTOR_STORAGES[id]
+        vector_store = load_vector_store(id, self.embeddings)
 
         retriever = vector_store.as_retriever(search_kwargs = {"k": 15})
 
@@ -768,7 +768,7 @@ class ResearchPipeline():
     # function to ask question abt source
     def ask_question(self, id: uuid.UUID, question: str):
 
-        vector_store = VECTOR_STORAGES[id]
+        vector_store = load_vector_store(id, self.embeddings)
 
         # Ask the question with context
         retriever = vector_store.as_retriever()
@@ -785,9 +785,5 @@ class ResearchPipeline():
 
     # function to delete vector store and/or session
     def delete_vector_store(self, id):
-
-        if id in VECTOR_STORAGES:
-            del VECTOR_STORAGES[id]
-
-        if id in SESSIONS:
-            del SESSIONS[id]
+        VECTOR_STORAGES.delete(id)
+        SESSIONS.delete(id)

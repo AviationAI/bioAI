@@ -10,6 +10,7 @@ langchain-community
 langchain-core
 langchain-text-splitters
 langchain-google-genai
+langchain-redis
  
 # Ollama
 ollama
