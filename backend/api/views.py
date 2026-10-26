@@ -65,7 +65,7 @@ class ProjectListCreate(generics.ListCreateAPIView):
     
     def get_permissions(self):
         if self.request.method == "POST":
-            return [IsAuthenticated(), Can_Create_Project()]
+            return [IsAuthenticated()]
         return [IsAuthenticated()]
 
     def perform_create(self, serializer):
@@ -537,7 +537,7 @@ class GenerateSourceSummary(generics.GenericAPIView):
 # View to generate subtopics
 class GenerateSubtopics(generics.GenericAPIView):
 
-    permission_classes = [IsAuthenticated, (IsPro | IsPremium | IsPremium_Deluxe)]
+    permission_classes = [IsAuthenticated]
     throttle_scope = 'sensitive_address'
 
     # POST request

@@ -51,8 +51,6 @@ class ProjectFrontendSerializer(serializers.ModelSerializer):
         if not scan_mode and (not rq):
             raise serializers.ValidationError("NO Research Question")
 
-        if user.is_basic() and scan_mode:
-            raise serializers.ValidationError("Basic User cannot go in scan mode.")
         return super().validate(attrs)
 
 class ProjectBackendSerializer(serializers.ModelSerializer):
@@ -79,9 +77,6 @@ class ProjectBackendSerializer(serializers.ModelSerializer):
 
         if not scan_mode and (not rq):
             raise serializers.ValidationError("NO Research Question")
-
-        if user.is_basic() and scan_mode:
-            raise serializers.ValidationError("Basic User cannot go in scan mode.")
         return super().validate(attrs)
 
 # Serializer for frontend with user objects
