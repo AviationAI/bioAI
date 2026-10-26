@@ -719,48 +719,16 @@ class ResearchPipeline():
                     - timeliness_score: integer (0-7)
                     - helpfulness_score: integer (0-8)
                 - purpose_score: integer (0-15)
-
-            Example of the EXACT format to follow:    
-                {json.dumps(example_rating.model_dump(exclude={"credibility_score": {"total"}, "relevance_score": {"total"}, "objectivity_score": {"total"}, "evidence_score": {"total"}, "total": True}))}
-
-            Do NOT let the numbers inside of each rating inside of the example influence your rating
-
-            **Guidelines for response**
-
-            You are FORBIDDEN from returning anything outside of the JSON object
-            You are FORBIDDEN from returning anything outside of JSON
-            Your response should be ENTIRELY contained within ONE JSON object
-            Do NOT include XML tags in your response
-            All of your scores MUST be integers
-            Do NOT include anything outside of the JSON object
-            You are FORBIDDEN from providing explanations for your choices
-            Do NOT include ``` anywhere in your response
-            DO NOT inlcude the phrase "json" anywhere in your response
-            NEVER leave a field empty
-            Do NOT add any plain text outside of the JSON object
-            You are REQUIRED to follow the above rules
-
-            **Important**
-            Before outputting your response, review it to make sure it satisfies the guidelines above
         """
+        llm = self.model.with_structured_output(Rating_Source)
 
         # Invoking model with prompt, then validating data 
-        raw = self.model.invoke(prompt).content
+        raw = llm.invoke(prompt)
 
-        # Remove markdown code fences if present
-        raw = raw.replace("```json", "").replace("```", "")
 
-        # Extract first JSON object
-        match = re.search(r"\{.*\}", raw, re.DOTALL)
-
-        if not match:
-            raise ValueError("No JSON object found in model output")
-        
         # Getting string then turning to json
-        credibility_response = match.group(0)
-        credibility_validated = Rating_Source.model_validate_json(credibility_response)
-
-        final_scores = credibility_validated.model_dump()
+        credibility_response = raw
+        final_scores = credibility_response.model_dump()
 
         return final_scores 
 

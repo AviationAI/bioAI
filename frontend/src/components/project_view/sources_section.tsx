@@ -94,7 +94,7 @@ function Sources({setPage, setPlaygroundSource, start, stop, projectID, sources,
     return (
         <div className = "flex flex-col">
             <h3 className = "text-3xl font-bold">Sources</h3>
-            <p className = "font-light text-sm">Below are the sources relevant to the research. Click on any source to go the website.</p><br/>
+            <p className = "font-light text-sm">Below are the sources relevant to the research. Click on any source to go to the source playground.</p><br/>
             <Loader loading = {summarizing} size = {14}/>
             {sources.map((source, index) => 
                 <Link to = "#" className = "flex flex-col" onClick = {() => {start(source)}}>
