@@ -1,51 +1,56 @@
+
 # Django
-Django>=4.2
+Django>=4.2,<6.2
 djangorestframework
 djangorestframework-simplejwt
- 
+django-cors-headers
+
 # LangChain
 langchain
 langchain-ollama
 langchain-community
 langchain-core
 langchain-text-splitters
- 
+langchain-google-genai
+langchain-redis>=0.2.6
+
 # Ollama
 ollama
- 
+
 # Vector store / embeddings
-# (InMemoryVectorStore is part of langchain-core)
- 
+# InMemoryVectorStore is part of langchain-core
+redisvl>=0.28.0,<0.29.0
+
 # Web scraping / metadata
 trafilatura
- 
-# Markdown
-markdown2
- 
-# Pydantic (used for model validation)
-pydantic
- 
-# Clerk authentication
-clerk-backend-api
-
-django-cors-headers
-
-tiktoken
-unstructured
 selenium
 webdriver-manager
 beautifulsoup4
 lxml
 requests
+unstructured
 
-# Postgres dependencies
+# Markdown
+markdown2
+
+# Pydantic
+pydantic
+
+# Clerk authentication
+clerk-backend-api
+
+# Tokenization
+tiktoken
+
+# Postgres
 psycopg2-binary
 
-# classification
+# Classification
 scikit-learn
 
+# Research metadata
 metapub
 
-# redis & task queue
-redis
+# Redis & task queue
+redis>=6.3.0,!=8.0.0,<9.0
 celery

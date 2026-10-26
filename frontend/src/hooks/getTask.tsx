@@ -53,7 +53,7 @@ function useTask (id: string | null, setGenerating: React.Dispatch<SetStateActio
 
     }, [id]);
 
-    return [status, result];
+    return [status as any, result as any];
 }
 
 export default useTask;

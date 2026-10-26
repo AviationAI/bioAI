@@ -26,6 +26,7 @@ function App() {
         <Route path = "/create" element = {<SignedIn><Create/></SignedIn>}></Route>
         <Route path = "/source/:projectID" element = {<Source/>}> </Route>
         <Route path = "/manuscripts/:manuscriptID" element = {<ManuscriptDetail/>}></Route>
+        <Route path = "/playground/" element = {<ManuscriptDetail/>}></Route>
         <Route path = "*" element={<Screen404/>} />
       </Routes>
     </div>

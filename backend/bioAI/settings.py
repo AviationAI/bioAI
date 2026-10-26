@@ -200,8 +200,10 @@ CHROME_DOCKER = os.getenv("CHROME_URL")
 
 SEARXNG_URL = os.getenv("SEARX_URL")
 
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-CELERY_BROKER_URL = os.getenv("REDIS_URL", "redis://redis:6379") + "/0"
+
+CELERY_BROKER_URL = os.getenv("REDIS_URL", "redis://redis:6379") + "/3"
 CELERY_RESULT_BACKEND = os.getenv("REDIS_URL", "redis://redis:6379") +"/1"
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TIMEZONE = "America/Los_Angeles"
@@ -210,3 +212,7 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_WORKER_CONCURRENCY = 3
 CELERY_RESULT_EXPIRES = 600
+
+
+VECTOR_STORAGE_URL = os.getenv("REDIS_URL", "redis://redis:6379") + "/2"
+MESSAGES_URL = os.getenv("REDIS_URL", "redis://redis:6379") + "/0?protocol=2"

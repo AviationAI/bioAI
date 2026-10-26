@@ -1,5 +1,7 @@
 from .apiconfig import VECTOR_STORAGES, SESSIONS
+from bioAI.settings import MESSAGES_URL
 from langchain_core.chat_history import InMemoryChatMessageHistory
+from langchain_redis import RedisChatMessageHistory                               
 import threading
 import uuid
 from selenium import webdriver
@@ -17,6 +19,8 @@ import ipaddress
 import socket
 import requests
 from metapub import PubMedFetcher
+from langchain_core.vectorstores import InMemoryVectorStore
+import json
 
 
 # With an id & time, this class deletes a vector store after a custom time limit ends
@@ -27,8 +31,8 @@ class ExpiringVectorStore:
         self.timer = threading.Timer(self.time, self.expire)
         self.timer.start()
     def expire(self):
-        if self.id in VECTOR_STORAGES:
-            del VECTOR_STORAGES[self.id]
+        VECTOR_STORAGES.delete(self.id)
+        get_session(self.id).clear()
 
 # Custom SeleniumURLLoader with driver customized
 class CustomSeleniumURLLoader(SeleniumURLLoader):
@@ -51,10 +55,8 @@ class CustomSeleniumURLLoader(SeleniumURLLoader):
         return driver
 
 # This gets a session by its id, and if none exists, created one in its place
-def get_session(session_id: uuid.UUID) -> InMemoryChatMessageHistory:
-    if session_id not in SESSIONS:
-        SESSIONS[session_id] = InMemoryChatMessageHistory()
-    return SESSIONS[session_id]
+def get_session(session_id):
+    return RedisChatMessageHistory(session_id = str(session_id), redis_url = MESSAGES_URL, ttl = 3600)
 
 def get_classifier():
 
@@ -163,7 +165,7 @@ def validate_url(url: str) -> str:
 # Resolving urls step by step to prevent redirect chaining 
 def resolve_and_validate_url(url: str)-> str:
 
-    max_redirects = 5
+    max_redirects = 10
 
     # url being validated
     current_url = url
@@ -265,4 +267,26 @@ def scrape_pubmed(url: str, modern: bool):
     return fetch.article_by_pmid(pmid)
 
 
+def get_content(response):
 
+    if isinstance(response.content, str):
+        return response.content
+    return response.content[0].get("text")
+
+
+def vector_add(id, vector_store):
+    VECTOR_STORAGES.set(id, vector_store)
+
+
+def load_vector_store(id, embeddings):
+
+    id = str(id)
+    raw = VECTOR_STORAGES.get(id)
+
+    if raw is None:
+        return None
+    
+    store = InMemoryVectorStore(embedding=embeddings)
+    store.store = json.loads(raw)
+
+    return store

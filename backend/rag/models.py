@@ -1,5 +1,6 @@
 from django.db import models
 from pydantic import BaseModel, Field, computed_field
+from typing import List
 
 # Credibility sub scores
 class CredibilitySubs(BaseModel):
@@ -52,13 +53,8 @@ class Rating_Source(BaseModel):
     def total (self) -> int:
         return self.credibility_score.total + self.evidence_score.total + self.objectivity_score.total + self.relevance_score.total + self.purpose_score
 
-
-
-# Info pulled from source
-class Other_Source_Information(BaseModel):
-    red_flags: list[str]
-    claims: list[str]
-    corporations: list[str]
+class ItemsList(BaseModel):
+    items: List[str]
 
 
 # Subtopic is one if the paths regarding the topic given by the AI
