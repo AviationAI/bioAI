@@ -24,15 +24,20 @@ function Playground ({source}: {source: string[]}) {
     const [nmLoading, setNMLoading] = useState(false);
     const [scoreLoading, setScoreLoading] = useState(false);
     const [claimLoading, setClaimLoading] = useState(false);
+    const [redLoading, setRedLoading] = useState(false);
+    const [coorpLoading, setCoorpLoading] = useState(false);
     const [scored, setScored] = useState(false);
     const [claimed, setClaimed] = useState(false);
     const [flagged, setFlagged] = useState(false);
+    const [coorped, setCoorped] = useState(false);
 
     // task ids
     const [initID, setInitID] = useState(null);
     const [askID, setAskID] = useState(null);
     const [rateID, setRateID] = useState(null);
     const [claimID, setClaimID] = useState(null);
+    const [redID, setRedID] = useState(null);
+    const [cID, setCID] = useState(null);
 
     // subpage
     const [subpage, setSubpage] = useState(0);
@@ -68,6 +73,8 @@ function Playground ({source}: {source: string[]}) {
     const [messageStatus, message] = useTask(askID, setNMLoading);
     const [rateStatus, rating] = useTask(rateID, setScoreLoading);
     const [claimStatus, claims] = useTask(claimID, setClaimLoading);
+    const [redStatus, flags] = useTask(redID, setRedLoading);
+    const [coorpStatus, coorps] = useTask(cID, setCoorpLoading);
 
 
     useEffect(() => {
@@ -93,6 +100,12 @@ function Playground ({source}: {source: string[]}) {
         }
         if (i === 2 && !claimed) {
             claim();
+        }
+        if (i === 3 && !flagged) {
+            flag();
+        }
+        if (i === 4 && !coorped) {
+            cooperations();
         }
     }
 
@@ -150,7 +163,41 @@ function Playground ({source}: {source: string[]}) {
             setClaimID(response.data.task_id);
         
         } catch (err) {
+            console.log(err);
+        }
+    }
 
+    // find red flags
+    async function flag() {
+        try {
+            const token = await getToken();
+            const response = await AxiosInstance.post(`/api/playground/find/red_flags/${vectorID}`, {}, {
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+
+            setFlagged(true);
+            setRedID(response.data.task_id);
+        } catch(err) {
+            console.log(err);
+        }
+    }
+
+    // find all cooperations involved
+    async function cooperations() {
+        try {
+            const token = await getToken();
+            const response = await AxiosInstance.post(`/api/playground/find/corporations/${vectorID}`, {}, {
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+
+            setCoorped(true);
+            setCID(response.data.task_id);
+        } catch(err) {
+            console.log(err);
         }
     }
 
@@ -436,6 +483,46 @@ function Playground ({source}: {source: string[]}) {
                     </div>
                 ):(
                     <Loader loading = {claimLoading}/>
+                )}
+            </>
+            }
+            {subpage === 3 && 
+            <>
+                {flagged && !redLoading ? (
+                    <div>
+                        <h4 className = "text-xl font-semibold">Red Flags</h4>
+                        <ul>
+                            {(flags ?? []).length > 0 ? (
+                                (flags as []).map((item, index) => (
+                                <li key={index}>"{item}"</li>
+                                ))
+                            ) : (
+                                <p>No Red Flags</p>
+                            )}
+                        </ul>
+                    </div>
+                ):(
+                    <Loader loading = {redLoading}/>
+                )}
+            </>
+            }
+            {subpage === 4 && 
+            <>
+                {coorped && !coorpLoading ? (
+                    <div>
+                        <h4 className = "text-xl font-semibold">Corporations</h4>
+                        <ul>
+                            {(coorps ?? []).length > 0 ? (
+                                (coorps as []).map((item, index) => (
+                                <li key={index}>"{item}"</li>
+                                ))
+                            ) : (
+                                <p>No Corporations Associated</p>
+                            )}
+                        </ul>
+                    </div>
+                ):(
+                    <Loader loading = {coorpLoading}/>
                 )}
             </>
             }
