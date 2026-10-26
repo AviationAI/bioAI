@@ -1,5 +1,7 @@
 from .apiconfig import VECTOR_STORAGES, SESSIONS
+from bioAI.settings import MESSAGES_URL
 from langchain_core.chat_history import InMemoryChatMessageHistory
+from langchain_redis import RedisChatMessageHistory                               
 import threading
 import uuid
 from selenium import webdriver
@@ -30,7 +32,7 @@ class ExpiringVectorStore:
         self.timer.start()
     def expire(self):
         VECTOR_STORAGES.delete(self.id)
-        SESSIONS.delete(self.id)
+        get_session(self.id).clear()
 
 # Custom SeleniumURLLoader with driver customized
 class CustomSeleniumURLLoader(SeleniumURLLoader):
@@ -53,10 +55,8 @@ class CustomSeleniumURLLoader(SeleniumURLLoader):
         return driver
 
 # This gets a session by its id, and if none exists, created one in its place
-def get_session(session_id: uuid.UUID) -> InMemoryChatMessageHistory:
-    if session_id not in SESSIONS:
-        SESSIONS[session_id] = InMemoryChatMessageHistory()
-    return SESSIONS[session_id]
+def get_session(session_id):
+    return RedisChatMessageHistory(session_id = str(session_id), redis_url = MESSAGES_URL, ttl = 3600)
 
 def get_classifier():
 
@@ -165,7 +165,7 @@ def validate_url(url: str) -> str:
 # Resolving urls step by step to prevent redirect chaining 
 def resolve_and_validate_url(url: str)-> str:
 
-    max_redirects = 5
+    max_redirects = 10
 
     # url being validated
     current_url = url

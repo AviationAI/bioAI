@@ -393,10 +393,7 @@ class ResearchPipeline():
 
         id = str(uuid.uuid4())
 
-        VECTOR_STORAGES.set(id, InMemoryVectorStore(embedding=self.embeddings))
-        vector_store = load_vector_store(id, self.embeddings)
-
-        ExpiringVectorStore(id, 3600)
+        vector_store = InMemoryVectorStore(embedding = self.embeddings)
 
         # If the url is invalid or false, then return 400 status
         try:
@@ -410,6 +407,8 @@ class ResearchPipeline():
         # Splitting docs, then joining back in chunks
         split_docs = self.text_splitter.split_documents(docs)
         vector_store.add_documents(split_docs)
+
+        VECTOR_STORAGES.set(id, json.dumps(vector_store.store), ex = 3600)
 
         return id
 
@@ -786,4 +785,4 @@ class ResearchPipeline():
     # function to delete vector store and/or session
     def delete_vector_store(self, id):
         VECTOR_STORAGES.delete(id)
-        SESSIONS.delete(id)
+        get_session(id).clear()

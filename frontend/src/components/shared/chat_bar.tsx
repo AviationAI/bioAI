@@ -16,11 +16,12 @@ function ChatBar({submit, disabled}: {submit: any, disabled: boolean}) {
             event.preventDefault();
             if (!empty && !disabled) {
                 submit(value.trim());
+                setValue("");
             }
         }
     };
     return (
-        <form onSubmit={(event) => {event.preventDefault(); event.stopPropagation(); submit(value.trim());}} className="px-4 pb-5 pt-2 sm:px-9">
+        <form onSubmit={(event) => {event.preventDefault(); event.stopPropagation(); submit(value.trim()); setValue("");}} className="px-4 pb-5 pt-2 sm:px-9">
         <div className="mx-auto flex max-w-[820px] items-end gap-2 rounded-[22px] border border-zinc-200 bg-white py-2 pl-5 pr-2 shadow-[0_1px_2px_rgba(0,0,0,.04),0_8px_24px_-12px_rgba(0,0,0,.12)] transition focus-within:border-indigo-500 focus-within:ring-4 focus-within:ring-indigo-500/15">
             <textarea
             rows={1}

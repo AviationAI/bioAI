@@ -1,4 +1,4 @@
-FROM python:3.14
+FROM python:3.13
 COPY . /usr/src/bioAI/backend
 WORKDIR /usr/src/bioAI/backend
 RUN pip install -r requirements.txt

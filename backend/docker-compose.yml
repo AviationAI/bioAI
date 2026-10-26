@@ -22,8 +22,7 @@ services:
       - search
       - selenium_net
   redis:
-    image: docker.io/valkey/valkey:8-alpine
-    command: valkey-server --save 30 1 --loglevel warning
+    image: redis/redis-stack-server:latest
     networks:
       - search
       - tasks
