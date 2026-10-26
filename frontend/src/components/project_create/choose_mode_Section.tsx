@@ -12,7 +12,7 @@ function ChooseMode ({setScan, plan, increment}:{setScan: React.Dispatch<React.S
                     <button className = "self-end text-[#f4f4f4]" onClick = {() => {setScan(false); increment();}}>Choose Research Mode</button>
                 </div>
                 <div className = "flex-1 border rounded-md m-3 p-3 flex flex-col">
-                    <h3  className = "text-xl font-semibold">Scan Mode (Pro Feature)</h3>
+                    <h3  className = "text-xl font-semibold">Scan Mode</h3>
                     <p className = "font-extralight text-sm max-w-prose">Select topic and description as a generic area of focus. AI will generate possible subtopics and descriptions, which you can use to refine your project before changing to research mode.</p><br/>
                     <button className = "self-end text-[#f4f4f4] disabled:opacity-50" disabled = {plan === "basic"} onClick = {() => {setScan(true); increment();}}>Choose Scan Mode</button>
                 </div>
