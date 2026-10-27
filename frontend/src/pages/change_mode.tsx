@@ -89,9 +89,9 @@ function ChangeMode() {
             await AxiosInstance.put(`/api/projects/${projectID}`, {
                     // Using spread operator to only send the said field if the content is not none
                     ...(topic.trim().length > 0 &&  {"topic": topic.trim()}),
-                    ...(rq.trim().length > 0 && {"question": rq.trim()}),
+                    ...(rq.trim().length > 0 && {"research_question": rq.trim()}),
                     ...(description.current.trim().length > 0 && {"description": description.current.trim()}),
-                    ...(sources.length > 0 && {"sources": sources}),
+                    ...(sources.length > 0 && {"available_trusted_literatures": sources}),
                     ...(summary.current.trim().length > 0  && {"summary": summary.current.trim()}),
                     ...(sources_summarized.current.trim().length > 0  && {"literature_summarized": sources_summarized.current.trim()})
                 }, 

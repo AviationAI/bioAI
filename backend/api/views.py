@@ -209,9 +209,9 @@ class ProjectChangeMode(generics.GenericAPIView):
 
         project = self.get_object()
 
-        updateData = {
-            "scan_mode": False
-        }
+        updateData = request.data.copy()
+
+        updateData["scan_mode"] = False
 
         serializer = self.get_serializer(project, data = updateData, partial = True)
         # Changing mode out of scan mode

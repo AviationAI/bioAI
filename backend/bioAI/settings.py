@@ -187,7 +187,7 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.UserRateThrottle'
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'sensitive_address': '5/minute',
+        'sensitive_address': '30/minute',
         'moderate_address': '60/minute',
         'spam_address': '120/minute',
         'user': '50000/day'
